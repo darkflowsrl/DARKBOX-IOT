@@ -1,0 +1,16 @@
+{
+    "idf.portWin": "COM3",
+    "files.associations": {
+        "*.py": "python",
+        "*.h": "cpp",
+        "*.tcc": "cpp",
+        "optional": "cpp",
+        "functional": "cpp",
+        "random": "cpp",
+        "fstream": "cpp",
+        "istream": "cpp",
+        "ostream": "cpp",
+        "sstream": "cpp",
+        "streambuf": "cpp"
+    }
+}

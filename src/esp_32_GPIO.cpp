@@ -8,12 +8,14 @@
 #define humiditySensor0 12
 #define tempSensor1_PIN 32
 
-const char* ssid     = "chop";
-const char* password = "741963258";
+const char* ssid     = "silfe";
+const char* wifiPassword = "SilFe2655";
 
-const char* host = "test.mosquitto.org";
-const char* root_topic_subscribe = "giuli/temp";
+const char* host = "mqtt.darkflow.com.ar";
+const char* root_topic_subscribe = "giuli/testing";
 const char* root_topic_publish = "giuli/data";
+const char* userName = "";
+const char* password = "";
 const int port = 1883;
 
 //Global vars
@@ -30,11 +32,25 @@ void callback(char* topic, byte* payload, unsigned int lenght);
 void reconnect();
 void setup_wifi();
 
+
+class terminalMessages{
+  private:
+    String msg1 = "Buscando sensores de temperatura...";
+    String msg2;
+    String msg3;
+  public:
+    String msg1Ret(){
+      return msg1;
+    }
+};
+
+terminalMessages msg1;
+
 void setup() {
   //Temp configuration
-  Serial.begin(115200);
+  Serial.begin(9600);
   DS18B20.begin();
-  Serial.print("Buscando sensores de temperatura...");
+  Serial.print(msg1.msg1Ret());
   sensorsCount = DS18B20.getDeviceCount();
   Serial.print(sensorsCount, DEC);
   Serial.print(" dispositivos");
@@ -86,7 +102,7 @@ void setup_wifi(){
   Serial.print(ssid);
   Serial.println(" ");
 
-  WiFi.begin(ssid, password);
+  WiFi.begin(ssid, wifiPassword);
 
   while (WiFi.status() != WL_CONNECTED) {
       delay(500);
@@ -108,18 +124,16 @@ void callback(char* topic, byte* payload, unsigned int lenght){
     incomingMessage += (char)payload[n];
   }
   incomingMessage.trim();
-  Serial.println(">>" + incomingMessage);
+  Serial.println(" >>" + incomingMessage);
 }
 
 void reconnect(){
   while(!client.connected()){
     String deviceId = "DarkFlow_";
     deviceId += String(random(0xffff), HEX);
-  
-    Serial.print("Intentando conectar a: ");
-    Serial.println(host);
+    String message = "Intentando conectar a: " + String(host) + ", Con ID: " + String(deviceId); 
     if(client.connect(deviceId.c_str())){
-      Serial.println("Coexión Exitosa");
+      Serial.println("Conexión Exitosa");
       if(client.subscribe(root_topic_subscribe)){
         Serial.println("Subscripción exitosa");
       }else{
