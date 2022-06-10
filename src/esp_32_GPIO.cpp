@@ -4,33 +4,37 @@
 #include <DallasTemperature.h>
 #include <WiFi.h>
 #include <PubSubClient.h>
+#include <type_traits>
+#include <string.h>
 
-#define humiditySensor0 12
+#define humiditySensor0 12 // GPIO pins from the ESP-32
 #define tempSensor1_PIN 32
 
-const char* ssid     = "silfe";
-const char* wifiPassword = "SilFe2655";
 
+const char* ssid = "silfe";
+const char* wifiPassword = "SilFe2655";
 const char* host = "mqtt.darkflow.com.ar";
 const char* root_topic_subscribe = "giuli/testing";
 const char* root_topic_publish = "giuli/data";
 const char* userName = "";
 const char* password = "";
 const int port = 1883;
+String stringifiedJSON = "{"; //This variable will be used by the JSONIZER, here will the "data" be inserted.
 
-//Global vars
-OneWire oneWire(tempSensor1_PIN);
+//Constructor for the sensors, the wifi and the MQTT Object
+OneWire oneWire(tempSensor1_PIN); 
 DallasTemperature DS18B20(&oneWire);
-WiFiClient espClient;
+WiFiClient espClient; 
 PubSubClient client(espClient);
 
 int sensorsCount = 0;
 float tempC;
 
-char message[50];
+char message[100];
 void callback(char* topic, byte* payload, unsigned int lenght);
 void reconnect();
 void setup_wifi();
+void JSONIZER(String data0, float data1, bool doEnd);
 
 
 class terminalMessages{
@@ -62,40 +66,33 @@ void setup() {
   client.setCallback(callback); //Callback 
   
 }
- 
+//function> loop: None -> void
 void loop() {
   //Temp loop
- DS18B20.requestTemperatures();
- float temp0 = DS18B20.getTempCByIndex(0);
- float temp1 = DS18B20.getTempCByIndex(1);
- float temp2 = DS18B20.getTempCByIndex(2);
- /*
- Serial.print("Sensor0 = ");
- Serial.print(temp0);
- Serial.println(" °C");
- Serial.print("Sensor1 = ");
- Serial.print(temp1);
- Serial.println(" °C");
- Serial.print("Sensor2 = ");
- Serial.print(temp2);
- Serial.println(" °C");
- Serial.println("============================");*/
- //MQTT
- if(!client.connected()){
-  reconnect();
- }
- if(client.connected()){
-  String str = "{ temp0:" + String(temp0) + ", temp1:" + String(temp1) + ", temp2:" + String(temp2) + "}";
-  Serial.println(str);
-  str.toCharArray(message, 50);
-  client.publish(root_topic_publish, message);
-  delay(1000);
- }
- client.loop();
- // {"temp0":x,"temp1:x,"temp2":x}
- 
+  DS18B20.requestTemperatures();
+  for(int n = 0; n < sensorsCount; n++){
+    String sensorNumber = "Sensor: " + String(n);
+    if(n < sensorsCount-1){
+      JSONIZER(sensorNumber, DS18B20.getTempCByIndex(n), false);
+    }else{
+      JSONIZER(sensorNumber, DS18B20.getTempCByIndex(n), true);
+    }
+  }
+  //MQTT
+  if(!client.connected()){
+    reconnect();
+  }
+  if(client.connected()){
+    Serial.println(stringifiedJSON);
+    stringifiedJSON.toCharArray(message, 100);
+    client.publish(root_topic_publish, message);
+    delay(1000);
+  }
+  client.loop();
+  // {"temp0":x,"temp1:x,"temp2":x} 
+  stringifiedJSON = "{";
 }
-
+//function> setup_wifi: None -> int
 void setup_wifi(){
   //WiFi connection
   Serial.print("Conectando a ");
@@ -145,5 +142,17 @@ void reconnect(){
       Serial.println("Intentando nuevamente en 10 Segundos");
       delay(5000);
     }
+  }
+}
+
+//function> JSONIZER: Any, Any, bool -> void
+void JSONIZER(String data0, float data1, bool doEnd){
+  if(doEnd == false){
+    String stringStream = "\"" + data0 + "\" : \"" + data1 + "\", ";   
+    stringifiedJSON += stringStream;
+  } 
+  if(doEnd == true){
+    String stringStream = "\"" + data0 + "\" : \"" + data1 + "\"} ";
+    stringifiedJSON += stringStream;
   }
 }
