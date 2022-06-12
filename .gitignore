@@ -19,3 +19,6 @@ src/back_0.zip
 .vs/IOT_FIRMWARE/FileContentIndex/36e11d7d-a469-47e5-b530-60d65aed6fc7.vsidx
 .vs/IOT_FIRMWARE/FileContentIndex/2582675c-8d6a-4ef3-861b-b410f1d4e5e9.vsidx
 src/back_3.zip
+*.exe
+.vscode/settings.json
+.vscode/tasks.json

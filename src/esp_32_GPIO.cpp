@@ -1,3 +1,4 @@
+//mosquitto_pub -h <host> -t <"topic"> -m <"message">
 //mosquitto_sub -h <host> -t <"topic"> 
 #include <Arduino.h>
 #include <OneWire.h>
@@ -6,10 +7,12 @@
 #include <PubSubClient.h>
 #include <type_traits>
 #include <string.h>
+#include <Adafruit_Sensor.h>
+#include <DHT.h>
 
-#define humiditySensor0 12 // GPIO pins from the ESP-32
+#define humiditySensor_PIN 23 // GPIO pins from the ESP-32
 #define tempSensor1_PIN 32
-
+#define DHTTYPE  DHT21 //Define the type of DHT sensor
 
 const char* ssid = "silfe";
 const char* wifiPassword = "SilFe2655";
@@ -24,6 +27,7 @@ String stringifiedJSON = "{"; //This variable will be used by the JSONIZER, here
 //Constructor for the sensors, the wifi and the MQTT Object
 OneWire oneWire(tempSensor1_PIN); 
 DallasTemperature DS18B20(&oneWire);
+DHT humiditySensor(humiditySensor_PIN, DHTTYPE);
 WiFiClient espClient; 
 PubSubClient client(espClient);
 
@@ -35,7 +39,6 @@ void callback(char* topic, byte* payload, unsigned int lenght);
 void reconnect();
 void setup_wifi();
 void JSONIZER(String data0, float data1, bool doEnd);
-
 
 class terminalMessages{
   private:
@@ -59,6 +62,8 @@ void setup() {
   Serial.print(sensorsCount, DEC);
   Serial.print(" dispositivos");
   Serial.println(""); 
+  //Humidity Sensor
+  humiditySensor.begin();
   //WIFI
   setup_wifi();
   //MQTT
@@ -71,13 +76,16 @@ void loop() {
   //Temp loop
   DS18B20.requestTemperatures();
   for(int n = 0; n < sensorsCount; n++){
-    String sensorNumber = "Sensor: " + String(n);
+    String sensorNumber = "Sensor" + String(n);
     if(n < sensorsCount-1){
       JSONIZER(sensorNumber, DS18B20.getTempCByIndex(n), false);
     }else{
-      JSONIZER(sensorNumber, DS18B20.getTempCByIndex(n), true);
+      JSONIZER(sensorNumber, DS18B20.getTempCByIndex(n), false);
     }
   }
+  //Humidity data
+  float ambientHumidity = humiditySensor.readTemperature();
+  JSONIZER("Humidity", ambientHumidity, true);
   //MQTT
   if(!client.connected()){
     reconnect();
@@ -86,7 +94,7 @@ void loop() {
     Serial.println(stringifiedJSON);
     stringifiedJSON.toCharArray(message, 100);
     client.publish(root_topic_publish, message);
-    delay(1000);
+    delay(1);
   }
   client.loop();
   // {"temp0":x,"temp1:x,"temp2":x} 
@@ -140,7 +148,7 @@ void reconnect(){
       Serial.println("Falló la conexión / Error >");
       Serial.print(client.state());
       Serial.println("Intentando nuevamente en 10 Segundos");
-      delay(5000);
+      delay(1);
     }
   }
 }
