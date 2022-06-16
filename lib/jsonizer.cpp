@@ -6,72 +6,86 @@
 #include <sstream>
 #include <stdio.h>
 
-std::string readFileIntoString(const std::string& path) {
-    auto file = std::ostringstream{};
-    std::ifstream input_file(path);
-    if (!input_file.is_open()) {
-        std::cerr << "Could not open the file - '"
-             << path << "'" << std::endl;
-        exit(EXIT_FAILURE);
-    }
-    file << input_file.rdbuf();
-    return file.str();
-}
-
-std::string path_ = ".\\config.json";
-std::string configFile = readFileIntoString(path_); 
-const char* configData = configFile.c_str(); // configArray is the array from the string that hosts the json document
-
-
+/* The class JSONIZER will be used for serialize and deserialize JSON files, this will be the
+class used by the ESP32 firmware to deserialize the config file.
+To seriliaze you will have to store the data into a vector an then, pass the vector through
+the toJSON function of the class
+@giulicrenna*/
 
 class JSONIZER{
     private:
         std::string launcher = "{";
         bool doEnd = true; 
-/*By conclution the first element will be started like it where a previous element
-Because of that doEnd strarts at false */
+        bool isSecond = false;
+        std::string tempString = "";
+        std::vector<std::string> configVector;
+        /*By conclution the first element will be started like it where a previous element
+        Because of that doEnd strarts at false */
     public:
+        /* readFileIntoString: const string -> string 
+        This function is used to turn the content from a .json file to a string */
+        std::string readFileIntoString(const std::string& path) {
+            auto file = std::ostringstream{};
+            std::ifstream input_file(path);
+            if (!input_file.is_open()) {
+                std::cerr << "Could not open the file - '"
+                    << path << "'" << std::endl;
+                exit(EXIT_FAILURE);
+            }
+            file << input_file.rdbuf();
+            return file.str();
+        }
+        /* toVECTOR: string -> vector<string>
+        This functions is used to turn a char Array (wich contains the json) into a vector
+        where the odd indexes are the json variable and the next index (obviuosly even) will that variable value*/
         std::vector<std::string> toVECTOR(std::string charArray){
-            std::string emptyString = "";
-            std::vector<std::string> configVector;
-            bool isSecond = false;
             for(int i = 0; i < charArray.length(); i++){
-                if(charArray.at(i) != '{' || charArray.at(i) != '}' || charArray.at(i) != ':'){
+                if(charArray.at(i) != '{'){
                     if(isSecond == false){ 
-                        emptyString.push_back(charArray.at(i));
-
+                        if(charArray.at(i) == ':'){
+                            configVector.push_back(tempString);
+                            isSecond = true;
+                            tempString.clear();
+                        }else if(charArray.at(i) != ':'){
+                            tempString.push_back(charArray.at(i));
+                        }
+                    }else if(isSecond == true){ //even odd
+                        if(charArray.at(i) == ','){
+                            configVector.push_back(tempString);
+                            isSecond = false;
+                            tempString.clear();
+                        }else if(charArray.at(i) != ',' && charArray.at(i) != '}'){
+                            tempString.push_back(charArray.at(i));
+                        }else if(charArray.at(i) == '}'){
+                            configVector.push_back(tempString);
+                            tempString.clear();
+                        }
+                    }else{
+                        std::cout<<"Error";
                     }
                 }
-
             }
             return configVector;
         }
-        std::string toSJSON(std::vector<std::string> element){
-            int capacity = element.size();
+        /* toJSON: vector<string> -> string
+        inversely to the "toVECTOR" function, this take a vector as parameter and 
+        return you a string formatted as a json file
+        PD: toJSON means ToStringJson*/
+        std::string toSJSON(std::vector<std::string> myVector){  
+            int capacity = myVector.size();
             for(int i = 1; i <= capacity; i++){
-                int evenOdd = capacity % 2;
-                if(evenOdd != 0 & doEnd == true){
-                    launcher += "\"" + element.at(i-1) + "\"" + ":";
+                float evenOdd = i % 2;
+                if(evenOdd != 0 && doEnd == true){ //par
+                    launcher += "\"" + myVector.at(i-1) + "\"" + ":";
                     doEnd = false;
-                }else if(evenOdd == 0 & doEnd == false & i != capacity){
-                    launcher += "\"" + element.at(i-1) + "\", ";
+                }else if(evenOdd == 0 && doEnd == false && i != capacity){ //impar
+                    launcher += "\"" + myVector.at(i-1) + "\", ";
                     doEnd = true;
                 }else{
-                    launcher += "\"" + element.at(i-1) + "\" }";
+                    launcher += "\"" + myVector.at(i-1) + "\"}";
                 }
             }
             return launcher;
         }
+        
 };
-
-int main(){
-    std::vector<std::string> myVector;
-    myVector.push_back("temp1");
-    myVector.push_back("5454");
-    myVector.push_back("temp2");   
-    myVector.push_back("123");
-
-    JSONIZER JSONsession;
-    std::cout<<JSONsession.toSJSON(myVector);
-    return 0;
-}
