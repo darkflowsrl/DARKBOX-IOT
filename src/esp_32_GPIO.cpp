@@ -1,28 +1,42 @@
 //mosquitto_pub -h <host> -t <"topic"> -m <"message">
 //mosquitto_sub -h <host> -t <"topic"> 
+//mosquitto_pub -h mqtt.darkflow.com.ar -t giuli/data
+#include <string>
+#include <sstream>
+#include <iostream>
+#include <fstream>
+#include <stdio.h>
+
 #include <Arduino.h>
+#include <ArduinoJson.h>
 #include <OneWire.h>
-#include <DallasTemperature.h>
-#include <WiFi.h>
-#include <PubSubClient.h>
-#include <type_traits>
-#include <string.h>
-#include <Adafruit_Sensor.h>
 #include <DHT.h>
+#include <WiFi.h>
+#include <Adafruit_Sensor.h>
+#include <DallasTemperature.h>
+#include <PubSubClient.h>
 
 #define humiditySensor_PIN 23 // GPIO pins from the ESP-32
 #define tempSensor1_PIN 32
 #define DHTTYPE  DHT21 //Define the type of DHT sensor
 
-const char* ssid = "silfe";
-const char* wifiPassword = "SilFe2655";
-const char* host = "mqtt.darkflow.com.ar";
-const char* root_topic_subscribe = "giuli/testing";
-const char* root_topic_publish = "giuli/data";
-const char* userName = "";
-const char* password = "";
-const int port = 1883;
+using namespace std;
+
+StaticJsonDocument<1024> config;
+char json_[] = "{\"ssid\":\"Chopin\",\"wifiPassword\": \"Euler27182\",\"host\": \"mqtt.darkflow.com.ar\",\"root_topic_subscribe\": \"giuli/testing\",\"root_topic_publish\": \"giuli/data\",\"userName\": \" \",\"password\": \" \",\"port\":1883,\"mailSender\": \"giulicrenna@outlook.com\",\"mailReceiver\": \"kirchhoff2002\",\"mailPassword\": \"giuli_crenna@gmail.com\",\"smtpServer\": \"smtp.office365.com\",\"smtpPort\":587}";
+DeserializationError error = deserializeJson(config, json_); // deserialize() allows a JSON data and an array that contains the JSON to deserialize 
+
+
+const char* ssid = config["ssid"];
+const char* wifiPassword = config["wifiPassword"];
+const char* host = config["host"];
+const char* root_topic_subscribe = config["root_topic_subscribe"];
+const char* root_topic_publish = config["root_topic_publish"];
+const char* userName = config["userName"];
+const char* password = config["password"];
+const int port = config["port"];  
 String stringifiedJSON = "{"; //This variable will be used by the JSONIZER, here will the "data" be inserted.
+
 
 //Constructor for the sensors, the wifi and the MQTT Object
 OneWire oneWire(tempSensor1_PIN); 
@@ -54,6 +68,7 @@ class terminalMessages{
 terminalMessages msg1;
 
 void setup() {
+
   //Temp configuration
   Serial.begin(9600);
   DS18B20.begin();
@@ -94,7 +109,7 @@ void loop() {
     Serial.println(stringifiedJSON);
     stringifiedJSON.toCharArray(message, 100);
     client.publish(root_topic_publish, message);
-    delay(1);
+    delay(2000);
   }
   client.loop();
   // {"temp0":x,"temp1:x,"temp2":x} 
@@ -148,7 +163,7 @@ void reconnect(){
       Serial.println("Falló la conexión / Error >");
       Serial.print(client.state());
       Serial.println("Intentando nuevamente en 10 Segundos");
-      delay(1);
+      delay(5000);
     }
   }
 }
