@@ -6,10 +6,10 @@
     "root_topic_publish":"giuli/data",
     "userName":"",
     "password":"",
-    "port":1883,
+    "port":"1883",
     "mailSender":"giulicrenna@outlook.com",
     "mailReceiver":"kirchhoff2002",
     "mailPassword":"giuli_crenna@gmail.com",
     "smtpServer":"smtp.office365.com",
-    "smtpPort":587
+    "smtpPort":"587"
 }

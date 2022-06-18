@@ -3,9 +3,10 @@
 #include <iostream>
 #include <fstream>
 #include <stdio.h>
-#include <jsonizer.h>
 
+#include <SD.h>
 #include <Arduino.h>
+#include <ArduinoJson.h>
 #include <OneWire.h>
 #include <DHT.h>
 #include <WiFi.h>
@@ -13,19 +14,27 @@
 #include <DallasTemperature.h>
 #include <PubSubClient.h>
 
+using namespace std;
+
 //mosquitto_pub -h <host> -t <"topic"> -m <"message">
 //mosquitto_sub -h <host> -t <"topic"> 
 //mosquitto_pub -h mqtt.darkflow.com.ar -t giuli/data -m 
+
+struct Config{
+  char ssid[128];
+  char wifiPassword[128];
+  char host[128];
+  char root_topic_subscribe[128];
+  char root_topic_publish[128];
+  char userName[128];
+  char password[128];
+  int port;
+};
 
 #define humiditySensor_PIN 23 // GPIO pins from the ESP-32
 #define tempSensor1_PIN 32
 #define DHTTYPE  DHT21 //Define the type of DHT sensor
 
-using namespace std;
-
-void callback(char* topic, byte* payload, unsigned int lenght);
-void reconnect();
-void setup_wifi();
 
 //Constructor for the sensors, the wifi and the MQTT Object
 OneWire oneWire(tempSensor1_PIN); 
@@ -33,24 +42,31 @@ DallasTemperature DS18B20(&oneWire);
 DHT humiditySensor(humiditySensor_PIN, DHTTYPE);
 WiFiClient espClient; 
 PubSubClient client(espClient);
-JSONIZER JSONsession;
+Config configuracion;
+Config configData;
 
-const string json = JSONsession.readFileIntoString(".\\config.json");
-vector<string> configuration = JSONsession.toVECTOR(json);
+void callback(char* topic, byte* payload, unsigned int lenght);
+void JSONIZER(String data0, float data1, bool doEnd);
+void saveConfig(const char *filename, const Config &config);
+void printFile(const char *filename, bool sd = false);
+void loadConfig(bool sd = false);
+void reconnect();
+void setup_wifi();
 
-const char* ssid = configuration[1].c_str();
-const char* wifiPassword = configuration[3].c_str();
-const char* host = configuration[5].c_str();
-const char* root_topic_subscribe = configuration[7].c_str();
-const char* root_topic_publish = configuration[9].c_str();
-const char* userName = configuration[11].c_str();
-const char* password = configuration[13].c_str();
-const int port = stoi(configuration[15]);
+const char *ssid = configuracion.ssid;
+const char *wifiPassword = configuracion.wifiPassword;
+const char *host = configuracion.host;
+const char *root_topic_subscribe = configuracion.root_topic_subscribe;
+const char *root_topic_publish = configuracion.root_topic_subscribe;
+const char *userName =  configuracion.userName;
+const char *password =  configuracion.password;
+const int port = configuracion.port;
 
+const char *path = ".\\config.json";
 int sensorsCount = 0;
 float tempC;
 char message[100];
-vector<string> tempData;
+String stringifiedJSON = "{";
 
 class terminalMessages{
   private:
@@ -66,7 +82,6 @@ class terminalMessages{
 terminalMessages msg1;
 
 void setup() {
-
   //Temp configuration
   Serial.begin(9600);
   DS18B20.begin();
@@ -82,7 +97,6 @@ void setup() {
   //MQTT
   client.setServer(host, port);
   client.setCallback(callback); //Callback 
-  
 }
 //function> loop: None -> void
 void loop() {
@@ -90,28 +104,32 @@ void loop() {
   DS18B20.requestTemperatures();
   for(int n = 0; n < sensorsCount; n++){
     String sensorNumber = "Sensor" + String(n);
-    if(n < sensorsCount){
-      tempData.push_back(sensorNumber.c_str());
-      tempData.push_back(String(DS18B20.getTempCByIndex(n), 3).c_str());   
+    if(n < sensorsCount-1){
+      JSONIZER(sensorNumber, DS18B20.getTempCByIndex(n), false);
+    }else{
+      JSONIZER(sensorNumber, DS18B20.getTempCByIndex(n), false);
     }
   }
   //Humidity data
   float ambientHumidity = humiditySensor.readTemperature();
-  tempData.push_back("Humidity");
-  tempData.push_back(String(ambientHumidity, 3).c_str());   
+  JSONIZER("Humidity", ambientHumidity, true);
   //MQTT
   if(!client.connected()){
     reconnect();
   }
   if(client.connected()){
-    string data = JSONsession.toSJSON(tempData);
-    client.publish(root_topic_publish, data.c_str());
-    delay(2000);
+    Serial.println(stringifiedJSON);
+    stringifiedJSON.toCharArray(message, 100);
+    client.publish(root_topic_publish, message);
+    delay(1);
   }
   client.loop();
+  // {"temp0":x,"temp1:x,"temp2":x} 
+  stringifiedJSON = "{";
 }
 //function> setup_wifi: None -> int
 void setup_wifi(){
+
   //WiFi connection
   Serial.print("Conectando a ");
   Serial.print(ssid);
@@ -163,3 +181,98 @@ void reconnect(){
   }
 }
 
+void JSONIZER(String data0, float data1, bool doEnd){
+  if(doEnd == false){
+    String stringStream = "\"" + data0 + "\" : \"" + data1 + "\", ";   
+    stringifiedJSON += stringStream;
+  } 
+  if(doEnd == true){
+    String stringStream = "\"" + data0 + "\" : \"" + data1 + "\"} ";
+    stringifiedJSON += stringStream;
+  }
+}
+
+
+void loadConfig(bool fromSD){
+  if(fromSD==true){
+    File file = SD.open(path);
+    StaticJsonDocument<1024> document;
+
+    DeserializationError error = deserializeJson(document, file);
+    if(error){
+      Serial.println("Error opening the file...");
+    }  
+    strlcpy(configData.ssid, document["ssid"], sizeof(configData.ssid));
+    strlcpy(configData.wifiPassword, document["wifiPassword"], sizeof(configData.wifiPassword));
+    strlcpy(configData.host, document["host"], sizeof(configData.host));
+    strlcpy(configData.root_topic_publish, document["root_topic_publish"], sizeof(configData.root_topic_publish));
+    strlcpy(configData.root_topic_subscribe, document["root_topic_subscribe"], sizeof(configData.root_topic_subscribe));
+    strlcpy(configData.userName, document["userName"], sizeof(configData.userName));
+    strlcpy(configData.password, document["password"], sizeof(configData.password));
+    configData.port = document["port"];
+    file.close();
+    
+  }else if(fromSD == false){
+      auto file = ostringstream{};
+      ifstream input_file(path);
+      if (!input_file.is_open()) {
+          std::cerr << "Could not open the file - '"
+              << path << "'" << std::endl;
+          exit(EXIT_FAILURE);
+      }
+      StaticJsonDocument<1024> document;
+
+      DeserializationError error = deserializeJson(document, file);
+      if(error){
+        Serial.println("Error opening the file...");
+      }  
+      strlcpy(configData.ssid, document["ssid"], sizeof(configData.ssid));
+      strlcpy(configData.wifiPassword, document["wifiPassword"], sizeof(configData.wifiPassword));
+      strlcpy(configData.host, document["host"], sizeof(configData.host));
+      strlcpy(configData.root_topic_publish, document["root_topic_publish"], sizeof(configData.root_topic_publish));
+      strlcpy(configData.root_topic_subscribe, document["root_topic_subscribe"], sizeof(configData.root_topic_subscribe));
+      strlcpy(configData.userName, document["userName"], sizeof(configData.userName));
+      strlcpy(configData.password, document["password"], sizeof(configData.password));
+      configData.port = document["port"];
+  }
+}
+void saveConfig(const char *filename, const Config &config){
+  SD.remove(filename);
+
+  File file = SD.open(filename, FILE_WRITE);
+  if(!file){
+    Serial.println(F("Error while trying to create the file :o"));
+    return;
+  }
+  
+  StaticJsonDocument<1024> document;
+  document["ssid"] = configData.ssid;
+  document["wifiPassword"] = configData.wifiPassword;
+  document["host"] = configData.host;
+  document["root_topic_publish"] = configData.root_topic_publish;
+  document["root_topic_subscribe"] = configData.root_topic_subscribe;
+  document["userName"] = configData.userName;
+  document["password"] = configData.password;
+  document["port"] = configData.port;
+
+  if(serializeJson(document, file) == 0){
+    Serial.println("Failed to write into the file");
+  }
+
+  file.close();
+}
+
+void printFile(const char *filename, bool fromSD){
+  if(fromSD == true){  
+    File file = SD.open(filename);
+    if(!file){
+      Serial.println(F("Failed to read file"));
+    }
+    while(file.available()){
+      Serial.print((char)file.read());
+    }
+    Serial.println();
+    file.close();
+    }else{
+    }
+}
