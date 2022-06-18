@@ -55,5 +55,6 @@
         "iomanip": "cpp"
     },
     "c-cpp-compile-run.c-compiler": "C:\\msys64\\mingw64\\bin\\g++.exe",
-    "c-cpp-compile-run.cpp-compiler": "C:\\msys64\\mingw64\\bin\\g++.exe"
+    "c-cpp-compile-run.cpp-compiler": "C:\\msys64\\mingw64\\bin\\g++.exe",
+    "idf.flashType": "UART"
 }

@@ -4,6 +4,7 @@
 #include <fstream>
 #include <stdio.h>
 
+#include <SPIFFS.h>
 #include <SD.h>
 #include <Arduino.h>
 #include <ArduinoJson.h>
@@ -82,8 +83,23 @@ class terminalMessages{
 terminalMessages msg1;
 
 void setup() {
+  //File system and Serial configuration
+  Serial.begin(115200);
+  if(!SPIFFS.begin(true)){
+    Serial.println("Error initializing");
+    while(true){}
+  }
+  // List any available file in the flash file system
+  File root = SPIFFS.open("/");
+  File file = root.openNextFile();
+  while(file){
+    Serial.print("File >> ");
+    Serial.println(file.name());
+    file = root.openNextFile();
+  }
+  root.close();
+  file.close();
   //Temp configuration
-  Serial.begin(9600);
   DS18B20.begin();
   Serial.print(msg1.msg1Ret());
   sensorsCount = DS18B20.getDeviceCount();
