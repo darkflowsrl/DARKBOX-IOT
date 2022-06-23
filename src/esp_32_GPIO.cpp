@@ -1,28 +1,42 @@
+//mosquitto_pub -h <host> -t <"topic"> -m <"message">
+//mosquitto_sub -h <host> -t <"topic"> 
+//mosquitto_pub -h mqtt.darkflow.com.ar -t giuli/data -m 
 #include <string>
 #include <sstream>
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <stdio.h>
-
+#include <FS.h>
 #include <SPIFFS.h>
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <OneWire.h>
-#include <DHT.h>
-#include <WiFi.h>
-#include <Adafruit_Sensor.h>
 #include <DallasTemperature.h>
+#include <WiFi.h>
 #include <PubSubClient.h>
+#include <Adafruit_Sensor.h>
+#include <DHT.h>
 
-using namespace std;
-
-//mosquitto_pub -h <host> -t <"topic"> -m <"message">
-//mosquitto_sub -h <host> -t <"topic"> 
-//mosquitto_pub -h mqtt.darkflow.com.ar -t giuli/data -m 
-
+#define FORMAT_SPIFFS_IF_FAILED true
 #define humiditySensor_PIN 23 // GPIO pins from the ESP-32
 #define tempSensor1_PIN 32
-#define DHTTYPE DHT21 //Define the type of DHT sensor
+#define DHTTYPE  DHT21 //Define the type of DHT sensor
+
+String ssid; // = "Chopin";
+String wifiPassword; // = "Euler27182";
+String host; // = "mqtt.darkflow.com.ar";
+String root_topic_subscribe; // = "giuli/testing";
+String root_topic_publish; // = "giuli/data";
+const char* userName; // = "";
+const char* password; // = "";
+const int port = 1883;  
+
+struct Network {
+    const char* ssid;
+    const char* password;
+};
+
+struct Network network;
 
 //Constructor for the sensors, the wifi and the MQTT Object
 OneWire oneWire(tempSensor1_PIN); 
@@ -31,52 +45,37 @@ DHT humiditySensor(humiditySensor_PIN, DHTTYPE);
 WiFiClient espClient; 
 PubSubClient client(espClient);
 
-void callback(char* topic, byte* payload, unsigned int lenght);
-void JSONIZER(String data0, float data1, bool doEnd);
-void listAllFiles();
-void reconnect();
-void setup_wifi();
-void loadData();
-
-const char *path = "/config.json";
-
-const char *ssid_;
-const char *wifiPassword;
-const char *host;
-const char *root_topic_subscribe;
-const char *root_topic_publish;
-const char *userName;
-const char *password;
-int port;
-
 int sensorsCount = 0;
 float tempC;
 char message[100];
-String stringifiedJSON = "{";
+String stringifiedJSON = "{"; //This variable will be used by the JSONIZER, here will the "data" be inserted.
 
-class terminalMessages{
-  private:
-    String msg1 = "Buscando sensores de temperatura...";
-    String msg2;
-    String msg3;
-  public:
-    String msg1Ret(){
-      return msg1;
-    }
-};
+void listDir(fs::FS &fs, const char * dirname, uint8_t levels); 
+void readFile(fs::FS &fs, const char * path);
+void writeFile(fs::FS &fs, const char * path, const char * message);
+void appendFile(fs::FS &fs, const char * path, const char * message);
+void renameFile(fs::FS &fs, const char * path1, const char * path2);
+void deleteFile(fs::FS &fs, const char * path);
+void loadData(const char * path);
+void callback(char* topic, byte* payload, unsigned int lenght);
+void reconnect();
+void setup_wifi();
+void JSONIZER(String data0, float data1, bool doEnd);
 
-terminalMessages msg1;
 
 void setup() {
-  //File system and Serial configuration
   Serial.begin(115200);
-  //loadData();
-  Serial.println(ssid_);
-  Serial.println(password);
-  Serial.println(host);
+  //File System and configuration setup
+  if(!SPIFFS.begin(FORMAT_SPIFFS_IF_FAILED)){
+    Serial.println("SPIFFS Mount Failed");
+    return;
+  }
+  listDir(SPIFFS, "/", 0);
+  readFile(SPIFFS, "/config.json");
+  loadData("/config.json");
   //Temp configuration
   DS18B20.begin();
-  Serial.print(msg1.msg1Ret());
+  Serial.print("Buscando sensores de temperatura...");
   sensorsCount = DS18B20.getDeviceCount();
   Serial.print(sensorsCount, DEC);
   Serial.print(" dispositivos");
@@ -84,10 +83,9 @@ void setup() {
   //Humidity Sensor
   humiditySensor.begin();
   //WIFI
-  Serial.println("&&&&&&&&&&&&&&&&&&&&&&&&&");
   setup_wifi();
   //MQTT
-  client.setServer(host, port);
+  client.setServer(host.c_str(), port);
   client.setCallback(callback); //Callback 
 }
 
@@ -113,22 +111,22 @@ void loop() {
   if(client.connected()){
     Serial.println(stringifiedJSON);
     stringifiedJSON.toCharArray(message, 100);
-    client.publish(root_topic_publish, message);
+    client.publish(root_topic_publish.c_str(), message);
     delay(1);
   }
   client.loop();
   // {"temp0":x,"temp1:x,"temp2":x} 
   stringifiedJSON = "{";
 }
+
 //function> setup_wifi: None -> int
 void setup_wifi(){
-
   //WiFi connection
   Serial.print("Conectando a ");
-  Serial.print(String(ssid_));
+  Serial.print(ssid);
   Serial.println(" ");
 
-  WiFi.begin("chop", "741963258");
+  WiFi.begin(ssid.c_str(), wifiPassword.c_str());
 
   while (WiFi.status() != WL_CONNECTED) {
       delay(500);
@@ -151,6 +149,7 @@ void callback(char* topic, byte* payload, unsigned int lenght){
   }
   incomingMessage.trim();
   Serial.println(" >>" + incomingMessage);
+
 }
 
 void reconnect(){
@@ -160,7 +159,7 @@ void reconnect(){
     String message = "Intentando conectar a: " + String(host) + ", Con ID: " + String(deviceId); 
     if(client.connect(deviceId.c_str())){
       Serial.println("Conexión Exitosa");
-      if(client.subscribe(root_topic_subscribe)){
+      if(client.subscribe(root_topic_subscribe.c_str())){
         Serial.println("Subscripción exitosa");
       }else{
         Serial.println("subscripción Fallida...");
@@ -169,57 +168,208 @@ void reconnect(){
       Serial.println("Falló la conexión / Error >");
       Serial.print(client.state());
       Serial.println("Intentando nuevamente en 10 Segundos");
-      delay(5000);
+      delay(1);
     }
   }
 }
 
+//function> JSONIZER: Any, Any, bool -> void
 void JSONIZER(String data0, float data1, bool doEnd){
   if(doEnd == false){
-    String stringStream = "\"" + data0 + "\" : \"" + data1 + "\", ";   
+    String stringStream = "\"" + data0 + "\":\"" + data1 + "\", ";   
     stringifiedJSON += stringStream;
   } 
   if(doEnd == true){
-    String stringStream = "\"" + data0 + "\" : \"" + data1 + "\"} ";
+    String stringStream = "\"" + data0 + "\":\"" + data1 + "\"} ";
     stringifiedJSON += stringStream;
   }
 }
 
-void listAllFiles(){
-  if(!SPIFFS.begin(true)){
-    Serial.println("Error initializing");
-    while(true){
-      Serial.print("..");
+void listDir(fs::FS &fs, const char * dirname, uint8_t levels){
+    Serial.printf("Listing directory: %s\r\n", dirname);
+
+    File root = fs.open(dirname);
+    if(!root){
+        Serial.println("- failed to open directory");
+        return;
     }
-  }
-  // List any available file in the flash file system
-  File root = SPIFFS.open("/");
-  File file = root.openNextFile();
-  while(file){
-    Serial.print("File >> ");
-    Serial.println(file.name());
-    file = root.openNextFile();
-  }
-  root.close();
-  file.close();
+    if(!root.isDirectory()){
+        Serial.println(" - not a directory");
+        return;
+    }
+
+    File file = root.openNextFile();
+    while(file){
+        if(file.isDirectory()){
+            Serial.print("  DIR : ");
+            Serial.println(file.name());
+            if(levels){
+                listDir(fs, file.name(), levels -1);
+            }
+        } else {
+            Serial.print("  FILE: ");
+            Serial.print(file.name());
+            Serial.print("\tSIZE: ");
+            Serial.println(file.size());
+        }
+        file = root.openNextFile();
+    }
 }
 
-void loadData(){
-  File file = SPIFFS.open(path);
+void readFile(fs::FS &fs, const char * path){
+    Serial.printf("Reading file: %s\r\n", path);
 
-  StaticJsonDocument<1024> document;
-  DeserializationError error = deserializeJson(document, path);
+    File file = fs.open(path, "r");
+    if(!file || file.isDirectory()){
+        Serial.println("...failed to open file for reading");
+        return;
+    }
 
-  Serial.print("Loading config...");
+    Serial.println("...read from file:");
+    while(file.available()){
+        Serial.write(file.read());
+    }
+    Serial.println("");
 
-  ssid_ = document["ssid"];
-  wifiPassword = document["wifiPassword"];
-  host = document["host"];
-  root_topic_subscribe = document["root_topic_subscribe"];
-  root_topic_publish = document["root_topic_publish"];
-  userName = document["userName"];
-  password = document["password"];
-  port = stoi(document["port"].as<string>());
+    file.close();   
+}
 
-  file.close();
+void loadData(const char * path){
+    File file_ = SPIFFS.open(path);
+    String content;
+    if(!file_.available()){
+      Serial.println("Couldn't open the file");  
+    }
+    while (file_.available()) {
+      content += file_.readString();
+      break;
+    }
+    StaticJsonDocument<1024> config;
+    auto error = deserializeJson(config, content);
+
+    if(error){
+      Serial.println("Failed to deserialize");
+      Serial.println(error.f_str());
+    }
+    
+    Serial.println(config.size());
+
+    ssid = (const char*)config["ssid"];
+    wifiPassword = (const char*)config["wifiPassword"];
+    host = (const char*)config["host"];
+    root_topic_subscribe = (const char*)config["root_topic_subscribe"];
+    root_topic_publish = (const char*)config["root_topic_publish"];
+
+    Serial.println("#### CONFIG LOADED ####");
+    Serial.println(ssid);
+    Serial.println(wifiPassword);
+    Serial.println(host);
+    Serial.println(root_topic_subscribe);
+    Serial.println(root_topic_publish);
+
+    file_.close();
+}
+
+void writeFile(fs::FS &fs, const char * path, const char * message){
+    Serial.printf("Writing file: %s\r\n", path);
+
+    File file = fs.open(path, FILE_WRITE);
+    if(!file){
+        Serial.println("...failed to open file for writing");
+        return;
+    }
+    if(file.print(message)){
+        Serial.println("...file written");
+    } else {
+        Serial.println("...write failed");
+    }
+    file.close();
+}
+
+void appendFile(fs::FS &fs, const char * path, const char * message){
+    Serial.printf("Appending to file: %s\r\n", path);
+
+    File file = fs.open(path, FILE_APPEND);
+    if(!file){
+        Serial.println("...failed to open file for appending");
+        return;
+    }
+    if(file.print(message)){
+        Serial.println("...message appended");
+    } else {
+        Serial.println("...append failed");
+    }
+    file.close();
+}
+
+void renameFile(fs::FS &fs, const char * path1, const char * path2){
+    Serial.printf("Renaming file %s to %s\r\n", path1, path2);
+    if (fs.rename(path1, path2)) {
+        Serial.println("...file renamed");
+    } else {
+        Serial.println("...rename failed");
+    }
+}
+
+void deleteFile(fs::FS &fs, const char * path){
+    Serial.printf("Deleting file: %s\r\n", path);
+    if(fs.remove(path)){
+        Serial.println("...file deleted");
+    } else {
+        Serial.println("...delete failed");
+    }
+}
+
+void testFileIO(fs::FS &fs, const char * path){
+    Serial.printf("Testing file I/O with %s\r\n", path);
+
+    static uint8_t buf[512];
+    size_t len = 0;
+    File file = fs.open(path, FILE_WRITE);
+    if(!file){
+        Serial.println("...failed to open file for writing");
+        return;
+    }
+
+    size_t i;
+    Serial.print("...writing" );
+    uint32_t start = millis();
+    for(i=0; i<2048; i++){
+        if ((i & 0x001F) == 0x001F){
+          Serial.print(".");
+        }
+        file.write(buf, 512);
+    }
+    Serial.println("");
+    uint32_t end = millis() - start;
+    Serial.printf(" - %u bytes written in %u ms\r\n", 2048 * 512, end);
+    file.close();
+
+    file = fs.open(path);
+    start = millis();
+    end = start;
+    i = 0;
+    if(file && !file.isDirectory()){
+        len = file.size();
+        size_t flen = len;
+        start = millis();
+        Serial.print("...reading" );
+        while(len){
+            size_t toRead = len;
+            if(toRead > 512){
+                toRead = 512;
+            }
+            file.read(buf, toRead);
+            if ((i++ & 0x001F) == 0x001F){
+              Serial.print(".");
+            }
+            len -= toRead;
+        }
+        Serial.println("");
+        end = millis() - start;
+        Serial.printf("- %u bytes read in %u ms\r\n", flen, end);
+        file.close();
+    } else {
+        Serial.println("...failed to open file for reading");
+    }
 }
