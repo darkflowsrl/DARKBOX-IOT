@@ -22,3 +22,8 @@ src/back_3.zip
 *.exe
 .vscode/settings.json
 .vscode/tasks.json
+.vscode/c_cpp_properties (conflicted copy 2022-06-23 162042).json
+.vscode/launch (conflicted copy 2022-06-23 162042).json
+.vscode/settings (conflicted copy 2022-06-18 171428).json
+*.zip
+*.7z
