@@ -1,0 +1,15 @@
+{
+    "ssid":"Chopin",
+    "wifiPassword":"Euler27182",
+    "host":"mqtt.darkflow.com.ar",
+    "root_topic_subscribe":"giuli/testing",
+    "root_topic_publish":"giuli/data",
+    "userName":"",
+    "password":"",
+    "port":"1883",
+    "mailSender":"giulicrenna@outlook.com",
+    "mailReceiver":"kirchhoff2002",
+    "mailPassword":"giuli_crenna@gmail.com",
+    "smtpServer":"smtp.office365.com",
+    "smtpPort":"587"
+}

@@ -47,6 +47,19 @@
         "iostream": "cpp",
         "stdexcept": "cpp",
         "cinttypes": "cpp",
-        "typeinfo": "cpp"
-    }
+        "typeinfo": "cpp",
+        "cstring": "cpp",
+        "ctime": "cpp",
+        "unordered_set": "cpp",
+        "map": "cpp",
+        "iomanip": "cpp"
+    },
+    "c-cpp-compile-run.c-compiler": "C:\\msys64\\mingw64\\bin\\g++.exe",
+    "c-cpp-compile-run.cpp-compiler": "C:\\msys64\\mingw64\\bin\\g++.exe",
+    "idf.flashType": "UART",
+    "idf.adapterTargetName": "esp32",
+    "idf.openOcdConfigs": [
+        "interface/ftdi/esp32_devkitj_v1.cfg",
+        "target/esp32.cfg"
+    ]
 }
