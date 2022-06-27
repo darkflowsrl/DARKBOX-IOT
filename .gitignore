@@ -7,6 +7,7 @@ src/esp_32_GPIO/esp_32_GPIO.ino
 src/back_2.zip
 src/back_1.zip
 src/back_0.zip
+.vscode
 .vscode/extensions.json
 .vs/slnx.sqlite
 .vs/ProjectSettings.json
