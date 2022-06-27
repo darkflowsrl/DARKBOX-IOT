@@ -13,6 +13,7 @@
 #include <WiFi.h>
 #include <PubSubClient.h>
 #include "dataSensors.h"
+#include "apMode.h"
 
 #define FORMAT_SPIFFS_IF_FAILED true
 
@@ -24,11 +25,14 @@ String root_topic_publish;
 const char* userName;
 const char* password;
 const int port = 1883;  
+bool isSetup = true;
+bool clientWifi = false;
 
 //Constructor for the sensors, the wifi and the MQTT Object
 WiFiClient espClient; 
 PubSubClient client(espClient);
 dataSensors mySensors;
+apMode apInstance;
 
 void listDir(fs::FS &fs, const char * dirname, uint8_t levels); 
 void readFile(fs::FS &fs, const char * path);
@@ -37,6 +41,7 @@ void appendFile(fs::FS &fs, const char * path, const char * message);
 void renameFile(fs::FS &fs, const char * path1, const char * path2);
 void deleteFile(fs::FS &fs, const char * path);
 void loadData(const char * path);
+String dataAsString(const char * path);
 void callback(char* topic, byte* payload, unsigned int lenght);
 void reconnect();
 void setup_wifi();
@@ -50,30 +55,42 @@ void setup() {
   }
   listDir(SPIFFS, "/", 0);
   readFile(SPIFFS, "/config.json");
+  //readFile(SPIFFS, "/index.html");
   loadData("/config.json"); 
-  //WiFi
-  setup_wifi();
-  //MQTT
-  client.setServer(host.c_str(), port);
-  client.setCallback(callback); //Callback 
-  //Sensors setup
-  mySensors.sensorsSetup();
+  //AP setup
+  apInstance.setupServer();
 }
 
 //function> loop: None -> void
 void loop() {
-  //Sensors data as string
-  std::string rawData = mySensors.rawData();
-  //MQTT
-  if(!client.connected()){
-    reconnect();
+  if(isSetup == true){
+    String index = dataAsString("/index.html");
+    Serial.println(index.c_str());
+    apInstance.startServer(index);
+  }else{
+    if(clientWifi = false){
+      //WiFi
+      setup_wifi();
+      //MQTT
+      client.setServer(host.c_str(), port);
+      client.setCallback(callback); //Callback 
+      //Sensors setup
+      mySensors.sensorsSetup();
+      clientWifi = true;
+    }
+    //Sensors data as string
+    std::string rawData = mySensors.rawData();
+    //MQTT
+    if(!client.connected()){
+      reconnect();
+    }
+    if(client.connected()){
+      Serial.println(rawData.c_str());
+      client.publish(root_topic_publish.c_str(), rawData.c_str());
+      delay(1);
+    }
+    client.loop();
   }
-  if(client.connected()){
-    Serial.println(rawData.c_str());
-    client.publish(root_topic_publish.c_str(), rawData.c_str());
-    delay(1);
-  }
-  client.loop();
 }
 
 //function> setup_wifi: None -> int
@@ -178,6 +195,22 @@ void readFile(fs::FS &fs, const char * path){
 
     file.close();   
 }
+
+String dataAsString(const char * path){
+    File file_ = SPIFFS.open(path);
+    String data;
+    if(!file_.available()){
+      Serial.println("Couldn't open the file");  
+    }
+    while (file_.available()) {
+      data += file_.readString() + '\n';
+      break;
+    }
+
+    file_.close();
+    return data;
+}
+
 
 void loadData(const char * path){
     File file_ = SPIFFS.open(path);
