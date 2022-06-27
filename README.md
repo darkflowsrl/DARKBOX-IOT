@@ -4,16 +4,18 @@
 
 External dependencies
 ```
-PubSubClient.h
-WiFi.h
-BTAddress.h
-BluetoothSerial.h
-BTScan.h
-OneWire.h
-DallasTemperature.h
+PubSubClient
+WiFi
+BTAddress
+BluetoothSerial
+BTScan
+OneWire
+DallasTemperature
+FS
+SPIFFS
 ```
 
-### Required Drivers 
+### Required Drivers (For windows or mac)
 CP210x 
 ```
 Available on: https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers
