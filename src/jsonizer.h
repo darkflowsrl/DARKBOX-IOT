@@ -87,5 +87,4 @@ class JSONIZER{
             }
             return launcher;
         }
-        
 };

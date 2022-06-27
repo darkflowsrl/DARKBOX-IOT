@@ -18,13 +18,11 @@
 OneWire oneWire(tempSensor1_PIN); 
 DallasTemperature DS18B20(&oneWire);
 DHT humiditySensor(humiditySensor_PIN, DHTTYPE);
-JSONIZER jsonSession;
 
 class dataSensors{
     private:
         int sensorsCount = 0;
         float tempC;
-        std::vector<std::string> myVector;
     public:        
         void sensorsSetup(){
             //Temperature sensor setup
@@ -38,21 +36,26 @@ class dataSensors{
             humiditySensor.begin();
         }
         std::string rawData(){
+            JSONIZER jsonSession;
+            std::vector<std::string> myVector;
             //Temp loop
+            String sensorNumber = "";
+            float ambientHumidity;
+            std::string rawData;
             DS18B20.requestTemperatures();
             for(int n = 0; n < sensorsCount; n++){
-                String sensorNumber = "Sensor" + String(n);
+                sensorNumber += "Sensor" + String(n);
                 if(n < sensorsCount){
                 myVector.push_back(sensorNumber.c_str());
                 myVector.push_back(String(DS18B20.getTempCByIndex(n)).c_str());
                 }
             }
             //Humidity data
-            float ambientHumidity = humiditySensor.readTemperature();
+            ambientHumidity = humiditySensor.readTemperature();
             myVector.push_back(String("Humidity").c_str());
             myVector.push_back(String(ambientHumidity).c_str());
             //Create Json
-            std::string rawData = jsonSession.toSJSON(myVector);
+            rawData = jsonSession.toSJSON(myVector);
             myVector.clear();
             return rawData;
         }
