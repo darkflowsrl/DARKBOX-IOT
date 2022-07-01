@@ -1,8 +1,28 @@
-#include <WiFi.h>
-#include <Arduino.h>
 #include <string>
+#include <Arduino.h>
+#include <WiFi.h>
+#include "ESPAsyncWebServer.h"
+#include <SPIFFS.h>
+#include <AsyncTCP.h>
 
-WiFiServer myServer;
+AsyncWebServer server(80);
+IPAddress local_ip(192, 168, 1, 1);
+IPAddress gateway(192, 168, 1, 1);
+IPAddress subnet(255, 255, 255, 0);
+
+void notFound(AsyncWebServerRequest *request);
+String dataAsString(const char * path);
+
+String HTML = dataAsString("/index.html");
+
+const char* ssidParam = "SSID";
+const char* passwParam = "WIFI_PASSWORD";
+const char* mailReceiverParam = "MAIL_RECEIVER";
+
+const String ssidInput= "SSID";  
+const String passwInput= "WIFI_PASSWORD";
+const String mailReceiverInput= "MAIL_RECEIVER";
+
 
 class apMode{
     private:
@@ -14,150 +34,64 @@ class apMode{
         void setupServer(){
             Serial.println("Starting HTTP server");
             WiFi.softAP(ssid, password);
+            WiFi.softAPConfig(local_ip, gateway, subnet);
             IPAddress apIp = WiFi.softAPIP();
             Serial.print("AP IP address: ");
             Serial.println(apIp);
-            myServer.begin();
-        }
-        void startServer(String index){
-            WiFiClient client = myServer.available();
-            String incomingData = "";
-            if(client){
-                Serial.print("New client: ");
-                while(client.connected()){
-                    if(client.available()){
-                        char c = client.read();
-                        Serial.write(c);
-                        if(c == '\n'){
-                            if(incomingData.length() == 0){
-                                /*HTTP headers always start with a response code (e.g. HTTP/1.1 200 OK)
-                                and a content-type so the client knows what's coming, then a blank line: */
-                                client.println("HTTP/1.1 200 OK");
-                                client.println("Content-type:text/html");
-                                client.println("Connection: close");
-                                client.println();
-                                client.println(index);
-                                client.println();
-                                break;
-                            }else{
-                                incomingData = "";
-                            }
-                        }else if(c != '\r'){
-                            incomingData += c;
-                        }
-                        client.stop();
-                        Serial.println("Client disconnected.");
-                        Serial.println("");
-                    }
+            server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
+              request->send(SPIFFS, "/index.html", String(), false);
+            });
+            /*
+            server.on("/main.css", HTTP_GET, [](AsyncWebServerRequest *request){
+              request->send(SPIFFS, "/main.css", "text/css");
+            });
+            */
+            server.on("/get", HTTP_GET, [] (AsyncWebServerRequest *request) {
+                String inputMessage1,inputMessage2,inputMessage3;
+                // GET input1 value on <ESP_IP>/get?input1=<inputMessage>
+                if (request->getParam(ssidParam)->value() != "") {
+                  inputMessage1 = request->getParam(ssidParam)->value();
+                } else {
+                  inputMessage1 = "none";
                 }
-            }   
-
+                // GET input2 value on <ESP_IP>/get?input2=<inputMessage>
+                if (request->getParam(passwParam)->value() != "") {
+                  inputMessage2 = request->getParam(passwParam)->value();
+                } else {
+                  inputMessage2 = "none";
+                }
+                // GET input3 value on <ESP_IP>/get?input3=<inputMessage>
+                if (request->getParam(mailReceiverParam)->value() != "") {
+                  inputMessage3 = request->getParam(mailReceiverParam)->value();
+                } else {
+                  inputMessage3 = "none";
+                }
+                Serial.println(ssidInput + ": " + inputMessage1);
+                Serial.println(passwInput + ": " + inputMessage2);
+                Serial.println(mailReceiverInput + ": " + inputMessage3);
+                request->send(200, "text/html", "HTTP GET request sent to your ESP on input field (" + ssidInput + ") with value: " + inputMessage1 + ", (" + passwParam + ") with value: " + inputMessage2 + ", (" + mailReceiverInput + ") with value: " + inputMessage3 + "<br><a href=\"/\">Return to Home Page</a>"); 
+            });
+            server.onNotFound(notFound);
+            server.begin();
         }
-
 };
 
-
-
-
-
-
-
-
-
-/*
-void loop(){
-  WiFiClient client = server.available();   // Listen for incoming clients
-
-  if (client) {                             // If a new client connects,
-    Serial.println("New Client.");          // print a message out in the serial port
-    String currentLine = "";                // make a String to hold incoming data from the client
-    while (client.connected()) {            // loop while the client's connected
-      if (client.available()) {             // if there's bytes to read from the client,
-        char c = client.read();             // read a byte, then
-        Serial.write(c);                    // print it out the serial monitor
-        header += c;
-        if (c == '\n') {                    // if the byte is a newline character
-          // if the current line is blank, you got two newline characters in a row.
-          // that's the end of the client HTTP request, so send a response:
-          if (currentLine.length() == 0) {
-            // HTTP headers always start with a response code (e.g. HTTP/1.1 200 OK)
-            // and a content-type so the client knows what's coming, then a blank line:
-            client.println("HTTP/1.1 200 OK");
-            client.println("Content-type:text/html");
-            client.println("Connection: close");
-            client.println();
-            
-            // turns the GPIOs on and off
-            if (header.indexOf("GET /26/on") >= 0) {
-              Serial.println("GPIO 26 on");
-              output26State = "on";
-              digitalWrite(output26, HIGH);
-            } else if (header.indexOf("GET /26/off") >= 0) {
-              Serial.println("GPIO 26 off");
-              output26State = "off";
-              digitalWrite(output26, LOW);
-            } else if (header.indexOf("GET /27/on") >= 0) {
-              Serial.println("GPIO 27 on");
-              output27State = "on";
-              digitalWrite(output27, HIGH);
-            } else if (header.indexOf("GET /27/off") >= 0) {
-              Serial.println("GPIO 27 off");
-              output27State = "off";
-              digitalWrite(output27, LOW);
-            }
-            
-            // Display the HTML web page
-            client.println("<!DOCTYPE html><html>");
-            client.println("<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
-            client.println("<link rel=\"icon\" href=\"data:,\">");
-            // CSS to style the on/off buttons 
-            // Feel free to change the background-color and font-size attributes to fit your preferences
-            client.println("<style>html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center;}");
-            client.println(".button { background-color: #4CAF50; border: none; color: white; padding: 16px 40px;");
-            client.println("text-decoration: none; font-size: 30px; margin: 2px; cursor: pointer;}");
-            client.println(".button2 {background-color: #555555;}</style></head>");
-            
-            // Web Page Heading
-            client.println("<body><h1>ESP32 Web Server</h1>");
-            
-            // Display current state, and ON/OFF buttons for GPIO 26  
-            client.println("<p>GPIO 26 - State " + output26State + "</p>");
-            // If the output26State is off, it displays the ON button       
-            if (output26State=="off") {
-              client.println("<p><a href=\"/26/on\"><button class=\"button\">ON</button></a></p>");
-            } else {
-              client.println("<p><a href=\"/26/off\"><button class=\"button button2\">OFF</button></a></p>");
-            } 
-               
-            // Display current state, and ON/OFF buttons for GPIO 27  
-            client.println("<p>GPIO 27 - State " + output27State + "</p>");
-            // If the output27State is off, it displays the ON button       
-            if (output27State=="off") {
-              client.println("<p><a href=\"/27/on\"><button class=\"button\">ON</button></a></p>");
-            } else {
-              client.println("<p><a href=\"/27/off\"><button class=\"button button2\">OFF</button></a></p>");
-            }
-            client.println("</body></html>");
-            
-            // The HTTP response ends with another blank line
-            client.println();
-            // Break out of the while loop
-            break;
-          } else { // if you got a newline, then clear currentLine
-            currentLine = "";
-          }
-        } else if (c != '\r') {  // if you got anything else but a carriage return character,
-          currentLine += c;      // add it to the end of the currentLine
-        }
-      }
+String dataAsString(const char * path){
+    File file_ = SPIFFS.open(path);
+    String data;
+    if(!file_.available()){
+      Serial.println("Couldn't open the file");  
     }
-    // Clear the header variable
-    header = "";
-    // Close the connection
-    client.stop();
-    Serial.println("Client disconnected.");
-    Serial.println("");
-  }
+    while (file_.available()) {
+      data += file_.readString();
+      break;
+    }
+
+    file_.close();
+    return data;
 }
 
-*/
+
+void notFound(AsyncWebServerRequest *request) {
+  request->send(404, "text/plain", "Not found");
+}

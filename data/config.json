@@ -1,6 +1,6 @@
 {
-    "ssid":"Tch-Guest3-2.4",
-    "wifiPassword":"sevillanas",
+    "ssid":"chop",
+    "wifiPassword":"741963258",
     "host":"mqtt.darkflow.com.ar",
     "root_topic_subscribe":"giuli/testing",
     "root_topic_publish":"giuli/data",

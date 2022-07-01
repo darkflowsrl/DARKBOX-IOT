@@ -30,3 +30,4 @@ src/back_3.zip
 *.7z
 src/.vscode/c_cpp_properties.json
 src/esp_32_GPIO backups
+src/erase/ap.h

@@ -6,16 +6,33 @@
 #include <string.h>
 #include "jsonizer.h"
 
+ 
+/*
+humiditySensor_PIN -> IO Onewire
+tempSensor_PIN -> IO Onewire
+extraPin0 -> Input
+extraPin1 -> Input
+extraPin2 -> Input
+extraPin3 -> Input
+extraPin4 -> Output Salida 4
+extraPin5 -> Output Salida 3
+extraPin6 -> Output Salida 2
+extraPin7 -> Output Salida 1
+*/
 #define DHTTYPE  DHT21 //Define the type of DHT sensor
-#define humiditySensor_PIN 23 // GPIO pins from the ESP-32
-#define tempSensor1_PIN 32
-#define extraPin0 27
-#define extraPin1 26
-#define extraPin2 25
-#define extraPin3 35
-#define extraPin4 34
 
-OneWire oneWire(tempSensor1_PIN); 
+#define humiditySensor_PIN 23 // GPIO pins from the ESP-32
+#define tempSensor_PIN 32
+#define extraPin0 4
+#define extraPin1 5
+#define extraPin2 16
+#define extraPin3 17
+#define extraPin4 26
+#define extraPin5 27
+#define extraPin6 14
+#define extraPin7 12
+
+OneWire oneWire(tempSensor_PIN); 
 DallasTemperature DS18B20(&oneWire);
 DHT humiditySensor(humiditySensor_PIN, DHTTYPE);
 
