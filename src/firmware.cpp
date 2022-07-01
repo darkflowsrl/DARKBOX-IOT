@@ -26,7 +26,7 @@ const char* userName;
 const char* password;
 const int port = 1883;  
 bool isSetup = true;
-bool clientWifi = false;
+bool isWifi = true; //Change to false
 
 //Constructor for the sensors, the wifi and the MQTT Object
 WiFiClient espClient; 
@@ -41,7 +41,6 @@ void appendFile(fs::FS &fs, const char * path, const char * message);
 void renameFile(fs::FS &fs, const char * path1, const char * path2);
 void deleteFile(fs::FS &fs, const char * path);
 void loadData(const char * path);
-String dataAsString(const char * path);
 void callback(char* topic, byte* payload, unsigned int lenght);
 void reconnect();
 void setup_wifi();
@@ -63,21 +62,22 @@ void setup() {
 
 //function> loop: None -> void
 void loop() {
-  if(isSetup == true){
-    String index = dataAsString("/index.html");
-    Serial.println(index.c_str());
-    apInstance.startServer(index);
-  }else{
-    if(clientWifi = false){
-      //WiFi
-      setup_wifi();
-      //MQTT
-      client.setServer(host.c_str(), port);
-      client.setCallback(callback); //Callback 
-      //Sensors setup
-      mySensors.sensorsSetup();
-      clientWifi = true;
+  if(isWifi == false){
+    setup_wifi();
+    if(WiFi.status() == WL_CONNECT_FAILED){
+      Serial.println("Bad ssid or password");
+      isWifi = true; /* I change this boolean to true, 
+      because if connection fails, the user can configure it again*/
+      setup();
     }
+    isWifi = true;
+  }
+  if(isSetup == false){
+    //MQTT
+    client.setServer(host.c_str(), port);
+    client.setCallback(callback); //Callback 
+    //Sensors setup
+    mySensors.sensorsSetup();
     //Sensors data as string
     std::string rawData = mySensors.rawData();
     //MQTT
@@ -90,6 +90,9 @@ void loop() {
       delay(1);
     }
     client.loop();
+  }else{
+    Serial.println("Device not configured");
+    delay(5000);
   }
 }
 
@@ -142,7 +145,7 @@ void reconnect(){
       Serial.println("Falló la conexión / Error >");
       Serial.print(client.state());
       Serial.println("Intentando nuevamente en 10 Segundos");
-      delay(1);
+      delay(10000);
     }
   }
 }
@@ -196,20 +199,6 @@ void readFile(fs::FS &fs, const char * path){
     file.close();   
 }
 
-String dataAsString(const char * path){
-    File file_ = SPIFFS.open(path);
-    String data;
-    if(!file_.available()){
-      Serial.println("Couldn't open the file");  
-    }
-    while (file_.available()) {
-      data += file_.readString() + '\n';
-      break;
-    }
-
-    file_.close();
-    return data;
-}
 
 
 void loadData(const char * path){
