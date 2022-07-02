@@ -8,8 +8,9 @@
 
  
 /*
+pinMode(switchUpPin, INPUT_PULLUP)
+
 humiditySensor_PIN -> IO Onewire
-tempSensor_PIN -> IO Onewire
 extraPin0 -> Input
 extraPin1 -> Input
 extraPin2 -> Input
@@ -21,20 +22,19 @@ extraPin7 -> Output Salida 1
 */
 #define DHTTYPE  DHT21 //Define the type of DHT sensor
 
-#define humiditySensor_PIN 23 // GPIO pins from the ESP-32
-#define tempSensor_PIN 32
-#define extraPin0 4
-#define extraPin1 5
-#define extraPin2 16
-#define extraPin3 17
-#define extraPin4 26
-#define extraPin5 27
-#define extraPin6 14
-#define extraPin7 12
+// GPIO pins from the ESP-32
+#define OneWirePin 2 // One WIre will be the temp. and humidity sensors 
+#define Input1 16
+#define Input2 14
+#define Input3 12
+#define Input4 13
+#define Output1 15
+#define i2c_SCL 5
+#define i2c_SDA 4
 
-OneWire oneWire(tempSensor_PIN); 
+OneWire oneWire(OneWirePin); 
 DallasTemperature DS18B20(&oneWire);
-DHT humiditySensor(humiditySensor_PIN, DHTTYPE);
+DHT humiditySensor(OneWirePin, DHTTYPE);
 
 class dataSensors{
     private:
