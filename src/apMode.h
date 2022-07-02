@@ -46,22 +46,23 @@ class apMode{
               request->send(SPIFFS, "/main.css", "text/css");
             });
             */
+           //get?ssidParam=awdaw&passwParam=dawdaw&mailReceiverParam=awd
             server.on("/get", HTTP_GET, [] (AsyncWebServerRequest *request) {
                 String inputMessage1,inputMessage2,inputMessage3;
                 // GET input1 value on <ESP_IP>/get?input1=<inputMessage>
-                if (request->getParam(ssidParam)->value() != "") {
+                if (request->hasParam(ssidParam)) {
                   inputMessage1 = request->getParam(ssidParam)->value();
                 } else {
                   inputMessage1 = "none";
                 }
                 // GET input2 value on <ESP_IP>/get?input2=<inputMessage>
-                if (request->getParam(passwParam)->value() != "") {
+                if (request->hasParam(passwParam)) {
                   inputMessage2 = request->getParam(passwParam)->value();
                 } else {
                   inputMessage2 = "none";
                 }
                 // GET input3 value on <ESP_IP>/get?input3=<inputMessage>
-                if (request->getParam(mailReceiverParam)->value() != "") {
+                if (request->hasParam(mailReceiverParam)) {
                   inputMessage3 = request->getParam(mailReceiverParam)->value();
                 } else {
                   inputMessage3 = "none";
@@ -69,9 +70,9 @@ class apMode{
                 Serial.println(ssidInput + ": " + inputMessage1);
                 Serial.println(passwInput + ": " + inputMessage2);
                 Serial.println(mailReceiverInput + ": " + inputMessage3);
-                request->send(200, "text/html", "HTTP GET request sent to your ESP on input field (" + ssidInput + ") with value: " + inputMessage1 + ", (" + passwParam + ") with value: " + inputMessage2 + ", (" + mailReceiverInput + ") with value: " + inputMessage3 + "<br><a href=\"/\">Return to Home Page</a>"); 
+                //request->send(200, "text/html", "HTTP GET request sent to your ESP on input field (" + ssidInput + ") with value: " + inputMessage1 + ", (" + passwParam + ") with value: " + inputMessage2 + ", (" + mailReceiverInput + ") with value: " + inputMessage3 + "<br><a href=\"/\">Return to Home Page</a>"); 
             });
-            server.onNotFound(notFound);
+            //server.onNotFound(notFound);
             server.begin();
         }
 };
