@@ -1,9 +1,13 @@
+#ifdef ESP32
+#include <WiFi.h>
+#else
+#include <ESP8266WiFi.h>
+#endif
 #include <string>
 #include <Arduino.h>
-#include <WiFi.h>
-#include "ESPAsyncWebServer.h"
+#include <ESPAsyncWebServer.h>
 #include <SPIFFS.h>
-#include <AsyncTCP.h>
+//#include <AsyncTCP.h>
 
 AsyncWebServer server(80);
 IPAddress local_ip(192, 168, 1, 1);
