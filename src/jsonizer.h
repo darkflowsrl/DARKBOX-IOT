@@ -1,3 +1,5 @@
+#ifndef JSONIZER_H
+#define JSONIZER_H
 #include <iostream>
 #include <string>
 #include <vector>
@@ -39,7 +41,7 @@ class JSONIZER{
         This functions is used to turn a char Array (wich contains the json) into a vector
         where the odd indexes are the json variable and the next index (obviuosly even) will that variable value*/
         std::vector<std::string> toVECTOR(std::string charArray){
-            for(int i = 0; i < charArray.length(); i++){
+            for(int i = 0; i < static_cast<int>(charArray.length()); i++){
                 if(charArray.at(i) != '{'){
                     if(isSecond == false){ 
                         if(charArray.at(i) == ':'){
@@ -88,3 +90,5 @@ class JSONIZER{
             return launcher;
         }
 };
+
+#endif
