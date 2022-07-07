@@ -6,7 +6,7 @@
 #include <string>
 #include <Arduino.h>
 #include <ESPAsyncWebServer.h>
-#include <SPIFFS.h>
+#include <LittleFS.h>
 //#include <AsyncTCP.h>
 
 AsyncWebServer server(80);
@@ -37,13 +37,13 @@ class apMode{
         line from the main file*/
         void setupServer(){
             Serial.println("Starting HTTP server");
-            WiFi.softAP(ssid, password);
             WiFi.softAPConfig(local_ip, gateway, subnet);
+            WiFi.softAP(ssid, password);
             IPAddress apIp = WiFi.softAPIP();
             Serial.print("AP IP address: ");
             Serial.println(apIp);
             server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
-              request->send(SPIFFS, "/index.html", String(), false);
+              request->send(LittleFS, "/index.html", String(), false);
             });
             /*
             server.on("/main.css", HTTP_GET, [](AsyncWebServerRequest *request){
@@ -74,7 +74,7 @@ class apMode{
                 Serial.println(ssidInput + ": " + inputMessage1);
                 Serial.println(passwInput + ": " + inputMessage2);
                 Serial.println(mailReceiverInput + ": " + inputMessage3);
-                //request->send(200, "text/html", "HTTP GET request sent to your ESP on input field (" + ssidInput + ") with value: " + inputMessage1 + ", (" + passwParam + ") with value: " + inputMessage2 + ", (" + mailReceiverInput + ") with value: " + inputMessage3 + "<br><a href=\"/\">Return to Home Page</a>"); 
+                request->send(200, "text/html", "HTTP GET request sent to your ESP on input field (" + ssidInput + ") with value: " + inputMessage1 + ", (" + passwParam + ") with value: " + inputMessage2 + ", (" + mailReceiverInput + ") with value: " + inputMessage3 + "<br><a href=\"/\">Return to Home Page</a>"); 
             });
             //server.onNotFound(notFound);
             server.begin();
@@ -82,7 +82,7 @@ class apMode{
 };
 
 String dataAsString(const char * path){
-    File file_ = SPIFFS.open(path);
+    File file_ = LittleFS.open(path, "w");
     String data;
     if(!file_.available()){
       Serial.println("Couldn't open the file");  
