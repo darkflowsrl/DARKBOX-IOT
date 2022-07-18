@@ -1,3 +1,5 @@
+#ifndef SCREENCOONTROLLER
+#define SCREENCOONTROLLER
 #include <LiquidCrystal_I2C.h>
 #include <string.h>
 #include <Arduino.h>
@@ -14,7 +16,7 @@ LiquidCrystal_I2C lcd(0x27,20,4);
 ####################
 */
 
-class screen{
+class Screen{
     public:
         void screenSetup(){
             lcd.init();                      // initialize the lcd 
@@ -42,3 +44,5 @@ class screen{
             }             
         }
 };
+
+#endif

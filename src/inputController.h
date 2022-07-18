@@ -1,7 +1,6 @@
 #include <iostream>
 #include <Arduino.h>
 #include <vector>
-#include "jsonizer.h"
 
 /*
 pinMode(switchUpPin, INPUT_PULLUP)
@@ -33,9 +32,7 @@ class inputController{
             pinMode(Input4, INPUT_PULLUP);
             pinMode(Output1, OUTPUT);
         }
-        std::string inputData(){
-            JSONIZER jsonSession;
-
+        std::vector<std::string> inputData(){
             std::vector<std::string> myVector;
 
             if(!digitalRead(Input1)){
@@ -62,10 +59,8 @@ class inputController{
                 digitalWrite(Output1, LOW);
             }
 
-            std::string rawData = jsonSession.toSJSON(myVector);
+            return myVector;
 
             myVector.clear();
-
-            return rawData;
         }
 };
