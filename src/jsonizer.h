@@ -16,8 +16,6 @@ the toJSON function of the class
 
 class JSONIZER{
     private:
-        std::string launcher = "{";
-        bool doEnd = true; 
         bool isSecond = false;
         std::string tempString = "";
         std::vector<std::string> configVector;
@@ -60,7 +58,7 @@ class JSONIZER{
                             tempString.push_back(charArray.at(i));
                         }else if(charArray.at(i) == '}'){
                             configVector.push_back(tempString);
-                            tempString.clear();
+                        tempString.clear();
                         }
                     }else{
                         std::cout<<"Error";
@@ -74,6 +72,9 @@ class JSONIZER{
         return you a string formatted as a json file
         PD: toJSON means ToStringJson*/
         std::string toSJSON(std::vector<std::string> myVector){  
+            std::string launcher = "{";
+            bool doEnd = true;
+             
             int capacity = myVector.size();
             for(int i = 1; i <= capacity; i++){
                 float evenOdd = i % 2;

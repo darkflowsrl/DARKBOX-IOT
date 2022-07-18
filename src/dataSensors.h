@@ -4,7 +4,6 @@
 #include <Wire.h> 
 #include <vector>
 #include <string.h>
-#include "jsonizer.h"
  
 /*
 pinMode(switchUpPin, INPUT_PULLUP)
@@ -42,9 +41,7 @@ class dataSensors{
             Serial.println(" Devices");
             Serial.println("");
         }
-        std::string rawData(){
-            JSONIZER jsonSession;
-
+        std::vector<std::string> rawData(){
             std::vector<std::string> temperatureVector;
              
             //Temp loop
@@ -65,15 +62,13 @@ class dataSensors{
             temperatureVector.end(), inputVector.begin(), inputVector.end(),
             std::back_inserter(dataVector));
             */
-            //Create Json
-            std::string rawData = jsonSession.toSJSON(temperatureVector); 
+
+            return temperatureVector;
 
             temperatureVector.clear();
-
-            return rawData;
         }
 
-        String singleSensorRawata(int sensorNumber){
+        String singleSensorRawdata(int sensorNumber){
             String dataSensor = String(DS18B20.getTempCByIndex(sensorNumber));
             
             return dataSensor;

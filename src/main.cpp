@@ -1,6 +1,6 @@
+// SilFe2655
 #ifdef ESP32
 #include <WiFi.h>
-//#include <SPIFFS.h>
 #else
 #include <ESP8266WiFi.h>
 #endif
@@ -17,6 +17,8 @@
 #include "screenController.h"
 #include "inputController.h"
 #include "apMode.h"
+#include "jsonizer.h"
+#include "functions.h"
 
 void listDir(fs::FS &fs, const char * dirname, uint8_t levels); 
 void readFile(fs::FS &fs, const char * path);
@@ -26,8 +28,8 @@ void renameFile(fs::FS &fs, const char * path1, const char * path2);
 void deleteFile(fs::FS &fs, const char * path);
 void loadData(fs::FS &fs, const char * path);
 void callback(char* topic, byte* payload, unsigned int lenght);
+void checkReset(std::string inputJson);
 void reconnect();
-void setup_wifi();
 void refreshScreen();
 
 //Constructor for the sensors, the wifi and the MQTT Object
@@ -35,24 +37,26 @@ WiFiClient espClient;
 PubSubClient client(espClient);
 dataSensors mySensors;
 apMode apInstance;
-screen myScreen;
+Screen myScreen;
 inputController myInputs;
+JSONIZER jsonSession;
 
-std::vector<String> myVector;
 String tempString0, tempString1, tempString2, tempString3 = "";
 const unsigned long eventInterval = 1500;
-unsigned long previousTime = 0;
+unsigned long previousTimeScreen = 0;
 
 String ssid;
 String wifiPassword;
 String host;
 String root_topic_subscribe;
 String root_topic_publish;
+String smtpSender;
+String smtpPass;
+String SmtpReceiver;
+String SmtpServer;
 const char* userName;
 const char* password;
 const int port = 1883;  
-bool inSetup = true;
-bool isWifi = true; //Change to false
 
 void setup(){
   Serial.begin(115000);
@@ -76,61 +80,73 @@ void setup(){
   readFile(LittleFS, "/config.json");
   loadData(LittleFS, "/config.json"); 
   //AP setup
-  myScreen.printScreen("Configuring...", 0, 1, true);
   apInstance.setupServer();
+  myScreen.screenClean();
 }
 
-void loop() {
-  if(isWifi == false){
-    setup_wifi();
-    if(WiFi.status() == WL_CONNECT_FAILED){
-      Serial.println("Bad ssid or password");
-      isWifi = true; /* I change this boolean to true, 
-      because if connection fails, the user can configure it again*/
-      setup();
-    }
-    isWifi = true;
+void loop(){
+  //SMTP test
+  if(std::atof(mySensors.singleSensorRawdata(0).c_str()) >= std::atof("50")){
+    sendEmail(smtpSender.c_str(), smtpPass.c_str(), SmtpReceiver.c_str(),
+  SmtpServer.c_str(), 587);
   }
-  if(inSetup == false){
-    //MQTT
-    client.setServer(host.c_str(), port);
-    client.setCallback(callback); //Callback 
-    //Sensors setup
-    mySensors.sensorsSetup();
-    //Sensors data as string
-    std::string rawData = mySensors.rawData();
-    //MQTT
-    if(!client.connected()){
-      reconnect();
-    }
-    if(client.connected()){
-      Serial.println(rawData.c_str());
-      client.publish(root_topic_publish.c_str(), rawData.c_str());
-      delay(1);
-    }
-    client.loop();
-      // Data to screen
-    std::string tempData = mySensors.rawData();
-    std::string inputsData = myInputs.inputData();
-    Serial.println(tempData.c_str());
-    if(inputsData != "{"){Serial.println(inputsData.c_str());}
+  //Data
+  std::vector<std::string> dataVector;
+  std::vector<std::string> inputData = myInputs.inputData();
+  std::vector<std::string> sensorData = mySensors.rawData(); 
+  for(int i = 0; i < inputData.size(); i ++){
+    dataVector.push_back(inputData.at(i));
+  }
+  for(int i = 0; i < sensorData.size(); i ++){
+    dataVector.push_back(sensorData.at(i));
+  }
+  //Data to screen
+  refreshScreen();
+  //MQTT
+  client.setServer(host.c_str(), port);
+  client.setCallback(callback); //Callback 
+  if(!client.connected()){
+    reconnect();
+  }
+  if(client.connected()){
+    std::string jsonData = jsonSession.toSJSON(dataVector);
+    Serial.println(jsonData.c_str());
+    client.publish(root_topic_publish.c_str(), jsonData.c_str());
+    delay(1);
+  }
 
-    refreshScreen();
-  }else{
-    Serial.println("Device not configured");
-    delay(5000);
+  client.loop();
+}
+
+void checkReset(std::string inputJson){
+  StaticJsonDocument<1024> config;
+  auto error = deserializeJson(config, inputJson.c_str());
+  if(error){
+    Serial.println("Failed to deserialize");
+      Serial.println(error.f_str());
+  }
+  //String inputState = config["Input2"];
+  //Serial.println(inputState);
+  if(config["Input2"] == "HIGH"){
+      for(int i = 0; i <= 2; i++){
+        delay(1000);
+        if(i == 2){
+          apInstance.reset();
+        }
+      }
   }
 }
 
 void refreshScreen(){
     unsigned long currentTime = millis();
      //I will use millis to create the time trigger to refresh the screen
-    tempString0 += "Sensor0: " + mySensors.singleSensorRawata(0);
-    tempString1 += "Sensor1: " + mySensors.singleSensorRawata(1);
-    tempString2 += "Sensor2: " + mySensors.singleSensorRawata(2);
+    tempString0 += "Sensor0: " + mySensors.singleSensorRawdata(0);
+    tempString1 += "Sensor1: " + mySensors.singleSensorRawdata(1);
+    tempString2 += "Sensor2: " + mySensors.singleSensorRawdata(2);
 
-    if(currentTime - previousTime >= eventInterval){
+    if(currentTime - previousTimeScreen >= eventInterval){
       myScreen.printScreen("SENSORS DATA:", 0, 0, false);
+      myScreen.printScreen(ntpRawNoDay(), 15, 0, false);
       myScreen.printScreen(tempString0, 0, 1, false);
       myScreen.printScreen(tempString1, 0, 2, false);
       myScreen.printScreen(tempString2, 0, 3, false);
@@ -138,27 +154,6 @@ void refreshScreen(){
     tempString0 = "";
     tempString1 = "";
     tempString2 = "";
-}
-
-
-//function> setup_wifi: None -> int
-void setup_wifi(){
-  //WiFi connection
-  Serial.print("Conectando a ");
-  Serial.print(ssid);
-  Serial.println(" ");
-
-  WiFi.begin(ssid.c_str(), wifiPassword.c_str());
-
-  while (WiFi.status() != WL_CONNECTED) {
-      delay(500);
-      Serial.print(".");
-  }
-
-  Serial.println("");
-  Serial.println("WiFi conectado");
-  Serial.println("IP local: ");
-  Serial.println(WiFi.localIP());
 }
 
 void callback(char* topic, byte* payload, unsigned int lenght){
@@ -171,11 +166,12 @@ void callback(char* topic, byte* payload, unsigned int lenght){
   }
   incomingMessage.trim();
   Serial.println(" >>" + incomingMessage);
-
 }
 
 void reconnect(){
+  int count = 0;
   while(!client.connected()){
+
     String deviceId = "DarkFlow_";
     deviceId += String(random(0xffff), HEX);
     String message = "Intentando conectar a: " + String(host) + ", Con ID: " + String(deviceId); 
@@ -187,8 +183,9 @@ void reconnect(){
         Serial.println("subscripción Fallida...");
       }
     }else{
+      count += 1;
       Serial.println("Falló la conexión / Error >");
-      Serial.print(client.state());
+      Serial.println(client.state());
       Serial.println("Intentando nuevamente en 10 Segundos");
       delay(10000);
     }
@@ -244,8 +241,6 @@ void readFile(fs::FS &fs, const char * path){
     file.close();   
 }
 
-
-
 void loadData(fs::FS &fs, const char * path){
     File file_ = fs.open(path, "r");
     String content;
@@ -266,18 +261,24 @@ void loadData(fs::FS &fs, const char * path){
     
     Serial.println(config.size());
 
-    ssid = (const char*)config["ssid"];
-    wifiPassword = (const char*)config["wifiPassword"];
     host = (const char*)config["host"];
     root_topic_subscribe = (const char*)config["root_topic_subscribe"];
     root_topic_publish = (const char*)config["root_topic_publish"];
+    smtpSender = (const char*)config["mailSender"];
+    smtpPass = (const char*)config["mailPassword"];
+    SmtpReceiver = (const char*)config["mailReceiver"];
+    SmtpServer = (const char*)config["smtpServer"];
 
     Serial.println("#### CONFIG LOADED ####");
-    Serial.println(ssid);
-    Serial.println(wifiPassword);
-    Serial.println(host);
+    //Serial.println(ssid);
+    //Serial.println(wifiPassword);
+    //Serial.println(host);
     Serial.println(root_topic_subscribe);
     Serial.println(root_topic_publish);
+    Serial.println(SmtpServer);
+    Serial.println(smtpSender);
+    Serial.println(smtpPass);
+    Serial.println(SmtpReceiver);
 
     file_.close();
 }
