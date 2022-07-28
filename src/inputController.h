@@ -63,4 +63,21 @@ class inputController{
 
             myVector.clear();
         }
+        void readInputs(){
+            if(!digitalRead(Input1)){
+                digitalWrite(Output1, HIGH);
+            }
+            if(!digitalRead(Input2)){
+                digitalWrite(Output1, HIGH);
+            }
+            if(!digitalRead(Input3)){
+                digitalWrite(Output1, HIGH);
+            }
+            if(!digitalRead(Input4)){
+                digitalWrite(Output1, HIGH);
+            }
+            if(digitalRead(Input1) && digitalRead(Input2) && digitalRead(Input3) && digitalRead(Input4)){
+                digitalWrite(Output1, LOW);
+            }
+        }
 };

@@ -43,10 +43,12 @@ JSONIZER jsonSession;
 
 String tempString0, tempString1, tempString2, tempString3 = "";
 const unsigned long eventInterval = 1500;
+unsigned long previousTimeMQTT = 0;
 unsigned long previousTimeScreen = 0;
 
-String ssid;
-String wifiPassword;
+String staticIpAP;
+String gatewayAP;
+String subnetMaskAP;
 String host;
 String root_topic_subscribe;
 String root_topic_publish;
@@ -80,8 +82,12 @@ void setup(){
   readFile(LittleFS, "/config.json");
   loadData(LittleFS, "/config.json"); 
   //AP setup
-  apInstance.setupServer();
+  apInstance.setupServer(staticIpAP, gatewayAP, subnetMaskAP);
   myScreen.screenClean();
+
+  //MQTT
+  client.setServer(host.c_str(), port);
+  client.setCallback(callback); //Callback 
 }
 
 void loop(){
@@ -100,21 +106,24 @@ void loop(){
   for(int i = 0; i < sensorData.size(); i ++){
     dataVector.push_back(sensorData.at(i));
   }
+  dataVector.push_back("Time");dataVector.push_back(ntpRawNoDay().c_str());
   //Data to screen
   refreshScreen();
   //MQTT
-  client.setServer(host.c_str(), port);
-  client.setCallback(callback); //Callback 
   if(!client.connected()){
     reconnect();
   }
   if(client.connected()){
-    std::string jsonData = jsonSession.toSJSON(dataVector);
-    Serial.println(jsonData.c_str());
-    client.publish(root_topic_publish.c_str(), jsonData.c_str());
-    delay(1);
+    unsigned long currentTime = millis();
+    if(currentTime - previousTimeMQTT >= 1000){
+      std::string jsonData = jsonSession.toSJSON(dataVector);
+      checkReset(jsonData);
+      Serial.println(jsonData.c_str());
+      client.publish(root_topic_publish.c_str(), jsonData.c_str());
+      previousTimeMQTT = currentTime;
+    }
   }
-
+  myInputs.readInputs();
   client.loop();
 }
 
@@ -171,10 +180,8 @@ void callback(char* topic, byte* payload, unsigned int lenght){
 void reconnect(){
   int count = 0;
   while(!client.connected()){
-
-    String deviceId = "DarkFlow_";
-    deviceId += String(random(0xffff), HEX);
-    String message = "Intentando conectar a: " + String(host) + ", Con ID: " + String(deviceId); 
+    String deviceId = String("DarkFlow_" + ESP.getChipId());
+    String message = "Intentando conectar a: " + String(host) + ", Con ID: " + deviceId; 
     if(client.connect(deviceId.c_str())){
       Serial.println("Conexión Exitosa");
       if(client.subscribe(root_topic_subscribe.c_str())){
@@ -184,7 +191,7 @@ void reconnect(){
       }
     }else{
       count += 1;
-      Serial.println("Falló la conexión / Error >");
+      Serial.print("Falló la conexión / Error >");
       Serial.println(client.state());
       Serial.println("Intentando nuevamente en 10 Segundos");
       delay(10000);
@@ -259,26 +266,20 @@ void loadData(fs::FS &fs, const char * path){
       Serial.println(error.f_str());
     }
     
-    Serial.println(config.size());
+    //Serial.println(config.size());
 
-    host = (const char*)config["host"];
-    root_topic_subscribe = (const char*)config["root_topic_subscribe"];
-    root_topic_publish = (const char*)config["root_topic_publish"];
-    smtpSender = (const char*)config["mailSender"];
-    smtpPass = (const char*)config["mailPassword"];
-    SmtpReceiver = (const char*)config["mailReceiver"];
-    SmtpServer = (const char*)config["smtpServer"];
+    staticIpAP = (const char*)config["network"]["ip"];
+    subnetMaskAP = (const char*)config["network"]["subnetMask"];
+    gatewayAP = (const char*)config["network"]["gateway"];
+    host = (const char*)config["mqtt"]["host"];
+    root_topic_subscribe = (const char*)config["mqtt"]["root_topic_subscribe"];
+    root_topic_publish = (const char*)config["mqtt"]["root_topic_publish"];
+    smtpSender = (const char*)config["smtp"]["mailSender"];
+    smtpPass = (const char*)config["smtp"]["mailPassword"];
+    SmtpReceiver = (const char*)config["smtp"]["mailReceiver"];
+    SmtpServer = (const char*)config["smtp"]["smtpServer"];
 
     Serial.println("#### CONFIG LOADED ####");
-    //Serial.println(ssid);
-    //Serial.println(wifiPassword);
-    //Serial.println(host);
-    Serial.println(root_topic_subscribe);
-    Serial.println(root_topic_publish);
-    Serial.println(SmtpServer);
-    Serial.println(smtpSender);
-    Serial.println(smtpPass);
-    Serial.println(SmtpReceiver);
 
     file_.close();
 }
