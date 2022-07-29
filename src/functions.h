@@ -43,8 +43,7 @@ String ntpRawDay(){
 String ntpRawNoDay(){
     timeClient.update();
     
-    String minutes;
-    String hour;
+    String minutes, seconds, hour;
 
     if(String(timeClient.getMinutes()).length() == 1){
         minutes = "0"+String(timeClient.getMinutes());
@@ -55,9 +54,13 @@ String ntpRawNoDay(){
         hour = "0"+String(timeClient.getHours());
     }else{
         hour = String(timeClient.getHours());        
+    }if(String(timeClient.getSeconds()).length() == 1){
+        seconds = "0"+String(timeClient.getSeconds());
+    }else{
+        seconds = String(timeClient.getSeconds());        
     }
 
-    String data = hour + ":" + minutes;
+    String data = hour + ":" + minutes + ":" + seconds;
     
     return data;
 }

@@ -18,8 +18,8 @@ IPAddress gateway(192, 168, 1, 1);
 IPAddress subnet(255, 255, 255, 0);
 IPAddress dns(8, 8, 8, 8);
 
-void changeCredentials(fs::FS &fs, const char * path, String mailReceiver, String StaticIP, String gateway, String subnet, String ssid,
-String password);
+void changeCredentials(fs::FS &fs, const char * path, String mailReceiver,
+  String StaticIP, String gateway, String subnet, String ssid, String password, String deviceName);
 bool isConfigured(const char * path);
 bool setup_wifi();
 void saveConfigCallback();
@@ -66,11 +66,10 @@ class apMode{
       <option value="3">Option 4</option>
       </select>
       */
+    /*
     const char *bufferStr = R"(
-      <!-- INPUT SELECT -->
       <br/>
-      <br/>
-      <label for='input_select'>Sensor 0</label>
+      <label for='sensor_select0'>Sensor 0</label>
       <select name="input_select" id="sensor_select0" class="button">
       <option value="0">OneWire</option>
       <option value="1">DHC</option>
@@ -79,8 +78,8 @@ class apMode{
       <option value="4"selected>Nothing</option>
       </select>
 
-      <label for='input_select'>Sensor 1</label>
-      <select name="input_select" id="sensor_select1" class="button">
+      <label for='sensor_select1'>Sensor 1</label>
+      <select name="input_select1" id="sensor_select1" class="button">
       <option value="0">OneWire</option>
       <option value="1">DHC</option>
       <option value="2">Tacometro</option>
@@ -88,71 +87,22 @@ class apMode{
       <option value="4"selected>Nothing</option>
       </select>
 
-      <label for='input_select'>Sensor 2</label>
-      <select name="input_select" id="sensor_select2" class="button">
+      <label for='sensor_select2'>Sensor 2</label>
+      <select name="input_select2" id="sensor_select2" class="button">
       <option value="0">OneWire</option>
       <option value="1">DHC</option>
       <option value="2">Tacometro</option>
       <option value="3">Luxometro</option>
       <option value="4"selected>Nothing</option>
       </select>
-      <br/>
     )";
-    const char *Sensor0HTML = R"(
-    <br/><label for='sensor0'>Sensor 0 Configuration</label>
-    <select name="sensorconfig" id="sensor0" onchange="document.getElementById('key_custom').value = this.value">
-      <option value="0">OneWire</option>
-      <option value="1">DHC</option>
-      <option value="2">Tacometro</option>
-      <option value="3">Luxometro</option>
-      <option value="4" selected>Nothing</option>
-    </select>
-    <script>
-      document.getElementById('sensor0').value = "%d";
-      document.querySelector("[for='key_custom']").hidden = true;
-      document.getElementById('key_custom').hidden = true;
-    </script>
-    )";
-  const char *Sensor1HTML = R"(
-    <br/><label for='sensor1'>Sensor 1 Configuration</label>
-    <select name="sensorconfig" id="sensor1" onchange="document.getElementById('key_custom').value = this.value">
-      <option value="0">OneWire</option>
-      <option value="1">DHC</option>
-      <option value="2">Tacometro</option>
-      <option value="3">Luxometro</option>
-      <option value="4" selected>Nothing</option>
-    </select>
-    <script>
-      document.getElementById('sensor1').value = "%d";
-      document.querySelector("[for='key_custom']").hidden = true;
-      document.getElementById('key_custom').hidden = true;
-    </script>
-    )";
-  const char *Sensor2HTML = R"(
-    <br/><label for='sensor2'>Sensor 2 Configuration</label>
-    <select name="sensorconfig" id="sensor2" onchange="document.getElementById('key_custom').value = this.value">
-      <option value="0">OneWire</option>
-      <option value="1">DHC</option>
-      <option value="2">Tacometro</option>
-      <option value="3">Luxometro</option>
-      <option value="4" selected>Nothing</option>
-    </select>
-    <script>
-      document.getElementById('sensor2').value = "%d";
-      document.querySelector("[for='key_custom']").hidden = true;
-      document.getElementById('key_custom').hidden = true;
-    </script>
-    )";
+    */
     const char* icon = "<link rel='icon' type='image/png' sizes='16x16' href='data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAADv7+//7+/v/+/v7//v7+//7+/v//Hw7//y8e//8fHv//Lx7//y8u//8vHv/+/v7//v7+//7+/v/+/v7//v7+//FxcX/xcXF/8XFxf/FxcX/xcXF/8QERf/DA4X/wwOF/8MDhf/CQsW/w0OF/8YGBf/GBgX/xcXF/8XFxf/FxcX/wAAAP8AAAD/AAAA/wIBAP8AAAD/XE0A/5R7AP+JcgD/iHEA/21bAP8uJQD/AAAA/wAAAP8AAAD/AAAA/wAAAP8BAQH/AQEB/wAAAf8EAwL/AAAB/5V+CP/sxwv/478L/+zGC//wygv/478L/5eAB/8YFAL/AAAB/wMDAv8BAQH/AAAA/wwKAf9iUwT/NSwC/wAAAP+KdAb/478K/1JFBP8kHgL/XE0E/66SB//sxwr/spYI/xANAf8AAAD/AQEA/wAAAP9wXgX/+dEK/0k9A/8AAAD/i3UG/+G9Cv9qWQX/NCwD/wMCAP8FBAD/kHkG/+3ICv95ZQX/AAAA/wMCAP8AAAD/c2EF/+rFCv9DOQP/AAAA/5mBBv/uyAr/6cQK//LLCv80LAL/AAAA/xkVAf/JqQn/w6QI/wsJAf8AAAD/AAAA/3JgBf/txwr/QzkD/wAAAP9SRAT/fGgF/29dBf96ZwX/LygC/wAAAP8AAAD/lHwG/967Cv8iHQL/AAAA/wAAAP9yYAX/7ccK/0M5A/8AAAD/YVIE/5R9Bv+Icwb/knoG/3FfBf8AAAD/AAAA/4dyBv/jvwn/KCEC/wAAAP8AAAD/cmAF/+3HCv9EOgP/AAAA/52EB//0zgr/478K/+rFCv/Ztwn/HBcC/wAAAP+skQf/1rQJ/xoWAf8AAAD/AAAA/3JgBf/txwr/RDkD/wAAAP8oIQL/OC8C/zUtAv81LQL/OzED/wQDAP86MQP/4L0J/62SB/8AAAD/AAAA/wAAAP9yYAX/7ccK/0A2A/8AAAD/AwIA/wAAAP8AAAD/AQEA/wAAAP8qIwL/vZ8I/+fDCv9URwT/AAAA/wMCAP8AAAD/cV8F/+XACv9wXgX/PzUD/0s/A/9KPgP/T0IE/2NTBP+QeQb/1LMJ/+rFCv+FcAb/AAAA/wEBAP8AAAD/AAAA/35qBf/yywr/58EK/+/ICv/uyAr/7sgK/+/ICv/wygr/68YK/8ioCP9lVQX/AwMA/wEAAP8AAAD/AAAA/wAAAP9BNwP/fGgF/3BeBf9xXwX/cmAF/3JfBf9yYAX/alkF/0c8A/8SDwH/AAAA/wICAP8BAAD/AAAA/wAAAP8BAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wMCAP8BAAD/AAAA/wAAAP8AAAD/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==' />";
     char smtpMail[40];
     char staticIPAP[40];
     char gatewayAP[40];
     char subnetAP[40];
-    char Sensor0[40];
-    char Sensor1[40];
-    char Sensor2[40];
-    char sensor0Buffer[50], sensor1Buffer[50], sensor2Buffer[50];
-    char convertedValue0[6], convertedValue1[6], convertedValue2[6];
+    char deviceName_[40];
     public:
         /*The function setuServer() has to be executed in the setup
         line from the main file*/
@@ -194,33 +144,52 @@ class apMode{
           myScreenAp.printScreen("2 Minutes timeout", 0, 3, false);
 
           // Custom parameters
+          WiFiManagerParameter deviceName("deviceName", "Nombre del dispositivo (Campo obligatorio)", deviceName_, 40, "required");
+          myManager.addParameter(&deviceName);
           WiFiManagerParameter smtpUser("mail", "SMTP mail", smtpMail, 40);
           myManager.addParameter(&smtpUser);
+          WiFiManagerParameter customWarning("<p>Keep all network parameters in blank for DHCP</p>"); //Sensor 0 Parameters
+          myManager.addParameter(&customWarning);
           WiFiManagerParameter StaticIpParam("StaticIP", "IP estatica", staticIPAP, 40, "pattern='\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}'");
           myManager.addParameter(&StaticIpParam);
           WiFiManagerParameter gatewayParam("GateWay", "Puerta de enlace predeterminada", gatewayAP, 40, "pattern='\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}'");
           myManager.addParameter(&gatewayParam);
           WiFiManagerParameter subnetParam("Subnet", "Mascara de subred", subnetAP, 40, "pattern='\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}'");
           myManager.addParameter(&subnetParam);
-          /*WiFiManagerParameter Sensor0("Sensor_0", "Sensor 0", "T", 2, _customHtml_checkbox, WFM_LABEL_AFTER);
-          myManager.addParameter(&Sensor0);
-          WiFiManagerParameter Sensor1("Sensor_1", "Sensor 1", "T", 2, _customHtml_checkbox, WFM_LABEL_AFTER);
-          myManager.addParameter(&Sensor1);
-          WiFiManagerParameter Sensor2("Sensor_2", "Sensor 2", "T", 2, _customHtml_checkbox, WFM_LABEL_AFTER);
-          myManager.addParameter(&Sensor2);
-          WiFiManagerParameter Sensor3("Sensor_3", "Sensor 3", "T", 2, _customHtml_checkbox, WFM_LABEL_AFTER);
-          myManager.addParameter(&Sensor3);*/
+          /*WiFiManagerParameter customTextSensor0("<p>Sensor 0 Configuration</p>"); //Sensor 0 Parameters
+          myManager.addParameter(&customTextSensor0);
+          WiFiManagerParameter Sensor0_0("Sensor_0_OneWire", "OneWire", "T", 2, _customHtml_checkbox, WFM_LABEL_AFTER);
+          myManager.addParameter(&Sensor0_0);
+          WiFiManagerParameter Sensor0_1("Sensor_0_DHC", "DHC Temp and Humidity", "F", 2, _customHtml_checkbox, WFM_LABEL_AFTER);
+          myManager.addParameter(&Sensor0_1);
+          WiFiManagerParameter Sensor0_2("Sensor_0_Tac", "Tacometro", "F", 2, _customHtml_checkbox, WFM_LABEL_AFTER);
+          myManager.addParameter(&Sensor0_2);
+          WiFiManagerParameter Sensor0_3("Sensor_0_Lux", "Luxómetro", "F", 2, _customHtml_checkbox, WFM_LABEL_AFTER);
+          myManager.addParameter(&Sensor0_3);
+          WiFiManagerParameter customTextSensor1("<p>Sensor 1 Configuration</p>"); //Sensor 1 parameters
+          myManager.addParameter(&customTextSensor1);
+          WiFiManagerParameter Sensor1_0("Sensor_1_OneWire", "OneWire", "T", 2, _customHtml_checkbox, WFM_LABEL_AFTER);
+          myManager.addParameter(&Sensor1_0);
+          WiFiManagerParameter Sensor1_1("Sensor_1_DHC", "DHC Temp and Humidity", "F", 2, _customHtml_checkbox, WFM_LABEL_AFTER);
+          myManager.addParameter(&Sensor1_1);
+          WiFiManagerParameter Sensor1_2("Sensor_1_Tac", "Tacometro", "F", 2, _customHtml_checkbox, WFM_LABEL_AFTER);
+          myManager.addParameter(&Sensor1_2);
+          WiFiManagerParameter Sensor1_3("Sensor_1_Lux", "Luxómetro", "F", 2, _customHtml_checkbox, WFM_LABEL_AFTER);
+          myManager.addParameter(&Sensor1_3);
+          WiFiManagerParameter customTextSensor2("<p>Sensor 2 Configuration</p>"); //Sensor 2 parameters
+          myManager.addParameter(&customTextSensor2);
+          WiFiManagerParameter Sensor2_0("Sensor_2_OneWire", "OneWire", "T", 2, _customHtml_checkbox, WFM_LABEL_AFTER);
+          myManager.addParameter(&Sensor2_0);
+          WiFiManagerParameter Sensor2_1("Sensor_2_DHC", "DHC Temp and Humidity", "F", 2, _customHtml_checkbox, WFM_LABEL_AFTER);
+          myManager.addParameter(&Sensor2_1);
+          WiFiManagerParameter Sensor2_2("Sensor_2_Tac", "Tacometro", "F", 2, _customHtml_checkbox, WFM_LABEL_AFTER);
+          myManager.addParameter(&Sensor2_2);
+          WiFiManagerParameter Sensor2_3("Sensor_2_Lux", "Luxómetro", "F", 2, _customHtml_checkbox, WFM_LABEL_AFTER);
           
-          //WiFiManagerParameter custom_html_inputs(bufferStr);
-          //myManager.addParameter(&custom_html_inputs);
+          WiFiManagerParameter custom_html_inputs(bufferStr);
+          myManager.addParameter(&custom_html_inputs);
+          myManager.addParameter(&Sensor2_3); */
 
-          WiFiManagerParameter custom_field(sensor0Buffer);WiFiManagerParameter custom_field1(sensor1Buffer);WiFiManagerParameter custom_field2(sensor2Buffer);
-          WiFiManagerParameter custom_hidden0("key_custom", "Will be hidden", convertedValue0, 2);WiFiManagerParameter custom_hidden1("key_custom", "Will be hidden", convertedValue1, 2);WiFiManagerParameter custom_hidden2("key_custom", "Will be hidden", convertedValue2, 2);
-
-          myManager.addParameter(&custom_hidden0);
-          myManager.addParameter(&custom_hidden1);
-          myManager.addParameter(&custom_hidden2);
-          myManager.addParameter(&custom_field);
           //<-
 
           //-> Start the client
@@ -232,14 +201,11 @@ class apMode{
           strcpy(staticIPAP, StaticIpParam.getValue());
           strcpy(gatewayAP, gatewayParam.getValue());
           strcpy(subnetAP, subnetParam.getValue());
-
-          strcpy(Sensor0, custom_hidden0.getValue());
-          strcpy(Sensor1, custom_hidden1.getValue());
-          strcpy(Sensor2, custom_hidden2.getValue());
+          strcpy(deviceName_, deviceName.getValue());
 
           if(shouldSaveConfig){
             changeCredentials(LittleFS, "/config.json", String(smtpMail), String(staticIPAP), 
-            String(gatewayAP), String(subnetAP), myManager.getWiFiSSID(), myManager.getWiFiPass());
+            String(gatewayAP), String(subnetAP), myManager.getWiFiSSID(), myManager.getWiFiPass(), String(deviceName_));
             ESP.restart();
           }
           if(!isConnected){
@@ -273,7 +239,7 @@ void saveConfigCallback () {
 }
 
 void changeCredentials(fs::FS &fs, const char * path, String mailReceiver,
-  String StaticIP, String gateway, String subnet, String ssid, String password){
+  String StaticIP, String gateway, String subnet, String ssid, String password, String deviceName){
   
   File file_ = fs.open(path, "w");
     String content;
@@ -282,6 +248,8 @@ void changeCredentials(fs::FS &fs, const char * path, String mailReceiver,
     }
     StaticJsonDocument<1024> config;
 
+    config["device"]["UID"] = std::to_string(ESP.getChipId()).c_str();
+    config["device"]["name"] = deviceName.c_str();
     config["network"]["SSID"] = ssid.c_str();
     config["network"]["wifiPassword"] = password.c_str();
     config["network"]["ip"] = StaticIP.c_str();
