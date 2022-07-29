@@ -12,7 +12,7 @@
 #include <LittleFS.h>
 #include <ArduinoJson.h>
 #include <Arduino.h>
-#include <PubSubClient.h> 
+#include <PubSubClient.h>
 #include "dataSensors.h"
 #include "screenController.h"
 #include "inputController.h"
@@ -46,6 +46,7 @@ const unsigned long eventInterval = 1500;
 unsigned long previousTimeMQTT = 0;
 unsigned long previousTimeScreen = 0;
 
+String deviceName;
 String staticIpAP;
 String gatewayAP;
 String subnetMaskAP;
@@ -59,6 +60,7 @@ String SmtpServer;
 const char* userName;
 const char* password;
 const int port = 1883;  
+
 
 void setup(){
   Serial.begin(115000);
@@ -91,13 +93,13 @@ void setup(){
 }
 
 void loop(){
+  std::vector<std::string> dataVector; //This vector is where all the json data will be stored after transformation to string
   //SMTP test
   if(std::atof(mySensors.singleSensorRawdata(0).c_str()) >= std::atof("50")){
     sendEmail(smtpSender.c_str(), smtpPass.c_str(), SmtpReceiver.c_str(),
   SmtpServer.c_str(), 587);
   }
-  //Data
-  std::vector<std::string> dataVector;
+  //Sensors Data
   std::vector<std::string> inputData = myInputs.inputData();
   std::vector<std::string> sensorData = mySensors.rawData(); 
   for(int i = 0; i < inputData.size(); i ++){
@@ -106,7 +108,9 @@ void loop(){
   for(int i = 0; i < sensorData.size(); i ++){
     dataVector.push_back(sensorData.at(i));
   }
-  dataVector.push_back("Time");dataVector.push_back(ntpRawNoDay().c_str());
+  dataVector.push_back("time");dataVector.push_back(ntpRawNoDay().c_str());
+  dataVector.push_back("DeviceID");dataVector.push_back(std::to_string(ESP.getChipId()));
+  dataVector.push_back("DeviceName");dataVector.push_back(deviceName.c_str());
   //Data to screen
   refreshScreen();
   //MQTT
@@ -123,7 +127,6 @@ void loop(){
       previousTimeMQTT = currentTime;
     }
   }
-  myInputs.readInputs();
   client.loop();
 }
 
@@ -268,6 +271,7 @@ void loadData(fs::FS &fs, const char * path){
     
     //Serial.println(config.size());
 
+    deviceName = (const char*)config["device"]["name"];
     staticIpAP = (const char*)config["network"]["ip"];
     subnetMaskAP = (const char*)config["network"]["subnetMask"];
     gatewayAP = (const char*)config["network"]["gateway"];

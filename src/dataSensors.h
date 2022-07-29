@@ -38,17 +38,18 @@ class dataSensors{
             Serial.println("Searching temperature devices...");
             sensorsCount = DS18B20.getDeviceCount();
             Serial.print(sensorsCount, DEC);
-            Serial.println(" Devices");
+            Serial.print(" Devices detected");
             Serial.println("");
         }
         std::vector<std::string> rawData(){
             std::vector<std::string> temperatureVector;
              
             //Temp loop
-            String sensorNumber = "";
+            
            
             DS18B20.requestTemperatures();
-            for(int n = 0; n < sensorsCount; n++){
+            for(int n = 0; n <= sensorsCount; n++){
+                String sensorNumber = "";
                 sensorNumber += "Sensor" + String(n);
                 if(n < sensorsCount){
                 temperatureVector.push_back(sensorNumber.c_str());
