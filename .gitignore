@@ -34,3 +34,5 @@ src/erase/ap.h
 lib/README
 include/README
 test/test.cpp
+IOT_FIRMWARE.code-workspace
+test/index.html

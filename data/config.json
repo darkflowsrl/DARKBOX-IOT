@@ -1,22 +1,26 @@
 {
-    "network" : {
-        "ip" : "",
-        "subnetMask" : "",
-        "gateway" : ""
+    "device": {
+      "UID": "␂296876",
+      "name": "giulidevice"
     },
-    "mqtt" : {
-        "host":"mqtt.darkflow.com.ar",
-        "root_topic_subscribe":"giuli/testing",
-        "root_topic_publish":"giuli/data",
-        "userName":"",
-        "password":"",
-        "port":"1883"
+    "network": {
+      "SSID": "chop",
+      "wifiPassword": "741963258",
+      "ip": "192.168.1.55",
+      "subnetMask": "255.255.255.0",
+      "gateway": "192.168.1.1"
     },
-    "smtp" : {
-        "mailSender":"giulicrenna@outlook.com",
-        "mailPassword":"kirchhoff2002",
-        "mailReceiver":"giuli_crenna@gmail.com",
-        "smtpServer":"smtp.office365.com",
-        "smtpPort":"587"
+    "mqtt": {
+      "host": "mqtt.darkflow.com.ar",
+      "root_topic_subscribe": "giuli/testing",
+      "root_topic_publish": "giuli/data",
+      "port": "1883"
+    },
+    "smtp": {
+      "mailSender": "giulicrenna@outlook.com",
+      "mailPassword": "kirchhoff2002",
+      "mailReceiver": "",
+      "smtpServer": "smtp.office365.com",
+      "smtpPort": "587"
     }
-}
+  }
