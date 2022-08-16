@@ -13,13 +13,13 @@
 #include <ArduinoJson.h>
 #include <Arduino.h>
 #include <PubSubClient.h>
-#include "httpServer.h";
 #include "dataSensors.h"
 #include "screenController.h"
 #include "inputController.h"
 #include "apMode.h"
 #include "jsonizer.h"
 #include "functions.h"
+#include "httpServer.h"
 
 void listDir(fs::FS &fs, const char *dirname, uint8_t levels);
 void readFile(fs::FS &fs, const char *path);
@@ -65,15 +65,6 @@ const int port = 1883;
 void setup()
 {
   Serial.begin(115000);
-  // Devices setup
-  mySensors.sensorsSetup();
-  myScreen.screenSetup();
-  myInputs.inputSetup();
-  // Screen
-  myScreen.printScreen("Starting device...", 0, 1, true);
-  delay(2000);
-  myScreen.screenClean();
-
   // File System and configuration setup
   if (!LittleFS.begin())
   {
@@ -82,24 +73,33 @@ void setup()
     Serial.println("SPIFFS Mount Failed");
     return;
   }
+  // Load and visualize data
   listDir(LittleFS, "/", 0);
   readFile(LittleFS, "/config.json");
   loadData(LittleFS, "/config.json");
-
+  // AP setup
+  apInstance.setupServer(staticIpAP, gatewayAP, subnetMaskAP);
+  // Devices setup
+  mySensors.sensorsSetup();
+  myScreen.screenSetup();
+  myInputs.inputSetup();
+  // Screen
+  myScreen.printScreen("Starting device...", 0, 1, true);
+  delay(2000);
   myScreen.screenClean();
   // MQTT
   client.setServer(host.c_str(), port);
   client.setCallback(callback); // Callback
-  // AP setup
-  apInstance.setupServer(staticIpAP, gatewayAP, subnetMaskAP);
-  setupDnsServer();
+  // mDNS setup
+  setupServer();
 }
 
 void loop()
 {
+  setupHttpServer();
   std::vector<std::string> dataVector; // This vector is where all the json data will be stored after transformation to string
   // SMTP test
-  if (std::atof(mySensors.singleSensorRawdata(0).c_str()) >= std::atof("50"))
+  if (std::atof(mySensors.singleSensorRawdataTemp(0).c_str()) >= std::atof("50"))
   {
     sendEmail(smtpSender.c_str(), smtpPass.c_str(), SmtpReceiver.c_str(),
               SmtpServer.c_str(), 587);
@@ -172,9 +172,9 @@ void refreshScreen()
 {
   unsigned long currentTime = millis();
   // I will use millis to create the time trigger to refresh the screen
-  tempString0 += "Sensor0: " + mySensors.singleSensorRawdata(0);
-  tempString1 += "Sensor1: " + mySensors.singleSensorRawdata(1);
-  tempString2 += "Sensor2: " + mySensors.singleSensorRawdata(2);
+  tempString0 += "Sensor0: " + mySensors.singleSensorRawdataTemp(0);
+  tempString1 += "Sensor1: " + mySensors.singleSensorRawdataTemp(1);
+  tempString2 += "Sensor2: " + mySensors.singleSensorRawdataTemp(2);
 
   if (currentTime - previousTimeScreen >= eventInterval)
   {
@@ -208,6 +208,9 @@ void reconnect()
   int count = 0;
   while (!client.connected())
   {
+    String resetData = String(" {\"Input2\":\"") + String(myInputs.returnSingleInput(14).c_str()) + String("\"} ");
+    Serial.println(resetData.c_str());
+    checkReset(resetData.c_str());
     setupHttpServer();
     String deviceId = String("DarkFlow_" + ESP.getChipId());
     String message = "Intentando conectar a: " + String(host) + ", Con ID: " + deviceId;
