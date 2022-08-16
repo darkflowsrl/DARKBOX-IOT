@@ -49,12 +49,13 @@ public:
 
     if (staticIpAP != "" && subnetMaskAP != "" && gatewayAP_ != "")
     {
-      myManager.setSTAStaticIPConfig(miIp, miGateway, miSubnet, IPAddress(8, 8, 8, 8)); // Repair this, static ip detected but no configured
+      //myManager.setSTAStaticIPConfig(miIp, miGateway, miSubnet, IPAddress(8, 8, 8, 8)); // Repair this, static ip detected but no configured
+      WiFi.config(miIp, miGateway, miSubnet);
     }
 
-    myManager.setShowStaticFields(false);
+    //myManager.setShowStaticFields(false);
 
-    myManager.setCustomHeadElement(icon);
+    //myManager.setCustomHeadElement(icon);
 
     myManager.setAPStaticIPConfig(local_ip, gateway, subnet);
 
@@ -96,7 +97,7 @@ public:
     //<-
 
     //-> Start the client
-    bool isConnected = myManager.autoConnect();
+    bool isConnected = myManager.autoConnect("DD");
     //<-
 
     //->Save config into JSON

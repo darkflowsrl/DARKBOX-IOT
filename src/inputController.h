@@ -80,4 +80,11 @@ class inputController{
                 digitalWrite(Output1, LOW);
             }
         }
+        std::string returnSingleInput(uint8_t customInput){
+            if(!digitalRead(customInput)){
+                return "HIGH";
+                }
+            return "LOW";
+        }
+    
 };
