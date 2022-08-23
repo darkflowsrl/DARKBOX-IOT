@@ -9,12 +9,8 @@
 const int utcOffset = -10800;
 unsigned long previousTime2 = 0;
 
-char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
-
 WiFiUDP ntpUDP;
-NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffset);
-
-time_t epochTime = timeClient.getEpochTime();
+NTPClient timeClient(ntpUDP, "0.south-america.pool.ntp.org", utcOffset);
 
 void sendEmail(const char *sender, const char *password, const char *receiver, const char *host, int port)
 {
@@ -34,14 +30,6 @@ void sendEmail(const char *sender, const char *password, const char *receiver, c
     Serial.println(response.status);
     Serial.println(response.code);
     Serial.println(response.desc);
-}
-
-// NTP FETCHER
-String ntpRawDay()
-{
-    timeClient.update();
-    String data = String(daysOfTheWeek[timeClient.getDay()]) + ":" + String(timeClient.getHours()) + ":" + String(timeClient.getMinutes());
-    return data;
 }
 
 String ntpRawNoDay()
@@ -82,17 +70,18 @@ String ntpRawNoDay()
 
 String formatedTime()
 {
-    timeClient.update();
-    struct tm *ptm = gmtime ((time_t *)&epochTime); 
-    
-    int monthDay = ptm->tm_mday;
-    int currentMonth = ptm->tm_mon+1;
-    int currentYear = ptm->tm_year+1900;
+    time_t epochTime = timeClient.getEpochTime();
 
-    String data = String(monthDay) + "/" + String(currentMonth) + "/" + String(currentYear) + " " + String(timeClient.getHours()) + ":" + String(timeClient.getMinutes()) + ":" + String(timeClient.getSeconds());
+    timeClient.update();
+    struct tm *ptm = gmtime((time_t *)&epochTime);
+
+    uint16_t monthDay = ptm->tm_mday;
+    uint16_t currentMonth = ptm->tm_mon + 1;
+    uint16_t currentYear = ptm->tm_year + 1900;
+
+    String data = String(monthDay) + "-" + String(currentMonth) + "-" + String(currentYear) + " " + String(timeClient.getHours()) + ":" + String(timeClient.getMinutes()) + ":" + String(timeClient.getSeconds());
     return data;
 }
-
 
 IPAddress strToIp(String miIp)
 {

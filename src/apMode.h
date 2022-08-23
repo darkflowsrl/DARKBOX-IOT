@@ -159,7 +159,9 @@ void changeCredentials(fs::FS &fs, const char *path, String mailReceiver,
   }
   StaticJsonDocument<1024> config;
 
-  config["device"]["UID"] = std::to_string(ESP.getChipId()).c_str();
+  String publishTopic = "DeviceData/" + String(ESP.getChipId());
+
+  config["device"]["UID"] = ESP.getChipId();
   config["device"]["name"] = deviceName.c_str();
   config["network"]["SSID"] = ssid.c_str();
   config["network"]["wifiPassword"] = password.c_str();
@@ -168,7 +170,7 @@ void changeCredentials(fs::FS &fs, const char *path, String mailReceiver,
   config["network"]["gateway"] = gateway.c_str();
   config["mqtt"]["host"] = "mqtt.darkflow.com.ar";
   config["mqtt"]["root_topic_subscribe"] = "giuli/testing";
-  config["mqtt"]["root_topic_publish"] = "giuli/data";
+  config["mqtt"]["root_topic_publish"] = publishTopic;
   config["mqtt"]["port"] = "1883";
   config["smtp"]["mailSender"] = "giulicrenna@outlook.com";
   config["smtp"]["mailPassword"] = "kirchhoff2002";
