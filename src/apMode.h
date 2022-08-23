@@ -155,7 +155,7 @@ void changeCredentials(fs::FS &fs, const char *path, String mailReceiver,
   String content;
   if (!file_.available())
   {
-    Serial.println("Couldn't open the file");
+    Serial.println("Couldn't open the file (AP INSTANCE)");
   }
   StaticJsonDocument<1024> config;
 
@@ -180,14 +180,15 @@ void changeCredentials(fs::FS &fs, const char *path, String mailReceiver,
   config["devices"]["sensor2"] = "";
 
   Serial.println("#### CONFIG WRITTEN ####");
-  Serial.println((const char *)config["mailReceiver"]);
 
   auto error = serializeJsonPretty(config, file_);
 
   if (error)
   {
-    Serial.println("Failed to Serialize");
+    Serial.println("Failed to Serialize (AP INSTANCE)");
   }
+
+  file_.close();
 }
 
 #endif

@@ -4,8 +4,8 @@
 #include <string.h>
 #include <Arduino.h>
 
-#define i2c_SCL 5
-#define i2c_SDA 4
+#define i2c_SCL 2
+#define i2c_SDA 0
 
 LiquidCrystal_I2C lcd(0x27,20,4); 
 

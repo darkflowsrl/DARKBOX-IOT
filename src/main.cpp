@@ -1,4 +1,8 @@
 // SilFe2655
+/*
+Notes:
+  Repair temperatures lectures. Bus busy while reading from html
+*/
 #ifdef ESP32
 #include <WiFi.h>
 #else
@@ -30,6 +34,8 @@ void deleteFile(fs::FS &fs, const char *path);
 void loadData(fs::FS &fs, const char *path);
 void callback(char *topic, byte *payload, unsigned int lenght);
 void checkReset(std::string inputJson);
+void loadTemporalData(fs::FS &fs, std::string t0, std::string t1, std::string h0,
+                      std::string d0, std::string d1, std::string d2, std::string d3);
 void reconnect();
 void refreshScreen();
 
@@ -42,11 +48,12 @@ Screen myScreen;
 inputController myInputs;
 JSONIZER jsonSession;
 
-String tempString0, tempString1, tempString2, tempString3 = "";
 const unsigned long eventInterval = 1500;
 unsigned long previousTimeMQTT = 0;
 unsigned long previousTimeScreen = 0;
+unsigned long previousTimeTemporalData = 0;
 
+String tempString0, tempString1, tempString2;
 String deviceName;
 String staticIpAP;
 String gatewayAP;
@@ -96,31 +103,34 @@ void setup()
 
 void loop()
 {
-  setupHttpServer();
-  std::vector<std::string> dataVector; // This vector is where all the json data will be stored after transformation to string
+  // JSON data creation
+  DynamicJsonDocument data(1024);
+  std::string data_;
+
+  std::vector<std::string> inputData = myInputs.inputData();
+
+  data["DeviceId"] = ESP.getChipId();
+  data["DeviceName"] = deviceName.c_str();
+  data["Timestamp"] = formatedTime();
+  data["MsgType"] = "Data";
+  data["Value"]["Temperature_0"] = mySensors.singleSensorRawdataTemp(0);
+  data["Value"]["DHT_temperature"] = mySensors.singleSensorRawdataDHT(false);
+  data["Value"]["DHT_humidity"] = mySensors.singleSensorRawdataDHT(true);
+  data["Value"]["Digital_0"] = inputData.at(0);
+  data["Value"]["Digital_1"] = inputData.at(1);
+  data["Value"]["Digital_2"] = inputData.at(2);
+  serializeJsonPretty(data, data_);
+  // Temporal data to EEPROM
+  loadTemporalData(LittleFS, mySensors.singleSensorRawdataTemp(0).c_str(), mySensors.singleSensorRawdataDHT(false).c_str(), mySensors.singleSensorRawdataDHT(true).c_str(),
+                   inputData.at(0), inputData.at(1), inputData.at(2), inputData.at(2));
   // SMTP test
   if (std::atof(mySensors.singleSensorRawdataTemp(0).c_str()) >= std::atof("50"))
   {
     sendEmail(smtpSender.c_str(), smtpPass.c_str(), SmtpReceiver.c_str(),
               SmtpServer.c_str(), 587);
   }
-  // Sensors Data
-  std::vector<std::string> inputData = myInputs.inputData();
-  std::vector<std::string> sensorData = mySensors.rawData();
-  for (int i = 0; i < inputData.size(); i++)
-  {
-    dataVector.push_back(inputData.at(i));
-  }
-  for (int i = 0; i < sensorData.size(); i++)
-  {
-    dataVector.push_back(sensorData.at(i));
-  }
-  dataVector.push_back("time");
-  dataVector.push_back(ntpRawNoDay().c_str());
-  dataVector.push_back("DeviceID");
-  dataVector.push_back(std::to_string(ESP.getChipId()));
-  dataVector.push_back("DeviceName");
-  dataVector.push_back(deviceName.c_str());
+  // HTTP and mDNS loop
+  setupHttpServer();
   // Data to screen
   refreshScreen();
   // MQTT
@@ -131,17 +141,15 @@ void loop()
   if (client.connected())
   {
     unsigned long currentTime = millis();
-    if (currentTime - previousTimeMQTT >= 500)
+    if (currentTime - previousTimeMQTT >= 3000)
     {
-      std::string jsonData = jsonSession.toSJSON(dataVector);
-      checkReset(jsonData);
-      Serial.println(jsonData.c_str());
-      client.publish(root_topic_publish.c_str(), jsonData.c_str());
+      checkReset(data_);
+      Serial.println(data_.c_str());
+      client.publish(root_topic_publish.c_str(), data_.c_str());
       previousTimeMQTT = currentTime;
     }
   }
   client.loop();
-  setupHttpServer();
 }
 
 void checkReset(std::string inputJson)
@@ -155,7 +163,7 @@ void checkReset(std::string inputJson)
   }
   // String inputState = config["Input2"];
   // Serial.println(inputState);
-  if (config["Input2"] == "HIGH")
+  if (config["Value"]["Digital_2"] == "HIGH")
   {
     for (int i = 0; i <= 2; i++)
     {
@@ -165,6 +173,37 @@ void checkReset(std::string inputJson)
         apInstance.reset();
       }
     }
+  }
+}
+
+void loadTemporalData(fs::FS &fs, std::string t0, std::string t1, std::string h0,
+                      std::string d0, std::string d1, std::string d2, std::string d3)
+{
+  unsigned long currentTime = millis();
+  if (currentTime - previousTimeTemporalData >= 10000)
+  {
+    File file_ = fs.open("temp.json", "w");
+    if (!file_)
+    {
+      Serial.print("error > ");
+      Serial.print(file_.available());
+      Serial.println(" (temporal file creation instance) Couldn't open the file");
+    }
+    StaticJsonDocument<512> temporalData;
+
+    temporalData["temp0"] = t0;
+    temporalData["tempDHT"] = t1;
+    temporalData["humDHT"] = h0;
+    temporalData["digital0"] = d0;
+    temporalData["digital1"] = d1;
+    temporalData["digital2"] = d2;
+    temporalData["digital3"] = d3;
+
+    serializeJsonPretty(temporalData, file_);
+
+    previousTimeTemporalData = currentTime;
+
+    file_.close();
   }
 }
 
@@ -187,6 +226,7 @@ void refreshScreen()
   tempString0 = "";
   tempString1 = "";
   tempString2 = "";
+  previousTimeScreen = currentTime;
 }
 
 void callback(char *topic, byte *payload, unsigned int lenght)

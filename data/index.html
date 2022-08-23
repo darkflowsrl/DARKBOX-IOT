@@ -8,57 +8,82 @@
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css"
     integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
   <link rel="stylesheet" type="text/css" href="style.css">
-  <script src="http://cdn.rawgit.com/Mikhus/canvas-gauges/gh-pages/download/2.1.7/all/gauge.min.js"></script>
 </head>
 
 <body>
   <div class="topnav">
     <h1>Darkflow Device</h1>
   </div>
-  <div class="content">
 
-    <div class="card-grid">
-      <div class="card">
-        <p class="card-title">Humedad</p>
-        <canvas id="gauge-humidity"></canvas>
-      </div>
-
-      <div class="card">
-        <p class="card-title">Temperatura 0</p>
-        <canvas id="gauge-temperature"></canvas>
-      </div>
+  <div class="card">
+    <div class="container">
+      <p>
+        <i class="fas fa-thermometer-half" style="color:#059e8a;"></i>
+        <span class="dht-labels">OneWire -> Temperature 0: </span>
+      </p>
+      <span id="temperature">%TEMPERATURE0%</span>
+      <sup class="units">&deg;C</sup>
     </div>
-    
-    <br>
-    
-    <div class="card-grid">
-      <div class="card">
-        <p class="card-title">Temperatura 1</p>
-        <canvas id="gauge-temperature1"></canvas>
-      </div>
-
-      <div class="card">
-        <p class="card-title">Temperatura 2</p>
-        <canvas id="gauge-temperature2"></canvas>
-      </div>
-    </div>
-
-    <br>
-
-    <div class="card-grid">
-      <div class="card">
-        <p class="card-title">Temperatura 3</p>
-        <canvas id="gauge-temperature3"></canvas>
-      </div>
-
-      <div class="card">
-        <p class="card-title">Temperatura X</p>
-        <canvas id="gauge-temperature3"></canvas>
-      </div>
-    </div>
-
-    <script src="/script.js"></script>
   </div>
+
+  <div class="card">
+    <div class="container">
+      <p>
+        <i class="fas fa-thermometer-half" style="color:#059e8a;"></i>
+        <span class="dht-labels">DHT -> Temperature 1: </span>
+      </p>
+      <span id="temperature">%TEMPERATURE1%</span>
+      <sup class="units">&deg;C</sup>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="container">
+      <p>
+        <i class="fas fa-tint" style="color:#00add6;"></i>
+        <span class="dht-labels">DHT -> Humidity: </span>
+      </p>
+      <span id="humidity">%HUMIDITY%</span>
+      <sup class="units">&percnt;</sup>
+    </div>
+  </div>
+
+  </div>
+
+
 </body>
+
+<script>
+  setInterval(function () {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function () {
+      if (this.readyState == 4 && this.status == 200) {
+        document.getElementById("temperature0").innerHTML = this.responseText;
+      }
+    };
+    xhttp.open("GET", "/temperature0", true);
+    xhttp.send();
+  }, 10000);
+  setInterval(function () {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function () {
+      if (this.readyState == 4 && this.status == 200) {
+        document.getElementById("temperature1").innerHTML = this.responseText;
+      }
+    };
+    xhttp.open("GET", "/temperature1", true);
+    xhttp.send();
+  }, 10000);
+  setInterval(function () {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function () {
+      if (this.readyState == 4 && this.status == 200) {
+        document.getElementById("humidity").innerHTML = this.responseText;
+      }
+    };
+    xhttp.open("GET", "/humidity  ", true);
+    xhttp.send();
+  }, 10000);
+</script>
 
 </html>

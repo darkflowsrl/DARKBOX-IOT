@@ -3,6 +3,7 @@
     "files.associations": {
         "*.py": "python",
         "*.h": "cpp",
+        "*.cpp": "cpp",
         "*.tcc": "cpp",
         "optional": "cpp",
         "functional": "cpp",
@@ -52,7 +53,14 @@
         "ctime": "cpp",
         "unordered_set": "cpp",
         "map": "cpp",
-        "iomanip": "cpp"
+        "iomanip": "cpp",
+        "bit": "cpp",
+        "bitset": "cpp",
+        "compare": "cpp",
+        "concepts": "cpp",
+        "set": "cpp",
+        "regex": "cpp",
+        "ranges": "cpp"
     },
     "c-cpp-compile-run.c-compiler": "C:\\msys64\\mingw64\\bin\\g++.exe",
     "c-cpp-compile-run.cpp-compiler": "C:\\msys64\\mingw64\\bin\\g++.exe",

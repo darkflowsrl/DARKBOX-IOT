@@ -37,3 +37,4 @@ test/test.cpp
 IOT_FIRMWARE.code-workspace
 test/index.html
 src/BackUps/BackUp-11-08.tar.xz
+.vscode/settings.json

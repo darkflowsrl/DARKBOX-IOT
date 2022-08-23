@@ -14,7 +14,10 @@ char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursd
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffset);
 
-void sendEmail(const char* sender, const char* password, const char* receiver, const char* host, int port){
+time_t epochTime = timeClient.getEpochTime();
+
+void sendEmail(const char *sender, const char *password, const char *receiver, const char *host, int port)
+{
     String msg = "Sending from " + String(sender) + " to " + String(receiver) + " over " + String(host);
     Serial.println(msg);
     EMailSender emailSend(sender, password, sender, "Darkflow-Device");
@@ -27,51 +30,78 @@ void sendEmail(const char* sender, const char* password, const char* receiver, c
     message.message = "El sensor superó la temperatura dada";
 
     EMailSender::Response response = emailSend.send(receiver, message);
- 
+
     Serial.println(response.status);
     Serial.println(response.code);
     Serial.println(response.desc);
- }  
+}
 
 // NTP FETCHER
-String ntpRawDay(){
+String ntpRawDay()
+{
     timeClient.update();
     String data = String(daysOfTheWeek[timeClient.getDay()]) + ":" + String(timeClient.getHours()) + ":" + String(timeClient.getMinutes());
     return data;
 }
 
-String ntpRawNoDay(){
+String ntpRawNoDay()
+{
     timeClient.update();
-    
+
     String minutes, seconds, hour;
 
-    if(String(timeClient.getMinutes()).length() == 1){
-        minutes = "0"+String(timeClient.getMinutes());
-    }else{
-        minutes = String(timeClient.getMinutes());        
+    if (String(timeClient.getMinutes()).length() == 1)
+    {
+        minutes = "0" + String(timeClient.getMinutes());
     }
-    if(String(timeClient.getHours()).length() == 1){
-        hour = "0"+String(timeClient.getHours());
-    }else{
-        hour = String(timeClient.getHours());        
-    }if(String(timeClient.getSeconds()).length() == 1){
-        seconds = "0"+String(timeClient.getSeconds());
-    }else{
-        seconds = String(timeClient.getSeconds());        
+    else
+    {
+        minutes = String(timeClient.getMinutes());
+    }
+    if (String(timeClient.getHours()).length() == 1)
+    {
+        hour = "0" + String(timeClient.getHours());
+    }
+    else
+    {
+        hour = String(timeClient.getHours());
+    }
+    if (String(timeClient.getSeconds()).length() == 1)
+    {
+        seconds = "0" + String(timeClient.getSeconds());
+    }
+    else
+    {
+        seconds = String(timeClient.getSeconds());
     }
 
     String data = hour + ":" + minutes + ":" + seconds;
-    
+
     return data;
 }
 
-IPAddress strToIp(String miIp){
+String formatedTime()
+{
+    timeClient.update();
+    struct tm *ptm = gmtime ((time_t *)&epochTime); 
+    
+    int monthDay = ptm->tm_mday;
+    int currentMonth = ptm->tm_mon+1;
+    int currentYear = ptm->tm_year+1900;
+
+    String data = String(monthDay) + "/" + String(currentMonth) + "/" + String(currentYear) + " " + String(timeClient.getHours()) + ":" + String(timeClient.getMinutes()) + ":" + String(timeClient.getSeconds());
+    return data;
+}
+
+
+IPAddress strToIp(String miIp)
+{
 
     std::stringstream s(miIp.c_str());
 
-    int oct0, oct1, oct2, oct3; //to store the 4 ints
+    int oct0, oct1, oct2, oct3; // to store the 4 ints
 
-    char ch; //to temporarily store the '.'
+    char ch; // to temporarily store the '.'
 
     s >> oct0 >> ch >> oct1 >> ch >> oct2 >> ch >> oct3;
 
@@ -88,22 +118,22 @@ IPAddress strToIp(String miIp){
 
         switch (num){
         case 0:
-            if(miIp.charAt(i) == '.'){num++;miIp.trim(); ip.push_back(std::stoi(empty.c_str()));empty = "";} 
+            if(miIp.charAt(i) == '.'){num++;miIp.trim(); ip.push_back(std::stoi(empty.c_str()));empty = "";}
             empty += miIp.charAt(i);
         case 1:
-            if(miIp.charAt(i) == '.'){num++; ip.push_back(std::stoi(empty.c_str()));empty = "";} 
+            if(miIp.charAt(i) == '.'){num++; ip.push_back(std::stoi(empty.c_str()));empty = "";}
             empty += miIp.charAt(i);
         case 2:
-            if(miIp.charAt(i) == '.'){num++; ip.push_back(std::stoi(empty.c_str()));empty = "";} 
+            if(miIp.charAt(i) == '.'){num++; ip.push_back(std::stoi(empty.c_str()));empty = "";}
             empty += miIp.charAt(i);
         case 3:
-            if(i == miIp.length()-1){empty += miIp.charAt(i); ip.push_back(std::stoi(empty.c_str()));empty = "";} 
+            if(i == miIp.length()-1){empty += miIp.charAt(i); ip.push_back(std::stoi(empty.c_str()));empty = "";}
             empty += miIp.charAt(i);
 
         }
     }
     int oct0 = ip.at(0); int oct1 = ip.at(1); int oct2 = ip.at(2); int oct3 = ip.at(3);
-    
+
     Serial.println(String(oct0) + "." + String(oct1) + "." + String(oct2) + "." + String(oct3));
 
     return IPAddress(oct0, oct1, oct2, oct3);
