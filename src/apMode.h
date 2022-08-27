@@ -69,16 +69,19 @@ public:
 
     myManager.setScanDispPerc(true);
 
-    myManager.setCaptivePortalEnable(true);
+    //Manager.setCaptivePortalEnable(true);
 
     // myManager.setHostname("Darkflow-Device");
 
     // Shows information trough the I2C screen
+    
+    /*
     String msg0 = "SSID:" + String(ssid);
     myScreenAp.printScreen("CONFIGURE WIFI HDP..", 0, 0, true);
     myScreenAp.printScreen(msg0, 0, 1, false);
     myScreenAp.printScreen("IP: 192.168.1.1", 0, 2, false);
     myScreenAp.printScreen("2 Minutes timeout", 0, 3, false);
+    */
 
     // Custom parameters
     WiFiManagerParameter deviceName("deviceName", "Nombre del dispositivo (Campo obligatorio)", deviceName_, 40, "required");

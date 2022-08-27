@@ -1,7 +1,6 @@
 // SilFe2655
 /*
 Notes:
-  Repair temperatures lectures. Bus busy while reading from html
 */
 #ifdef ESP32
 #include <WiFi.h>
@@ -16,14 +15,14 @@ Notes:
 #include <LittleFS.h>
 #include <ArduinoJson.h>
 #include <Arduino.h>
-#include <PubSubClient.h>
+#include "apMode.h"
 #include "dataSensors.h"
 #include "screenController.h"
 #include "inputController.h"
-#include "apMode.h"
 #include "jsonizer.h"
 #include "functions.h"
 #include "httpServer.h"
+#include "myMqtt.h"
 
 void listDir(fs::FS &fs, const char *dirname, uint8_t levels);
 void readFile(fs::FS &fs, const char *path);
@@ -40,8 +39,7 @@ void reconnect();
 void refreshScreen();
 
 // Constructor for the sensors, the wifi and the MQTT Object
-WiFiClient espClient;
-PubSubClient client(espClient);
+WiFiClientSecureCtx espClient;
 dataSensors mySensors;
 apMode apInstance;
 Screen myScreen;
@@ -49,9 +47,10 @@ inputController myInputs;
 JSONIZER jsonSession;
 
 const unsigned long eventInterval = 1500;
-unsigned long previousTimeMQTT = 0;
 unsigned long previousTimeScreen = 0;
 unsigned long previousTimeTemporalData = 0;
+unsigned long previousTimeMQTT = 0;
+unsigned long keepAliveTime = 0;
 
 String tempString0, tempString1, tempString2;
 String deviceName;
@@ -68,6 +67,9 @@ String SmtpServer;
 const char *userName;
 const char *password;
 const int port = 1883;
+
+String keepAliveTopic = "DeviceStatus/" + String(ESP.getChipId());
+String DataTopic = "DeviceData/" + String(ESP.getChipId());
 
 void setup()
 {
@@ -94,22 +96,21 @@ void setup()
   myScreen.printScreen("Starting device...", 0, 1, true);
   delay(2000);
   myScreen.screenClean();
-  // MQTT
-  client.setServer(host.c_str(), port);
-  client.setCallback(callback); // Callback
   // mDNS setup
   setupServer();
+  // MQTT
+  mqttSetup(host.c_str(), port, DataTopic.c_str(), espClient, keepAliveTopic.c_str());
 }
 
 void loop()
 {
   // JSON data creation
   DynamicJsonDocument data(1024);
-  std::string data_;
+  std::string data_, dataPretty;
 
   std::vector<std::string> inputData = myInputs.inputData();
 
-  data["DeviceId"] = ESP.getChipId();
+  data["DeviceId"] = String(ESP.getChipId());
   data["DeviceName"] = deviceName.c_str();
   data["Timestamp"] = formatedTime();
   data["MsgType"] = "Data";
@@ -119,7 +120,8 @@ void loop()
   data["Value"]["Digital_0"] = inputData.at(0);
   data["Value"]["Digital_1"] = inputData.at(1);
   data["Value"]["Digital_2"] = inputData.at(2);
-  serializeJsonPretty(data, data_);
+  serializeJson(data, data_);
+  serializeJsonPretty(data, dataPretty);
   // Temporal data to EEPROM
   loadTemporalData(LittleFS, mySensors.singleSensorRawdataTemp(0).c_str(), mySensors.singleSensorRawdataDHT(false).c_str(), mySensors.singleSensorRawdataDHT(true).c_str(),
                    inputData.at(0), inputData.at(1), inputData.at(2), inputData.at(2));
@@ -133,23 +135,21 @@ void loop()
   setupHttpServer();
   // Data to screen
   refreshScreen();
-  // MQTT
-  if (!client.connected())
+  // MQTT 
+  if (millis() - previousTimeMQTT > 5000)
   {
-    reconnect();
+    Serial.println(dataPretty.c_str());
+    mqttOnLoop(host.c_str(), port, DataTopic.c_str(), espClient, keepAliveTopic.c_str(), DataTopic.c_str(),
+               data_.c_str());
+    previousTimeMQTT = millis();
   }
-  if (client.connected())
+  if (millis() - keepAliveTime > 600000)
   {
-    unsigned long currentTime = millis();
-    if (currentTime - previousTimeMQTT >= 3000)
-    {
-      checkReset(data_);
-      Serial.println(data_.c_str());
-      client.publish(root_topic_publish.c_str(), data_.c_str());
-      previousTimeMQTT = currentTime;
-    }
+    String aliveMessage = String("{\"aliveStatus\": \"") + String(ESP.getChipId()) + String("\"}"); 
+    mqttOnLoop(host.c_str(), port, DataTopic.c_str(), espClient, keepAliveTopic.c_str(), keepAliveTopic.c_str(),
+               aliveMessage.c_str());
+    keepAliveTime = millis();
   }
-  client.loop();
 }
 
 void checkReset(std::string inputJson)
@@ -227,54 +227,6 @@ void refreshScreen()
   tempString1 = "";
   tempString2 = "";
   previousTimeScreen = currentTime;
-}
-
-void callback(char *topic, byte *payload, unsigned int lenght)
-{
-  String incomingMessage = "";
-  Serial.print("desde > ");
-  Serial.print(topic);
-  Serial.println("");
-  for (int n = 0; n < lenght; n++)
-  {
-    incomingMessage += (char)payload[n];
-  }
-  incomingMessage.trim();
-  Serial.println(" >>" + incomingMessage);
-}
-
-void reconnect()
-{
-  int count = 0;
-  while (!client.connected())
-  {
-    String resetData = String(" {\"Input2\":\"") + String(myInputs.returnSingleInput(14).c_str()) + String("\"} ");
-    Serial.println(resetData.c_str());
-    checkReset(resetData.c_str());
-    setupHttpServer();
-    String deviceId = String("DarkFlow_" + ESP.getChipId());
-    String message = "Intentando conectar a: " + String(host) + ", Con ID: " + deviceId;
-    if (client.connect(deviceId.c_str()))
-    {
-      Serial.println("Conexión Exitosa");
-      if (client.subscribe(root_topic_subscribe.c_str()))
-      {
-        Serial.println("Subscripción exitosa");
-      }
-      else
-      {
-        Serial.println("subscripción Fallida...");
-      }
-    }
-    else
-    {
-      count += 1;
-      Serial.print("Falló la conexión / Error >");
-      Serial.println(client.state());
-      Serial.println("Intentando nuevamente en 10 Segundos");
-      delay(10000);
-    }
-  }
 }
 
 void listDir(fs::FS &fs, const char *dirname, uint8_t levels)
