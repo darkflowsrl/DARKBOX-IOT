@@ -69,16 +69,19 @@ public:
 
     myManager.setScanDispPerc(true);
 
-    myManager.setCaptivePortalEnable(true);
+    //Manager.setCaptivePortalEnable(true);
 
     // myManager.setHostname("Darkflow-Device");
 
     // Shows information trough the I2C screen
+    
+    /*
     String msg0 = "SSID:" + String(ssid);
     myScreenAp.printScreen("CONFIGURE WIFI HDP..", 0, 0, true);
     myScreenAp.printScreen(msg0, 0, 1, false);
     myScreenAp.printScreen("IP: 192.168.1.1", 0, 2, false);
     myScreenAp.printScreen("2 Minutes timeout", 0, 3, false);
+    */
 
     // Custom parameters
     WiFiManagerParameter deviceName("deviceName", "Nombre del dispositivo (Campo obligatorio)", deviceName_, 40, "required");
@@ -159,7 +162,9 @@ void changeCredentials(fs::FS &fs, const char *path, String mailReceiver,
   }
   StaticJsonDocument<1024> config;
 
-  config["device"]["UID"] = std::to_string(ESP.getChipId()).c_str();
+  String publishTopic = "DeviceData/" + String(ESP.getChipId());
+
+  config["device"]["UID"] = ESP.getChipId();
   config["device"]["name"] = deviceName.c_str();
   config["network"]["SSID"] = ssid.c_str();
   config["network"]["wifiPassword"] = password.c_str();
@@ -168,7 +173,7 @@ void changeCredentials(fs::FS &fs, const char *path, String mailReceiver,
   config["network"]["gateway"] = gateway.c_str();
   config["mqtt"]["host"] = "mqtt.darkflow.com.ar";
   config["mqtt"]["root_topic_subscribe"] = "giuli/testing";
-  config["mqtt"]["root_topic_publish"] = "giuli/data";
+  config["mqtt"]["root_topic_publish"] = publishTopic;
   config["mqtt"]["port"] = "1883";
   config["smtp"]["mailSender"] = "giulicrenna@outlook.com";
   config["smtp"]["mailPassword"] = "kirchhoff2002";
