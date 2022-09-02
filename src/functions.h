@@ -97,36 +97,213 @@ IPAddress strToIp(String miIp)
     return IPAddress(oct0, oct1, oct2, oct3);
 }
 
-/*
-IPAddress strToIp(String miIp){
-    std::vector<int> ip;
+/**
+ * @brief
+ *
+ * @param fs
+ * @param json
+ * @return int
+ */
+int updateConfig(fs::FS &fs, const char *json)
+{
+    Serial.println("UPDATING CONFIGURATION");
 
-    for(int i = 0; i < miIp.length(); i++){
-        String empty = "";
-        int num = 0;
+    delay(2000);
 
-        switch (num){
-        case 0:
-            if(miIp.charAt(i) == '.'){num++;miIp.trim(); ip.push_back(std::stoi(empty.c_str()));empty = "";}
-            empty += miIp.charAt(i);
-        case 1:
-            if(miIp.charAt(i) == '.'){num++; ip.push_back(std::stoi(empty.c_str()));empty = "";}
-            empty += miIp.charAt(i);
-        case 2:
-            if(miIp.charAt(i) == '.'){num++; ip.push_back(std::stoi(empty.c_str()));empty = "";}
-            empty += miIp.charAt(i);
-        case 3:
-            if(i == miIp.length()-1){empty += miIp.charAt(i); ip.push_back(std::stoi(empty.c_str()));empty = "";}
-            empty += miIp.charAt(i);
+    File fileRead = fs.open("/config.json", "r");
 
-        }
+    Serial.println("config.json opened");
+    delay(1000);
+
+    String content;
+
+    while (fileRead.available())
+    {
+        content += fileRead.readString();
+        break;
     }
-    int oct0 = ip.at(0); int oct1 = ip.at(1); int oct2 = ip.at(2); int oct3 = ip.at(3);
 
-    Serial.println(String(oct0) + "." + String(oct1) + "." + String(oct2) + "." + String(oct3));
+    Serial.println("Content Loaded");
+    delay(1000);
 
-    return IPAddress(oct0, oct1, oct2, oct3);
+    StaticJsonDocument<1024> actualConfig;
+    auto error = deserializeJson(actualConfig, content);
+    StaticJsonDocument<1024> newConfig;
+    auto error2 = deserializeJson(newConfig, json);
+
+    StaticJsonDocument<1024> writeConfig;
+
+    if (error)
+    {
+        Serial.println("Failed to deserialize (1)");
+        Serial.println(error.f_str());
+        return 1;
+    }
+
+    if (error2)
+    {
+        Serial.println("Failed to deserialize (2)");
+        Serial.println(error.f_str());
+        return 1;
+    }
+
+    fileRead.close();
+    File fileWrite = fs.open("/config.json", "w");
+
+    writeConfig["device"]["UID"] = actualConfig["device"]["UID"];
+    writeConfig["device"]["name"] = actualConfig["device"]["name"];
+    writeConfig["network"]["SSID"] = actualConfig["network"]["SSID"];
+    writeConfig["smtp"]["mailSender"] = actualConfig["smtp"]["mailSender"];
+    writeConfig["smtp"]["mailPassword"] = actualConfig["smtp"]["mailPassword"];
+    writeConfig["smtp"]["mailReceiver"] = actualConfig["smtp"]["mailReceiver"];
+    writeConfig["smtp"]["smtpServer"] = actualConfig["smtp"]["smtpServer"];
+    writeConfig["smtp"]["smtpPort"] = actualConfig["smtp"]["smtpPort"];
+
+    if (newConfig["network"]["SSID"] == "None")
+    {
+        writeConfig["network"]["SSID"] = actualConfig["network"]["SSID"];
+    }
+    else
+    {
+        writeConfig["network"]["SSID"] = newConfig["network"]["SSID"];
+    }
+    if (newConfig["network"]["wifiPassword"] == "None")
+    {
+        writeConfig["network"]["wifiPassword"] = actualConfig["network"]["wifiPassword"];
+    }
+    else
+    {
+        writeConfig["network"]["wifiPassword"] = newConfig["network"]["wifiPassword"];
+    }
+    if (newConfig["network"]["ip"] == "None")
+    {
+        writeConfig["network"]["ip"] = actualConfig["network"]["ip"];
+    }
+    else
+    {
+        writeConfig["network"]["ip"] = newConfig["network"]["ip"];
+    }
+    if (newConfig["network"]["subnetMask"] == "None")
+    {
+        writeConfig["network"]["subnetMask"] = actualConfig["network"]["subnetMask"];
+    }
+    else
+    {
+        writeConfig["network"]["subnetMask"] = newConfig["network"]["subnetMask"];
+    }
+    if (newConfig["network"]["gateway"] == "None")
+    {
+        writeConfig["network"]["gateway"] = actualConfig["network"]["gateway"];
+    }
+    else
+    {
+        writeConfig["network"]["gateway"] = newConfig["network"]["gateway"];
+    }
+
+    if (newConfig["mqtt"]["host"] == "None")
+    {
+        writeConfig["mqtt"]["host"] = actualConfig["mqtt"]["host"];
+    }
+    else
+    {
+        writeConfig["mqtt"]["host"] = newConfig["mqtt"]["host"];
+    }
+    if (newConfig["mqtt"]["root_topic_subscribe"] == "None")
+    {
+        writeConfig["mqtt"]["root_topic_subscribe"] = actualConfig["mqtt"]["root_topic_subscribe"];
+    }
+    else
+    {
+        writeConfig["mqtt"]["root_topic_subscribe"] = newConfig["mqtt"]["root_topic_subscribe"];
+    }
+    if (newConfig["mqtt"]["root_topic_publish"] == "None")
+    {
+        writeConfig["mqtt"]["root_topic_publish"] = actualConfig["mqtt"]["root_topic_publish"];
+    }
+    else
+    {
+        writeConfig["mqtt"]["root_topic_publish"] = newConfig["mqtt"]["root_topic_publish"];
+    }
+    if (newConfig["mqtt"]["keep_alive_topic_publish"] == "None")
+    {
+        writeConfig["mqtt"]["keep_alive_topic_publish"] = actualConfig["mqtt"]["keep_alive_topic_publish"];
+    }
+    else
+    {
+        writeConfig["mqtt"]["keep_alive_topic_publish"] = newConfig["mqtt"]["keep_alive_topic_publish"];
+    }
+    if (newConfig["mqtt"]["port"] == "None")
+    {
+        writeConfig["mqtt"]["port"] = actualConfig["mqtt"]["port"];
+    }
+    else
+    {
+        writeConfig["mqtt"]["port"] = newConfig["mqtt"]["port"];
+    }
+
+    if (newConfig["refreshTimes"]["MQTTmsg"] == "None")
+    {
+        writeConfig["refreshTimes"]["MQTTmsg"] = actualConfig["MQTTmsg"]["port"];
+    }
+    else
+    {
+        writeConfig["refreshTimes"]["MQTTmsg"] = newConfig["MQTTmsg"]["port"];
+    }
+    if (newConfig["refreshTimes"]["keepAlive"] == "None")
+    {
+        writeConfig["refreshTimes"]["keepAlive"] = actualConfig["keepAlive"]["port"];
+    }
+    else
+    {
+        writeConfig["refreshTimes"]["keepAlive"] = newConfig["keepAlive"]["port"];
+    }
+
+    if (newConfig["refreshTimes"]["temporalData"] == "None")
+    {
+        writeConfig["refreshTimes"]["temporalData"] = actualConfig["MQTTmsg"]["temporalData"];
+    }
+    else
+    {
+        writeConfig["refreshTimes"]["temporalData"] = newConfig["MQTTmsg"]["temporalData"];
+    }
+
+    auto error3 = serializeJsonPretty(writeConfig, fileWrite);
+
+    if (error3)
+    {
+        Serial.println("Failed to Serialize (3)");
+        return 1;
+    }
+
+    fileWrite.close();
+
+    return 0;
 }
+/*
+New Config JSON Structure
+
+{
+  "network": {
+    "SSID": "Chop",
+    "wifiPassword": "741963258",
+    "ip": "192.168.1.67",
+    "subnetMask": "255.255.255.0",
+    "gateway": "192.168.1.1"
+  },
+  "mqtt": {
+    "host": "None",
+    "root_topic_subscribe": "None",
+    "root_topic_publish": "None",
+    "keep_alive_topic_publish" : "None",
+    "port": "None"
+  },
+  "refreshTimes": {
+    "MQTTmsg" : "1000",
+    "keepAlive" : "600000",
+    "temporalData" : "10000"
+  }
+}
+
 */
 
 #endif
