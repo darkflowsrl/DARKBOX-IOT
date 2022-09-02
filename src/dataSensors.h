@@ -62,8 +62,8 @@ public:
         // Temp loop
         DS18B20.requestTemperatures();
         /*
-        USE THIS FOR LOOP IN CASE YOU WANT TO CONNECT MORE TEMPERATURE SENSORS IN THE ONEWIRE
-        CHANNEL.
+        USE THIS "FOR" LOOP IN CASE YOU WANT TO CONNECT MORE TEMPERATURE SENSORS IN THE ONEWIRE
+        BUS.
         for (int n = 0; n <= sensorsCount; n++)
         {
             String sensorNumber = "";

@@ -12,6 +12,7 @@
 class used by the ESP32 firmware to deserialize the config file.
 To seriliaze you will have to store the data into a vector an then, pass the vector through
 the toJSON function of the class
+This class has three methods.
 @giulicrenna*/
 
 class JSONIZER{
@@ -68,9 +69,9 @@ class JSONIZER{
             return configVector;
         }
         /* toJSON: vector<string> -> string
-        inversely to the "toVECTOR" function, this take a vector as parameter and 
+        inversely to the "toVECTOR" metehod, this take a vector as parameter and 
         return you a string formatted as a json file
-        PD: toJSON means ToStringJson*/
+        PD: toSJSON means ToStringJson*/
         std::string toSJSON(std::vector<std::string> myVector){  
             std::string launcher = "{";
             bool doEnd = true;
