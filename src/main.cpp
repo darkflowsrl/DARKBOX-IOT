@@ -18,6 +18,9 @@
 #include <LittleFS.h>
 #include <ArduinoJson.h>
 #include <Arduino.h>
+#include <vector>
+
+#include "global.h"
 #include "apMode.h"
 #include "dataSensors.h"
 #include "screenController.h"
@@ -48,32 +51,6 @@ apMode apInstance;
 Screen myScreen;
 inputController myInputs;
 JSONIZER jsonSession;
-
-const unsigned long eventInterval = 1500;
-unsigned long previousTimeScreen = 0;
-unsigned long previousTimeTemporalData = 0;
-unsigned long previousTimeMQTT = 0;
-unsigned long previousKeepAliveTime = 0;
-
-String tempString0, tempString1, tempString2;
-String deviceName;
-String staticIpAP;
-String gatewayAP;
-String subnetMaskAP;
-String host;
-String root_topic_subscribe;
-String root_topic_publish;
-String keep_alive_topic_publish;
-String smtpSender;
-String smtpPass;
-String SmtpReceiver;
-String SmtpServer;
-const char *userName;
-const char *password;
-const int port = 1883;
-int MQTTmsgTime;
-int keepAliveTime;
-int temporalDataRefreshTime;
 
 void setup()
 {
@@ -350,9 +327,6 @@ void loadData(fs::FS &fs, const char *path)
   gatewayAP = (const char *)config["network"]["gateway"];
 
   host = (const char *)config["mqtt"]["host"];
-  root_topic_subscribe = (const char *)config["mqtt"]["root_topic_subscribe"];
-  root_topic_publish = (const char *)config["mqtt"]["root_topic_publish"];
-  keep_alive_topic_publish = (const char *)config["mqtt"]["keep_alive_topic_publish"];
 
   smtpSender = (const char *)config["smtp"]["mailSender"];
   smtpPass = (const char *)config["smtp"]["mailPassword"];
@@ -361,8 +335,6 @@ void loadData(fs::FS &fs, const char *path)
 
   MQTTmsgTime = std::stoi((const char *)config["refreshTimes"]["MQTTmsg"]);
   keepAliveTime = std::stoi((const char *)config["refreshTimes"]["keepAlive"]);
-  ;
-  temporalDataRefreshTime = std::stoi((const char *)config["refreshTimes"]["temporalData"]);
 
   Serial.println("#### CONFIG LOADED ####");
 
@@ -389,24 +361,6 @@ void writeFile(fs::FS &fs, const char *path, const char *message)
   }
   file.close();
 }
-
-/*
-void appendFile(fs::FS &fs, const char * path, const char * message){
-    Serial.printf("Appending to file: %s\r\n", path);
-
-    File file = fs.open(path, FILE_APPEND);
-    if(!file){
-        Serial.println("...failed to open file for appending");
-        return;
-    }
-    if(file.print(message)){
-        Serial.println("...message appended");
-    } else {
-        Serial.println("...append failed");
-    }
-    file.close();
-}
-*/
 
 void renameFile(fs::FS &fs, const char *path1, const char *path2)
 {

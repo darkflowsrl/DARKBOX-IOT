@@ -23,10 +23,7 @@ is the UID (Unique ID) of the device.
 #ifndef APMODE_H
 #define APMODE_H
 #include <WiFiManager.h>
-#include <functions.h>
-#include <string>
-#include <Arduino.h>
-#include <LittleFS.h>
+#include "functions.h"
 #include "screenController.h"
 
 IPAddress local_ip(192, 168, 1, 1);
@@ -68,7 +65,7 @@ public:
   {
 
     // Library Configuration
-    // WiFi.mode(WIFI_STA);
+    WiFi.mode(WIFI_STA);
 
     IPAddress miIp = strToIp(staticIpAP.c_str());
     IPAddress miGateway = strToIp(gatewayAP_.c_str());
@@ -195,7 +192,6 @@ instance of StaticJsonDocument. This is a class fromr ArduinoJson.h
 void changeCredentials(fs::FS &fs, const char *path, String mailReceiver,
                        String StaticIP, String gateway, String subnet, String ssid, String password, String deviceName)
 {
-
   File file_ = fs.open(path, "w");
   String content;
   if (!file_.available())
@@ -206,6 +202,7 @@ void changeCredentials(fs::FS &fs, const char *path, String mailReceiver,
 
   String publishTopic = "DeviceData/" + String(ESP.getChipId());
   String keepAliveTopic = "DeviceStatus/" + String(ESP.getChipId());
+  String subscribeTopic = "DeviceConfig/" + String(ESP.getChipId());
 
   config["device"]["UID"] = ESP.getChipId();
   config["device"]["name"] = deviceName.c_str();
@@ -215,9 +212,6 @@ void changeCredentials(fs::FS &fs, const char *path, String mailReceiver,
   config["network"]["subnetMask"] = subnet.c_str();
   config["network"]["gateway"] = gateway.c_str();
   config["mqtt"]["host"] = "mqtt.darkflow.com.ar";
-  config["mqtt"]["root_topic_subscribe"] = "giuli/testing";
-  config["mqtt"]["root_topic_publish"] = publishTopic;
-  config["mqtt"]["keep_alive_topic_publish"] = keepAliveTopic;
   config["mqtt"]["port"] = "1883";
   config["smtp"]["mailSender"] = "giulicrenna@outlook.com";
   config["smtp"]["mailPassword"] = "kirchhoff2002";
@@ -226,7 +220,6 @@ void changeCredentials(fs::FS &fs, const char *path, String mailReceiver,
   config["smtp"]["smtpPort"] = "587";
   config["refreshTimes"]["MQTTmsg"] = "5000";
   config["refreshTimes"]["keepAlive"] = "600000";
-  config["refreshTimes"]["temporalData"] = "10000";
 
   Serial.println("#### CONFIG WRITTEN ####");
 

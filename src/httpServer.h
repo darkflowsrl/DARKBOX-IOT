@@ -1,8 +1,5 @@
-#include <Arduino.h>
 #define WEBSERVER_H
 #include <ESPAsyncWebServer.h>
-#include <LittleFS.h>
-//#include <Arduino_JSON.h>
 #include <ESP8266mDNS.h>
 #include "dataSensors.h"
 

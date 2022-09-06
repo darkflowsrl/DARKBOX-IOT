@@ -4,8 +4,6 @@
 #include <DallasTemperature.h>
 #include <Adafruit_Sensor.h>
 #include <Wire.h>
-#include <vector>
-#include <string.h>
 #include <DHT.h>
 
 /*
