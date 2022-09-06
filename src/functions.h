@@ -1,10 +1,8 @@
 #ifndef FUNCTIONS_H
 #define FUNCTIONS_H
-#include <sstream>
+#include <WiFiUdp.h>
 #include <NTPClient.h>
 #include <EMailSender.h>
-#include <WiFiUdp.h>
-#include <string.h>
 
 const int utcOffset = -10800;
 unsigned long previousTime2 = 0;
@@ -150,160 +148,140 @@ int updateConfig(fs::FS &fs, const char *json)
     fileRead.close();
     File fileWrite = fs.open("/config.json", "w");
 
-    writeConfig["device"]["UID"] = actualConfig["device"]["UID"];
-    writeConfig["device"]["name"] = actualConfig["device"]["name"];
-    writeConfig["network"]["SSID"] = actualConfig["network"]["SSID"];
-    writeConfig["smtp"]["mailSender"] = actualConfig["smtp"]["mailSender"];
-    writeConfig["smtp"]["mailPassword"] = actualConfig["smtp"]["mailPassword"];
-    writeConfig["smtp"]["mailReceiver"] = actualConfig["smtp"]["mailReceiver"];
-    writeConfig["smtp"]["smtpServer"] = actualConfig["smtp"]["smtpServer"];
-    writeConfig["smtp"]["smtpPort"] = actualConfig["smtp"]["smtpPort"];
+    String device_UID = actualConfig["device"]["UID"];
+    String device_name = actualConfig["device"]["name"];
+    String network_ssid = actualConfig["network"]["SSID"];
+    String smtp_sender = actualConfig["smtp"]["mailSender"];
+    String smtp_pass = actualConfig["smtp"]["mailPassword"];
+    String smtp_receiver = actualConfig["smtp"]["mailReceiver"];
+    String smtp_server = actualConfig["smtp"]["smtpServer"];
+    String smtp_port = actualConfig["smtp"]["smtpPort"];
 
-    if (newConfig["network"]["SSID"] == "None")
-    {
-        writeConfig["network"]["SSID"] = actualConfig["network"]["SSID"];
-    }
-    else
-    {
-        writeConfig["network"]["SSID"] = newConfig["network"]["SSID"];
-    }
-    if (newConfig["network"]["wifiPassword"] == "None")
-    {
-        writeConfig["network"]["wifiPassword"] = actualConfig["network"]["wifiPassword"];
-    }
-    else
-    {
-        writeConfig["network"]["wifiPassword"] = newConfig["network"]["wifiPassword"];
-    }
-    if (newConfig["network"]["ip"] == "None")
-    {
-        writeConfig["network"]["ip"] = actualConfig["network"]["ip"];
-    }
-    else
-    {
-        writeConfig["network"]["ip"] = newConfig["network"]["ip"];
-    }
-    if (newConfig["network"]["subnetMask"] == "None")
-    {
-        writeConfig["network"]["subnetMask"] = actualConfig["network"]["subnetMask"];
-    }
-    else
-    {
-        writeConfig["network"]["subnetMask"] = newConfig["network"]["subnetMask"];
-    }
-    if (newConfig["network"]["gateway"] == "None")
-    {
-        writeConfig["network"]["gateway"] = actualConfig["network"]["gateway"];
-    }
-    else
-    {
-        writeConfig["network"]["gateway"] = newConfig["network"]["gateway"];
-    }
+    String network_SSID = actualConfig["network"]["SSID"];
+    String network_wifiPassword = actualConfig["network"]["wifiPassword"];
+    String network_ip = actualConfig["network"]["ip"];
+    String network_submask = actualConfig["network"]["subnetMask"];
+    String network_gateway = actualConfig["network"]["gateway"];
+    String mqtt_host = actualConfig["mqtt"]["host"];
+    String mqtt_port = actualConfig["mqtt"]["port"];
+    String refresh_mqttmsg = actualConfig["refreshTimes"]["MQTTmsg"];
+    String refresh_keepalive = actualConfig["refreshTimes"]["keepAlive"];
 
-    if (newConfig["mqtt"]["host"] == "None")
+    String new_network_SSID = newConfig["network"]["SSID"];
+    String new_network_wifiPassword = newConfig["network"]["wifiPassword"];
+    String new_network_ip = newConfig["network"]["ip"];
+    String new_network_submask = newConfig["network"]["subnetMask"];
+    String new_network_gateway = newConfig["network"]["gateway"];
+    String new_mqtt_host = newConfig["mqtt"]["host"];
+    String new_mqtt_port = newConfig["mqtt"]["port"];
+    String new_refresh_mqttmsg = newConfig["refreshTimes"]["MQTTmsg"];
+    String new_refresh_keepalive = newConfig["refreshTimes"]["keepAlive"];
+
+
+    Serial.println("*** Starting new configuration...");
+
+    writeConfig["device"]["UID"] = device_UID;
+    writeConfig["device"]["name"] = device_name;
+    writeConfig["network"]["SSID"] = network_ssid;
+    writeConfig["smtp"]["mailSender"] = smtp_sender;
+    writeConfig["smtp"]["mailPassword"] = smtp_pass;
+    writeConfig["smtp"]["mailReceiver"] = smtp_receiver;
+    writeConfig["smtp"]["smtpServer"] = smtp_server;
+    writeConfig["smtp"]["smtpPort"] = smtp_port;
+
+    if (new_network_SSID == "None")
     {
-        writeConfig["mqtt"]["host"] = actualConfig["mqtt"]["host"];
+        writeConfig["network"]["SSID"] = network_SSID;
     }
     else
     {
-        writeConfig["mqtt"]["host"] = newConfig["mqtt"]["host"];
-    }
-    if (newConfig["mqtt"]["root_topic_subscribe"] == "None")
-    {
-        writeConfig["mqtt"]["root_topic_subscribe"] = actualConfig["mqtt"]["root_topic_subscribe"];
-    }
-    else
-    {
-        writeConfig["mqtt"]["root_topic_subscribe"] = newConfig["mqtt"]["root_topic_subscribe"];
-    }
-    if (newConfig["mqtt"]["root_topic_publish"] == "None")
-    {
-        writeConfig["mqtt"]["root_topic_publish"] = actualConfig["mqtt"]["root_topic_publish"];
-    }
-    else
-    {
-        writeConfig["mqtt"]["root_topic_publish"] = newConfig["mqtt"]["root_topic_publish"];
-    }
-    if (newConfig["mqtt"]["keep_alive_topic_publish"] == "None")
-    {
-        writeConfig["mqtt"]["keep_alive_topic_publish"] = actualConfig["mqtt"]["keep_alive_topic_publish"];
-    }
-    else
-    {
-        writeConfig["mqtt"]["keep_alive_topic_publish"] = newConfig["mqtt"]["keep_alive_topic_publish"];
-    }
-    if (newConfig["mqtt"]["port"] == "None")
-    {
-        writeConfig["mqtt"]["port"] = actualConfig["mqtt"]["port"];
-    }
-    else
-    {
-        writeConfig["mqtt"]["port"] = newConfig["mqtt"]["port"];
+        writeConfig["network"]["SSID"] = new_network_SSID;
     }
 
-    if (newConfig["refreshTimes"]["MQTTmsg"] == "None")
+    if (new_network_wifiPassword == "None")
     {
-        writeConfig["refreshTimes"]["MQTTmsg"] = actualConfig["MQTTmsg"]["port"];
+        writeConfig["network"]["wifiPassword"] = network_wifiPassword;
     }
     else
     {
-        writeConfig["refreshTimes"]["MQTTmsg"] = newConfig["MQTTmsg"]["port"];
-    }
-    if (newConfig["refreshTimes"]["keepAlive"] == "None")
-    {
-        writeConfig["refreshTimes"]["keepAlive"] = actualConfig["keepAlive"]["port"];
-    }
-    else
-    {
-        writeConfig["refreshTimes"]["keepAlive"] = newConfig["keepAlive"]["port"];
+        writeConfig["network"]["wifiPassword"] = new_network_wifiPassword;
     }
 
-    if (newConfig["refreshTimes"]["temporalData"] == "None")
+    if (new_network_ip == "None")
     {
-        writeConfig["refreshTimes"]["temporalData"] = actualConfig["MQTTmsg"]["temporalData"];
+        writeConfig["network"]["ip"] = network_ip;
     }
     else
     {
-        writeConfig["refreshTimes"]["temporalData"] = newConfig["MQTTmsg"]["temporalData"];
+        writeConfig["network"]["ip"] = new_network_ip;
+    }
+
+    if (new_network_submask == "None")
+    {
+        writeConfig["network"]["subnetMask"] = network_submask;
+    }
+    else
+    {
+        writeConfig["network"]["subnetMask"] = new_network_submask;
+    }
+
+    if (new_network_gateway == "None")
+    {
+        writeConfig["network"]["gateway"] = network_gateway;
+    }
+    else
+    {
+        writeConfig["network"]["gateway"] = new_network_gateway;
+    }
+
+    if (new_mqtt_host == "None")
+    {
+        writeConfig["mqtt"]["host"] = mqtt_host;
+    }
+    else
+    {
+        writeConfig["mqtt"]["host"] = new_mqtt_host;
+    }
+
+    if (new_mqtt_port == "None")
+    {
+        writeConfig["mqtt"]["port"] = mqtt_port;
+    }
+    else
+    {
+        writeConfig["mqtt"]["port"] = new_mqtt_port;
+    }
+
+    if (new_refresh_mqttmsg == "None")
+    {
+        writeConfig["refreshTimes"]["MQTTmsg"] = refresh_mqttmsg;
+    }
+    else
+    {
+        writeConfig["refreshTimes"]["MQTTmsg"] = new_refresh_mqttmsg;
+    }
+
+    if (new_refresh_keepalive == "None")
+    {
+        writeConfig["refreshTimes"]["keepAlive"] = refresh_keepalive;
+    }
+    else
+    {
+        writeConfig["refreshTimes"]["keepAlive"] = new_refresh_keepalive;
     }
 
     auto error3 = serializeJsonPretty(writeConfig, fileWrite);
 
-    if (error3)
+    if (!error3)
     {
         Serial.println("Failed to Serialize (3)");
-        return 1;
     }
 
     fileWrite.close();
 
+    ESP.restart();
+
     return 0;
 }
-/*
-New Config JSON Structure
-
-{
-  "network": {
-    "SSID": "Chop",
-    "wifiPassword": "741963258",
-    "ip": "192.168.1.67",
-    "subnetMask": "255.255.255.0",
-    "gateway": "192.168.1.1"
-  },
-  "mqtt": {
-    "host": "None",
-    "root_topic_subscribe": "None",
-    "root_topic_publish": "None",
-    "keep_alive_topic_publish" : "None",
-    "port": "None"
-  },
-  "refreshTimes": {
-    "MQTTmsg" : "1000",
-    "keepAlive" : "600000",
-    "temporalData" : "10000"
-  }
-}
-
-*/
 
 #endif

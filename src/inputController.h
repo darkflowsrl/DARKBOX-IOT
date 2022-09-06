@@ -1,7 +1,3 @@
-#include <iostream>
-#include <Arduino.h>
-#include <vector>
-
 /*
 pinMode(switchUpPin, INPUT_PULLUP)
 

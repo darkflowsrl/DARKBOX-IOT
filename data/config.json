@@ -12,9 +12,6 @@
   },
   "mqtt": {
     "host": "mqtt.darkflow.com.ar",
-    "root_topic_subscribe": "giuli/testing",
-    "root_topic_publish": "giuli/data",
-    "keep_alive_topic_publish" : "",
     "port": "1883"
   },
   "smtp": {
@@ -24,9 +21,9 @@
     "smtpServer": "smtp.office365.com",
     "smtpPort": "587"
   },
-  "refreshTimes": {
+  "ports": {
     "MQTTmsg" : "5000",
-    "keepAlive" : "600000",
-    "temporalData" : "10000"
+    "delayO1" : "9000",
+    "keepAlive" : "600000"
   }
 }

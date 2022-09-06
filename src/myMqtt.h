@@ -12,35 +12,26 @@ void onMqttMessage(int messageSize)
   Serial.print(messageSize);
   Serial.println(" bytes:");
 
-  String content;
-
+  String newContent;
+  
   // use the Stream interface to print the contents
   while (mqttClient.available())
   {
-    content += (char)mqttClient.read();
+    newContent += (char)mqttClient.read();
   }
 
-  Serial.println(content);
+  Serial.println(newContent);
 
-  /*int error = updateConfig(LittleFS, content.c_str());
-
-  if (error == 0)
-  {
-    Serial.println(std::to_string(error).c_str());
-    ESP.restart();
-  }
-  */
+  updateConfig(LittleFS, newContent.c_str());
 }
 
 void mqttSetup(const char *MQTT_SERVER, uint16_t MQTT_PORT, const char *PATH, WiFiClient client, const char *PATH_ALT = "")
 {
-  if (!mqttClient.connect(MQTT_SERVER, MQTT_PORT))
+  while (!mqttClient.connect(MQTT_SERVER, MQTT_PORT))
   {
     Serial.print("MQTT connection failed! Error code: ");
     Serial.println(std::to_string(mqttClient.connectError()).c_str());
-
-    while (1)
-      ;
+    delay(1500);
   }
 
   mqttClient.setId(String(ESP.getChipId()));
@@ -51,17 +42,14 @@ void mqttSetup(const char *MQTT_SERVER, uint16_t MQTT_PORT, const char *PATH, Wi
 
   mqttClient.onMessage(onMqttMessage);
 
-  String configTopic = "DeviceConfig/" + String(ESP.getChipId());
-
   mqttClient.subscribe(configTopic.c_str(), 2);
 
   Serial.println("You're connected to the MQTT broker!");
 }
 
-
 /**
  * @brief mqttOnLoop receive all the neccesary data to send a MQTT message
- * 
+ *
  * @param MQTT_SERVER MQTT host
  * @param MQTT_PORT MQTT port (1883 no SSL, 8883 SSL)
  * @param PATH Topic where the message will be sent

@@ -4,15 +4,20 @@
 
 External dependencies
 ```
-PubSubClient
-WiFi
-BTAddress
-BluetoothSerial
-BTScan
 OneWire
 DallasTemperature
-FS
-SPIFFS
+Adafruit Unified Sensor
+LiquidCrystal_I2C
+ArduinoJson
+Arduino_JSON
+LittleFS_esp32
+NTPClient
+ESP Mail Client
+EMailSender
+ESPAsyncWebServer-esphome
+DHT sensor library
+ArduinoMqttClient
+WiFiManager
 ```
 
 ### Required Drivers (For windows or mac)
