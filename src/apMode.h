@@ -71,11 +71,6 @@ public:
     IPAddress miGateway = strToIp(gatewayAP_.c_str());
     IPAddress miSubnet = strToIp(subnetMaskAP.c_str());
 
-    if (staticIpAP != "" && subnetMaskAP != "" && gatewayAP_ != "")
-    {
-      // myManager.setSTAStaticIPConfig(miIp, miGateway, miSubnet, IPAddress(8, 8, 8, 8)); // Repair this, static ip detected but no configured
-      WiFi.config(miIp, miGateway, miSubnet);
-    }
 
     myManager.setCustomHeadElement(icon);
 
@@ -125,6 +120,12 @@ public:
     String name = String("Darkflow_") + String(ESP.getChipId());
     bool isConnected = myManager.autoConnect(name.c_str());
 
+    if (staticIpAP != "" && subnetMaskAP != "" && gatewayAP_ != "")
+    {
+      myManager.setSTAStaticIPConfig(miIp, miGateway, miSubnet, IPAddress(8, 8, 8, 8)); // Repair this, static ip detected but no configured
+      WiFi.config(miIp, miGateway, miSubnet);
+    }
+    
     //-> Save config into JSON
     strcpy(smtpMail, smtpUser.getValue());
     strcpy(staticIPAP, StaticIpParam.getValue());
@@ -200,10 +201,6 @@ void changeCredentials(fs::FS &fs, const char *path, String mailReceiver,
   }
   StaticJsonDocument<1024> config;
 
-  String publishTopic = "DeviceData/" + String(ESP.getChipId());
-  String keepAliveTopic = "DeviceStatus/" + String(ESP.getChipId());
-  String subscribeTopic = "DeviceConfig/" + String(ESP.getChipId());
-
   config["device"]["UID"] = ESP.getChipId();
   config["device"]["name"] = deviceName.c_str();
   config["network"]["SSID"] = ssid.c_str();
@@ -211,15 +208,17 @@ void changeCredentials(fs::FS &fs, const char *path, String mailReceiver,
   config["network"]["ip"] = StaticIP.c_str();
   config["network"]["subnetMask"] = subnet.c_str();
   config["network"]["gateway"] = gateway.c_str();
-  config["mqtt"]["host"] = "mqtt.darkflow.com.ar";
-  config["mqtt"]["port"] = "1883";
   config["smtp"]["mailSender"] = "giulicrenna@outlook.com";
   config["smtp"]["mailPassword"] = "kirchhoff2002";
   config["smtp"]["mailReceiver"] = mailReceiver.c_str();
   config["smtp"]["smtpServer"] = "smtp.office365.com";
   config["smtp"]["smtpPort"] = "587";
-  config["refreshTimes"]["MQTTmsg"] = "5000";
-  config["refreshTimes"]["keepAlive"] = "600000";
+  config["ports"]["IO_0"] = "5000";
+  config["ports"]["IO_1"] = "5000";
+  config["ports"]["IO_2"] = "5000";
+  config["ports"]["IO_3"] = "5000";
+  config["ports"]["MQTTmsg"] = "5000";
+  config["ports"]["keepAlive"] = "600000";
 
   Serial.println("#### CONFIG WRITTEN ####");
 

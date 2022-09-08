@@ -1,15 +1,15 @@
 /**
  * @file main.cpp
  * @author Giuliano Crenna (giulicrenna@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-09-02
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
 
- // SilFe2655
+// SilFe2655
 #include <string>
 #include <sstream>
 #include <fstream>
@@ -93,15 +93,16 @@ void loop()
               SmtpServer.c_str(), 587);
   }*/
   // HTTP and mDNS loop
+  myInputs.inputData();
   setupHttpServer();
   // Data to screen
-  //refreshScreen();
+  // refreshScreen();
   // Temporal data to EEPROM
   if (millis() - previousTimeTemporalData >= temporalDataRefreshTime)
   {
-    std::vector<std::string> inputData = myInputs.inputData();
     loadTemporalData(LittleFS, mySensors.singleSensorRawdataTemp(0).c_str(), mySensors.singleSensorRawdataDHT(false).c_str(), mySensors.singleSensorRawdataDHT(true).c_str(),
-                     inputData.at(0), inputData.at(1), inputData.at(2), inputData.at(2));
+                     myInputs.returnSingleInput(12), myInputs.returnSingleInput(13),
+                     myInputs.returnSingleInput(14), myInputs.returnSingleInput(16));
     previousTimeTemporalData = millis();
   }
   // MQTT
@@ -111,7 +112,6 @@ void loop()
     // JSON data creation
     DynamicJsonDocument data(512);
     std::string data_, dataPretty;
-    std::vector<std::string> inputData = myInputs.inputData();
 
     data["DeviceId"] = String(ESP.getChipId());
     data["DeviceName"] = deviceName.c_str();
@@ -120,9 +120,6 @@ void loop()
     data["Value"]["Temperature_0"] = mySensors.singleSensorRawdataTemp(0);
     data["Value"]["DHT_temperature"] = mySensors.singleSensorRawdataDHT(false);
     data["Value"]["DHT_humidity"] = mySensors.singleSensorRawdataDHT(true);
-    data["Value"]["Digital_0"] = inputData.at(0);
-    data["Value"]["Digital_1"] = inputData.at(1);
-    data["Value"]["Digital_2"] = inputData.at(2);
     serializeJson(data, data_);
     serializeJsonPretty(data, dataPretty);
 
@@ -230,11 +227,11 @@ void refreshScreen()
 }
 
 /**
- * @brief 
- * 
- * @param fs 
- * @param dirname 
- * @param levels 
+ * @brief
+ *
+ * @param fs
+ * @param dirname
+ * @param levels
  */
 void listDir(fs::FS &fs, const char *dirname, uint8_t levels)
 {
@@ -326,15 +323,17 @@ void loadData(fs::FS &fs, const char *path)
   subnetMaskAP = (const char *)config["network"]["subnetMask"];
   gatewayAP = (const char *)config["network"]["gateway"];
 
-  host = (const char *)config["mqtt"]["host"];
-
   smtpSender = (const char *)config["smtp"]["mailSender"];
   smtpPass = (const char *)config["smtp"]["mailPassword"];
   SmtpReceiver = (const char *)config["smtp"]["mailReceiver"];
   SmtpServer = (const char *)config["smtp"]["smtpServer"];
 
-  MQTTmsgTime = std::stoi((const char *)config["refreshTimes"]["MQTTmsg"]);
-  keepAliveTime = std::stoi((const char *)config["refreshTimes"]["keepAlive"]);
+  IO_0 = (const char *)config["ports"]["IO_0"];
+  IO_1 = (const char *)config["ports"]["IO_1"];
+  IO_2 = (const char *)config["ports"]["IO_2"];
+  IO_3 = (const char *)config["ports"]["IO_3"];
+  MQTTmsgTime = std::stoi((const char *)config["ports"]["MQTTmsg"]);
+  keepAliveTime = std::stoi((const char *)config["ports"]["keepAlive"]);
 
   Serial.println("#### CONFIG LOADED ####");
 

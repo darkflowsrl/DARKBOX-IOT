@@ -1,3 +1,5 @@
+#ifndef MYMQTT_H
+#define MYMQTT_H
 #include <ArduinoMqttClient.h>
 
 WiFiClient client_;
@@ -71,3 +73,5 @@ void mqttOnLoop(const char *MQTT_SERVER, uint16_t MQTT_PORT, const char *PATH, W
   mqttClient.print(MESSAGE);
   mqttClient.endMessage();
 }
+
+#endif
