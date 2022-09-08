@@ -10,10 +10,6 @@
     "subnetMask": "",
     "gateway": ""
   },
-  "mqtt": {
-    "host": "mqtt.darkflow.com.ar",
-    "port": "1883"
-  },
   "smtp": {
     "mailSender": "giulicrenna@outlook.com",
     "mailPassword": "kirchhoff2002",
@@ -22,8 +18,11 @@
     "smtpPort": "587"
   },
   "ports": {
+    "IO_0" : "OTU",
+    "IO_1" : "OTD",
+    "IO_2" : "9000",
+    "IO_3" : "9000",
     "MQTTmsg" : "5000",
-    "delayO1" : "9000",
     "keepAlive" : "600000"
   }
 }
