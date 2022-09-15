@@ -109,7 +109,7 @@ public:
         {
             return String(myDHT.readTemperature(false));
         }
-        return "99";
+        return "None";
     }
 };
 
