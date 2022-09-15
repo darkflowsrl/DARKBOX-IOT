@@ -8,6 +8,11 @@
 WiFiClient client_;
 MqttClient mqttClient(client_);
 
+/**
+ * @brief This function handle the incomming messages from a particular topic
+ * 
+ * @param messageSize 
+ */
 void onMqttMessage(int messageSize)
 {
   // we received a message, print out the topic and contents
@@ -35,7 +40,7 @@ void mqttSetup(const char *MQTT_SERVER, uint16_t MQTT_PORT, const char *PATH, Wi
   int count = 0;
   while (!mqttClient.connect(MQTT_SERVER, MQTT_PORT))
   {
-    if(count != 25){ //600
+    if(count != 600){ //600
     Serial.print("MQTT connection failed! Error code: ");
     Serial.println(std::to_string(mqttClient.connectError()).c_str());
     count++;
