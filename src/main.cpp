@@ -38,7 +38,6 @@ void renameFile(fs::FS &fs, const char *path1, const char *path2);
 void deleteFile(fs::FS &fs, const char *path);
 void loadData(fs::FS &fs, const char *path);
 void callback(char *topic, byte *payload, unsigned int lenght);
-void checkReset(std::string inputJson);
 void loadTemporalData(fs::FS &fs, std::string t0, std::string t1, std::string h0,
                       std::string d0, std::string d1, std::string d2, std::string d3);
 void reconnect();
@@ -94,7 +93,7 @@ void loop()
   }*/
   // HTTP and mDNS loop
   myInputs.inputData();
-  setupHttpServer();
+  //setupHttpServer();
   // Data to screen
   // refreshScreen();
   // Temporal data to EEPROM
@@ -134,35 +133,11 @@ void loop()
   if (millis() - previousKeepAliveTime > keepAliveTime)
   {
     String aliveMessage = String("{\"deviceStatus\": \"") + String(ESP.getChipId()) + String("\"}");
-    mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), espClient, keep_alive_topic_publish.c_str(), keep_alive_topic_publish.c_str(),
+    mqttOnLoop(host.c_str(), port, keep_alive_topic_publish.c_str(), espClient, keep_alive_topic_publish.c_str(), keep_alive_topic_publish.c_str(),
                aliveMessage.c_str());
     previousKeepAliveTime = millis();
   }
   myInputs.readInputs();
-}
-
-void checkReset(std::string inputJson)
-{
-  StaticJsonDocument<1024> config;
-  auto error = deserializeJson(config, inputJson.c_str());
-  if (error)
-  {
-    Serial.println("Failed to deserialize");
-    Serial.println(error.f_str());
-  }
-  // String inputState = config["Input2"];
-  // Serial.println(inputState);
-  if (config["Value"]["Digital_2"] == "HIGH")
-  {
-    for (int i = 0; i <= 2; i++)
-    {
-      delay(1000);
-      if (i == 2)
-      {
-        apInstance.reset();
-      }
-    }
-  }
 }
 
 /**
@@ -332,8 +307,8 @@ void loadData(fs::FS &fs, const char *path)
   IO_1 = (const char *)config["ports"]["IO_1"];
   IO_2 = (const char *)config["ports"]["IO_2"];
   IO_3 = (const char *)config["ports"]["IO_3"];
-  MQTTmsgTime = std::stoi((const char *)config["ports"]["MQTTmsg"]);
-  keepAliveTime = std::stoi((const char *)config["ports"]["keepAlive"]);
+  MQTTmsgTime = std::stoi((const char *)config["etc"]["MQTTmsg"]);
+  keepAliveTime = std::stoi((const char *)config["etc"]["keepAlive"]);
 
   Serial.println("#### CONFIG LOADED ####");
 

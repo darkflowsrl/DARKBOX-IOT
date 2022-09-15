@@ -9,6 +9,7 @@ unsigned int MQTTmsgTime;
 unsigned int keepAliveTime;
 
 
+String chipId =  String(ESP.getChipId());
 String IO_0;
 String IO_1;
 String IO_2;
@@ -23,7 +24,7 @@ String SmtpReceiver;
 String SmtpServer;
 String tempString0, tempString1, tempString2;
 String host = "mqtt.darkflow.com.ar";
-String configTopic = "DeviceConfig/" + String(ESP.getChipId());
-String root_topic_subscribe = "DeviceConfig/" + String(ESP.getChipId());
-String root_topic_publish = "DeviceData/" + String(ESP.getChipId());
-String keep_alive_topic_publish = "DeviceStatus/" + String(ESP.getChipId());
+String configTopic = "DeviceConfig/" + chipId;
+String root_topic_subscribe = "DeviceConfig/" + chipId;
+String root_topic_publish = "DeviceData/" + chipId;
+String keep_alive_topic_publish = "DeviceStatus/" + chipId;

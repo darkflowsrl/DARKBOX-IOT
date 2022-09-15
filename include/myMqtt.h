@@ -1,6 +1,9 @@
 #ifndef MYMQTT_H
 #define MYMQTT_H
 #include <ArduinoMqttClient.h>
+#include <WiFiClient.h>
+#include <string.h>
+#include <LittleFS.h>
 
 WiFiClient client_;
 MqttClient mqttClient(client_);
@@ -29,11 +32,18 @@ void onMqttMessage(int messageSize)
 
 void mqttSetup(const char *MQTT_SERVER, uint16_t MQTT_PORT, const char *PATH, WiFiClient client, const char *PATH_ALT = "")
 {
+  int count = 0;
   while (!mqttClient.connect(MQTT_SERVER, MQTT_PORT))
   {
+    if(count != 25){ //600
     Serial.print("MQTT connection failed! Error code: ");
     Serial.println(std::to_string(mqttClient.connectError()).c_str());
+    count++;
     delay(1500);
+    }else{
+      restoreConfig(LittleFS);
+      ESP.restart();
+    }
   }
 
   mqttClient.setId(String(ESP.getChipId()));

@@ -122,15 +122,14 @@ int updateConfig(fs::FS &fs, const char *json)
 
     File fileWrite = fs.open("/config.json", "w");
 
-
     String device_uid = newConfig["device"]["UID"];
-    String device_name = newConfig["device"]["name"]; 
+    String device_name = newConfig["device"]["name"];
     String new_network_SSID = newConfig["network"]["SSID"];
     String new_network_wifiPassword = newConfig["network"]["wifiPassword"];
     String new_network_ip = newConfig["network"]["ip"];
     String new_network_submask = newConfig["network"]["subnetMask"];
     String new_network_gateway = newConfig["network"]["gateway"];
-    String smtp_sender = newConfig["smtp"]["mailSender"]; 
+    String smtp_sender = newConfig["smtp"]["mailSender"];
     String smtp_passw = newConfig["smtp"]["mailPassword"];
     String smtp_receiver = newConfig["smtp"]["mailReceiver"];
     String smpt_server = newConfig["smtp"]["smtpServer"];
@@ -139,8 +138,8 @@ int updateConfig(fs::FS &fs, const char *json)
     String ports_IO1 = newConfig["ports"]["IO_1"];
     String ports_IO2 = newConfig["ports"]["IO_2"];
     String ports_IO3 = newConfig["ports"]["IO_3"];
-    String ports_mqttmsg = newConfig["ports"]["MQTTmsg"];
-    String ports_keepalive = newConfig["ports"]["keepAlive"];
+    String ports_mqttmsg = newConfig["etc"]["MQTTmsg"];
+    String ports_keepalive = newConfig["etc"]["keepAlive"];
 
     Serial.println("*** Starting new configuration...");
 
@@ -160,8 +159,8 @@ int updateConfig(fs::FS &fs, const char *json)
     writeConfig["ports"]["IO_1"] = ports_IO1;
     writeConfig["ports"]["IO_2"] = ports_IO2;
     writeConfig["ports"]["IO_3"] = ports_IO3;
-    writeConfig["ports"]["MQTTmsg"] = ports_mqttmsg;
-    writeConfig["ports"]["keepAlive"] = ports_keepalive;
+    writeConfig["etc"]["MQTTmsg"] = ports_mqttmsg;
+    writeConfig["etc"]["keepAlive"] = ports_keepalive;
 
     auto error3 = serializeJsonPretty(writeConfig, fileWrite);
 
@@ -177,4 +176,31 @@ int updateConfig(fs::FS &fs, const char *json)
     return 0;
 }
 
+int restoreConfig(fs::FS &fs)
+{   
+    Serial.println("*** Restoring default configuration ***");
+
+    fs.remove("/config.json");
+    File restoreFile = fs.open("/restore.json", "r");
+    File configFile = fs.open("/config.json", "w+");
+
+    String content;
+    if (!restoreFile.available())
+    {
+        Serial.println("Couldn't open the file");
+        return 1;
+    }
+    while (restoreFile.available())
+    {
+        content += restoreFile.readString();
+        break;
+    }
+
+    configFile.print(content);
+
+    configFile.close();
+    restoreFile.close();
+
+    return 0;
+}
 #endif
