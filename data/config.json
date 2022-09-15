@@ -1,11 +1,11 @@
 {
   "device": {
     "UID": "296876",
-    "name": "giuli"
+    "name": "default"
   },
   "network": {
-    "SSID": "silfe",
-    "wifiPassword": "SilFe2655",
+    "SSID": "default",
+    "wifiPassword": "default",
     "ip": "",
     "subnetMask": "",
     "gateway": ""
@@ -18,11 +18,13 @@
     "smtpPort": "587"
   },
   "ports": {
-    "IO_0" : "OTU",
-    "IO_1" : "OTD",
-    "IO_2" : "9000",
-    "IO_3" : "9000",
-    "MQTTmsg" : "5000",
-    "keepAlive" : "600000"
+    "IO_0": "OTU",
+    "IO_1": "OTD",
+    "IO_2": "9000",
+    "IO_3": "9000"
+  },
+  "etc": {
+    "MQTTmsg": "5000",
+    "keepAlive": "600000"
   }
 }

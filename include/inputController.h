@@ -48,6 +48,34 @@ int previousTime_IO_1 = 0;
 int previousTime_IO_2 = 0;
 int previousTime_IO_3 = 0;
 
+void checkReset(std::string inputJson)
+{
+    StaticJsonDocument<1024> config;
+    auto error = deserializeJson(config, inputJson.c_str());
+    if (error)
+    {
+        Serial.println("Failed to deserialize");
+        Serial.println(error.f_str());
+    }
+    if (config["Value"]["Input_2"] == "HIGH")
+    {
+        for (int i = 0; i <= 2; i++)
+        {
+            delay(1000);
+            if (i == 2)
+            {
+                Serial.println("*** Resetting WiFi credentials ***");
+                myScreenAp.printScreen("Resetting Device ", 0, 1, true);
+                delay(5000);
+                myManager.resetSettings();
+                ESP.eraseConfig();
+                ESP.reset();
+                ESP.restart();
+            }
+        }
+    }
+}
+
 class inputController
 {
 private:
@@ -145,7 +173,7 @@ public:
     }
     void onTriggerFlag(int Input, String IO_name, bool ascendant = true)
     {
-        if(IO_name == "Input_0")
+        if (IO_name == "Input_0")
         {
             IO_0_State = digitalRead(Input);
 
@@ -181,7 +209,8 @@ public:
                 }
             }
             last_IO_0_State = IO_0_State;
-        }else if(IO_name == "Input_1")
+        }
+        else if (IO_name == "Input_1")
         {
             IO_1_State = digitalRead(Input);
 
@@ -217,7 +246,8 @@ public:
                 }
             }
             last_IO_1_State = IO_1_State;
-        }if(IO_name == "Input_2")
+        }
+        if (IO_name == "Input_2")
         {
             IO_2_State = digitalRead(Input);
 
@@ -253,7 +283,8 @@ public:
                 }
             }
             last_IO_2_State = IO_2_State;
-        }if(IO_name == "Input_3")
+        }
+        if (IO_name == "Input_3")
         {
             IO_3_State = digitalRead(Input);
 
@@ -405,6 +436,8 @@ public:
 
                 serializeJsonPretty(data, message);
                 Serial.println(message);
+                // Device hard reset check
+                checkReset(message.c_str());
                 mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), wifiClient, keep_alive_topic_publish.c_str(), keep_alive_topic_publish.c_str(),
                            message.c_str());
             }

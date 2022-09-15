@@ -14,7 +14,7 @@ dataSensors _mySensors;
 AsyncWebServer server(80);
 MDNSResponder mDns;
 
-String localDeviceName, httpLocalIp, t0, t1, h0, d0, d1, d2, d3;
+String localDeviceName, t0, t1, h0, d0, d1, d2, d3;
 
 void setupServer()
 {
@@ -129,8 +129,7 @@ void loadRequiredDataforHttpServer(fs::FS &fs, const char *path)
     Serial.println(error.f_str());
   }
 
-  httpLocalIp = (const char *)config["network"]["ip"];
-  localDeviceName = (const char *)config["device"]["name"];
+  localDeviceName = String("darkflow-") + String(ESP.getChipId());
 
   file_.close();
 }
