@@ -4,6 +4,7 @@
 <head>
   <title>Darkflow Device</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css"
     integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
@@ -21,7 +22,7 @@
         <i class="fas fa-thermometer-half" style="color:#059e8a;"></i>
         <span class="dht-labels">OneWire -> Temperature 0: </span>
       </p>
-      <span id="temperature">%TEMPERATURE0%</span>
+      <span id="temperature0">%TEMPERATURE0%</span>
       <sup class="units">&deg;C</sup>
     </div>
   </div>
@@ -32,7 +33,7 @@
         <i class="fas fa-thermometer-half" style="color:#059e8a;"></i>
         <span class="dht-labels">DHT -> Temperature 1: </span>
       </p>
-      <span id="temperature">%TEMPERATURE1%</span>
+      <span id="temperature1">%TEMPERATURE1%</span>
       <sup class="units">&deg;C</sup>
     </div>
   </div>
@@ -48,9 +49,47 @@
     </div>
   </div>
 
+  <div class="card">
+    <div class="container">
+      <p>
+        <span class="dht-labels">IO0: </span>
+      </p>
+      <span id="io0">%IO0%</span>
+    </div>
   </div>
 
+  <div class="card">
+    <div class="container">
+      <p>
+        <span class="dht-labels">IO1: </span>
+      </p>
+      <span id="io1">%IO1%</span>
+    </div>
+  </div>
 
+  <div class="card">
+    <div class="container">
+      <p>
+        <span class="dht-labels">IO2: </span>
+      </p>
+      <span id="io2">%IO2%</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="container">
+      <p>
+        <span class="dht-labels">IO3: </span>
+      </p>
+      <span id="io3">%IO3%</span>
+    </div>
+  </div>
+
+  <form action="/reset" method="post"> 
+    <p><button class="submit">Hard Reset</button></p>
+  </form>
+
+  </div>
 </body>
 
 <script>
@@ -58,12 +97,34 @@
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function () {
       if (this.readyState == 4 && this.status == 200) {
+        var a = this.responseText.split(';');
+
+        document.getElementById("temperature0").innerHTML = a[0];
+        document.getElementById("temperature1").innerHTML = a[1];
+        document.getElementById("humidity").innerHTML = a[2];
+        document.getElementById("io0").innerHTML = a[3];
+        document.getElementById("io1").innerHTML = a[4];
+        document.getElementById("io2").innerHTML = a[5];
+        document.getElementById("io3").innerHTML = a[6];
+      }
+    };
+    xhttp.open("GET", "/allvalues", true);
+    xhttp.send();
+  }, 50);
+
+  /*
+  setInterval(function () {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function () {
+      if (this.readyState == 4 && this.status == 200) {
         document.getElementById("temperature0").innerHTML = this.responseText;
+
       }
     };
     xhttp.open("GET", "/temperature0", true);
     xhttp.send();
-  }, 10000);
+  }, 500);
+  
   setInterval(function () {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function () {
@@ -73,7 +134,8 @@
     };
     xhttp.open("GET", "/temperature1", true);
     xhttp.send();
-  }, 10000);
+  }, 500);
+
   setInterval(function () {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function () {
@@ -83,7 +145,53 @@
     };
     xhttp.open("GET", "/humidity  ", true);
     xhttp.send();
-  }, 10000);
+  }, 500);
+
+  setInterval(function () {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function () {
+      if (this.readyState == 4 && this.status == 200) {
+        document.getElementById("io0").innerHTML = this.responseText;
+      }
+    };
+    xhttp.open("GET", "/io0  ", true);
+    xhttp.send();
+  }, 500);
+
+  setInterval(function () {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function () {
+      if (this.readyState == 4 && this.status == 200) {
+        document.getElementById("io1").innerHTML = this.responseText;
+      }
+    };
+    xhttp.open("GET", "/io1  ", true);
+    xhttp.send();
+  }, 500);
+
+  setInterval(function () {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function () {
+      if (this.readyState == 4 && this.status == 200) {
+        document.getElementById("io2").innerHTML = this.responseText;
+      }
+    };
+    xhttp.open("GET", "/io2  ", true);
+    xhttp.send();
+  }, 500);
+
+  setInterval(function () {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function () {
+      if (this.readyState == 4 && this.status == 200) {
+        document.getElementById("io3").innerHTML = this.responseText;
+      }
+    };
+    xhttp.open("GET", "/io3  ", true);
+    xhttp.send();
+  }, 500);
+*/
+
 </script>
 
 </html>

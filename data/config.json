@@ -20,11 +20,12 @@
   "ports": {
     "IO_0": "OTU",
     "IO_1": "OTD",
-    "IO_2": "9000",
-    "IO_3": "9000"
+    "IO_2": "OTD",
+    "IO_3": "OTD"
   },
   "etc": {
-    "MQTTmsg": "5000",
+    "MQTTtemp": "1000",
+    "MQTThum": "10000",
     "keepAlive": "600000"
   }
 }

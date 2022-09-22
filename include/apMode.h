@@ -229,7 +229,8 @@ void changeCredentials(fs::FS &fs, const char *path, String mailReceiver,
   config["ports"]["IO_1"] = "5000";
   config["ports"]["IO_2"] = "5000";
   config["ports"]["IO_3"] = "5000";
-  config["etc"]["MQTTmsg"] = "5000";
+  config["etc"]["MQTTtemp"] = "5000";
+  config["etc"]["MQTThum"] = "5000";
   config["etc"]["keepAlive"] = "600000";
 
   Serial.println("#### CONFIG WRITTEN ####");

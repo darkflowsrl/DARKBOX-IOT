@@ -1,30 +1,31 @@
 {
-    "device": {
-      "UID": "111111",
-      "name": "default"
-    },
-    "network": {
-      "SSID": "default",
-      "wifiPassword": "default",
-      "ip": "",
-      "subnetMask": "",
-      "gateway": ""
-    },
-    "smtp": {
-      "mailSender": "default@server.com",
-      "mailPassword": "default",
-      "mailReceiver": "",
-      "smtpServer": "smtp.office365.com",
-      "smtpPort": "587"
-    },
-    "ports": {
-      "IO_0": "5000",
-      "IO_1": "5000",
-      "IO_2": "5000",
-      "IO_3": "5000"
-    },
-    "etc": {
-      "MQTTmsg": "5000",
-      "keepAlive": "600000"
-    }
+  "device": {
+    "UID": "296876",
+    "name": "default"
+  },
+  "network": {
+    "SSID": "default",
+    "wifiPassword": "default",
+    "ip": "",
+    "subnetMask": "",
+    "gateway": ""
+  },
+  "smtp": {
+    "mailSender": "giulicrenna@outlook.com",
+    "mailPassword": "kirchhoff2002",
+    "mailReceiver": "",
+    "smtpServer": "smtp.office365.com",
+    "smtpPort": "587"
+  },
+  "ports": {
+    "IO_0": "OTU",
+    "IO_1": "OTD",
+    "IO_2": "OTD",
+    "IO_3": "OTD"
+  },
+  "etc": {
+    "MQTTtemp": "5000",
+    "MQTThum": "7000",
+    "keepAlive": "600000"
   }
+}
