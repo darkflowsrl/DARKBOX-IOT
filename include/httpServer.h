@@ -3,23 +3,22 @@
 #include <ESP8266mDNS.h>
 #include "dataSensors.h"
 
-void loadRequiredDataforHttpServer(fs::FS &fs, const char *path);
 void changeCredentials(fs::FS &fs, const char *path, const char *device0, const char *device1, const char *device2);
 void loadDevices(fs::FS &fs, const char *path);
 void readVariables(fs::FS &fs);
-String proccesor(const String &var);
+String proccesor();
 String getReadings();
 
 dataSensors _mySensors;
 AsyncWebServer server(80);
 MDNSResponder mDns;
 
-String localDeviceName, t0, t1, h0, d0, d1, d2, d3;
+String localDeviceName = String("darkflow-") + String(ESP.getChipId());
+String t0, t1, h0, d0, d1, d2, d3, io0, io1, io2, io3, allvalues;
 
 void setupServer()
 {
   // mDNS setup
-  loadRequiredDataforHttpServer(LittleFS, "config.json");
   Serial.print("Local DNS: " + localDeviceName + ".local ");
   const char *resolutionName = localDeviceName.c_str();
 
@@ -36,14 +35,12 @@ void setupServer()
 
   // ESPAsyncWebServer Setup
   // Web Server Root URL
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
-            { request->send(LittleFS, "/index.html", String(), false, proccesor); });
-  server.on("/temperature0", HTTP_GET, [](AsyncWebServerRequest *request)
-            { request->send(200, "text/plain", t0); });
-  server.on("/temperature1", HTTP_GET, [](AsyncWebServerRequest *request)
-            { request->send(200, "text/plain", t1); });
-  server.on("/humidity", HTTP_GET, [](AsyncWebServerRequest *request)
-            { request->send(200, "text/plain", h0); });
+   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
+            { request->send(LittleFS, "/index.html", "text/html"); });
+   server.on("/allvalues", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
+            request->send(200, "application/json", proccesor());
+            });
 
   server.begin();
 }
@@ -53,83 +50,17 @@ void setupHttpServer()
   mDns.update();
 }
 
-String proccesor(const String &var)
+String proccesor()
 {
-  readVariables(LittleFS);
-  if (var == "TEMPERATURE0")
-  {
-    return t0;
-  }
-  else if (var == "TEMPERATURE1")
-  {
-    return t1;
-  }
-  else if (var == "HUMIDITY")
-  {
-    return h0;
-  }
+  t0 = String(TemporalAccess.t0);
+  t1 = String(TemporalAccess.t1);
+  h0 = String(TemporalAccess.h0);
+  d0 = String(TemporalAccess.d0);
+  d1 = String(TemporalAccess.d1);
+  d2 = String(TemporalAccess.d2);
+  d3 = String(TemporalAccess.d3);
 
-  return String();
-}
+  String allValues = t0 + String(";") + t1 + String(";") + h0 + String(";") + d0 + String(";") + d1 + String(";") + d2 + String(";") + d3;
 
-void readVariables(fs::FS &fs)
-{
-  File file_ = fs.open("temp.json", "r");
-  String content;
-  if (!file_)
-  {
-    Serial.println("(HTML variables load instance) Couldn't open the file");
-  }
-  while (file_.available())
-  {
-    content += file_.readString();
-    break;
-  }
-
-  StaticJsonDocument<512> temporalData;
-  auto error = deserializeJson(temporalData, content);
-
-  if (error)
-  {
-    Serial.println("(HTML variables load instance) Failed to deserialize");
-    Serial.println(error.f_str());
-  }
-
-  t0 = (const char *)temporalData["temp0"];
-  t1 = (const char *)temporalData["tempDHT"];
-  h0 = (const char *)temporalData["humDHT"];
-  d0 = (const char *)temporalData["digital0"];
-  d1 = (const char *)temporalData["digital1"];
-  d2 = (const char *)temporalData["digital2"];
-  d3 = (const char *)temporalData["digital3"];
-
-  file_.close();
-}
-
-void loadRequiredDataforHttpServer(fs::FS &fs, const char *path)
-{
-  File file_ = fs.open(path, "r");
-  String content;
-  if (!file_.available())
-  {
-    Serial.println("(DNS instance) Couldn't open the file");
-  }
-  while (file_.available())
-  {
-    content += file_.readString();
-    break;
-  }
-
-  StaticJsonDocument<1024> config;
-  auto error = deserializeJson(config, content);
-
-  if (error)
-  {
-    Serial.println("(DNS instance) Failed to deserialize");
-    Serial.println(error.f_str());
-  }
-
-  localDeviceName = String("darkflow-") + String(ESP.getChipId());
-
-  file_.close();
+  return allValues; 
 }

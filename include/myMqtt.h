@@ -3,7 +3,6 @@
 #include <ArduinoMqttClient.h>
 #include <WiFiClient.h>
 #include <string.h>
-#include <LittleFS.h>
 
 WiFiClient client_;
 MqttClient mqttClient(client_);
@@ -30,8 +29,6 @@ void onMqttMessage(int messageSize)
     newContent += (char)mqttClient.read();
   }
 
-  Serial.println(newContent);
-
   updateConfig(LittleFS, newContent.c_str());
 }
 
@@ -40,7 +37,8 @@ void mqttSetup(const char *MQTT_SERVER, uint16_t MQTT_PORT, const char *PATH, Wi
   int count = 0;
   while (!mqttClient.connect(MQTT_SERVER, MQTT_PORT))
   {
-    if(count != 600){ //600
+    if(count != 500){ //500 (15 min aprox)
+    Serial.print(String(count) + String(") "));
     Serial.print("MQTT connection failed! Error code: ");
     Serial.println(std::to_string(mqttClient.connectError()).c_str());
     count++;
