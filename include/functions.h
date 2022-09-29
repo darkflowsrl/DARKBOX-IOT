@@ -8,7 +8,7 @@ const int utcOffset = -10800;
 unsigned long previousTime2 = 0;
 
 WiFiUDP ntpUDP;
-NTPClient timeClient(ntpUDP, "0.south-america.pool.ntp.org", utcOffset);
+NTPClient timeClient(ntpUDP, "time.google.com", 0);
 
 void sendEmail(const char *sender, const char *password, const char *receiver, const char *host, int port)
 {
@@ -30,40 +30,11 @@ void sendEmail(const char *sender, const char *password, const char *receiver, c
     Serial.println(response.desc);
 }
 
-String ntpRawNoDay()
+String ntpRaw()
 {
     timeClient.update();
 
-    String minutes, seconds, hour;
-
-    if (String(timeClient.getMinutes()).length() == 1)
-    {
-        minutes = "0" + String(timeClient.getMinutes());
-    }
-    else
-    {
-        minutes = String(timeClient.getMinutes());
-    }
-    if (String(timeClient.getHours()).length() == 1)
-    {
-        hour = "0" + String(timeClient.getHours());
-    }
-    else
-    {
-        hour = String(timeClient.getHours());
-    }
-    if (String(timeClient.getSeconds()).length() == 1)
-    {
-        seconds = "0" + String(timeClient.getSeconds());
-    }
-    else
-    {
-        seconds = String(timeClient.getSeconds());
-    }
-
-    String data = hour + ":" + minutes + ":" + seconds;
-
-    return data;
+    return String(timeClient.getEpochTime());
 }
 
 String refactor(int time)
@@ -202,7 +173,6 @@ int updateConfig(fs::FS &fs, const char *json)
     writeConfig["etc"]["MQTTtemp"] = ports_mqttMQTTtemp;
     writeConfig["etc"]["MQTThum"] = ports_mqttMQTThum;
     writeConfig["etc"]["keepAlive"] = ports_keepalive;
-Serial.println("ÑÑÑ");
 
     File fileWrite = fs.open("/config.json", "w");
 

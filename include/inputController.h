@@ -185,12 +185,14 @@ public:
                     DynamicJsonDocument data(512);
                     data["DeviceId"] = String(ESP.getChipId());
                     data["DeviceName"] = deviceName.c_str();
-                    data["Timestamp"] = formatedTime();
+                    data["Timestamp"] = ntpRaw();
+                    data["MsgType"] = "Data";
+                    data["MsgType"] = "Data";
                     data["MsgType"] = "Data";
                     data["Value"][0]["Port"] = IO_name;
                     data["Value"][0]["Value"] = "HIGH";
-                    serializeJsonPretty(data, message);
-                    Serial.println(message);
+                    serializeJson(data, message);
+                    // Serial.println(message);
                     mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), wifiClient, keep_alive_topic_publish.c_str(), keep_alive_topic_publish.c_str(),
                                message.c_str());
                 }
@@ -200,11 +202,13 @@ public:
                     DynamicJsonDocument data(512);
                     data["DeviceId"] = String(ESP.getChipId());
                     data["DeviceName"] = deviceName.c_str();
-                    data["Timestamp"] = formatedTime();
+                    data["Timestamp"] = ntpRaw();
+                    data["MsgType"] = "Data";
+                    data["MsgType"] = "Data";
                     data["Value"][0]["Port"] = IO_name;
                     data["Value"][0]["Value"] = "LOW";
-                    serializeJsonPretty(data, message);
-                    Serial.println(message);
+                    serializeJson(data, message);
+                    // Serial.println(message);
                     mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), wifiClient, keep_alive_topic_publish.c_str(), keep_alive_topic_publish.c_str(),
                                message.c_str());
                 }
@@ -223,12 +227,13 @@ public:
                     DynamicJsonDocument data(512);
                     data["DeviceId"] = String(ESP.getChipId());
                     data["DeviceName"] = deviceName.c_str();
-                    data["Timestamp"] = formatedTime();
+                    data["Timestamp"] = ntpRaw();
+                    data["MsgType"] = "Data";
                     data["MsgType"] = "Data";
                     data["Value"][0]["Port"] = IO_name;
                     data["Value"][0]["Value"] = "HIGH";
-                    serializeJsonPretty(data, message);
-                    Serial.println(message);
+                    serializeJson(data, message);
+                    // Serial.println(message);
                     mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), wifiClient, keep_alive_topic_publish.c_str(), keep_alive_topic_publish.c_str(),
                                message.c_str());
                 }
@@ -238,11 +243,12 @@ public:
                     DynamicJsonDocument data(512);
                     data["DeviceId"] = String(ESP.getChipId());
                     data["DeviceName"] = deviceName.c_str();
-                    data["Timestamp"] = formatedTime();
+                    data["Timestamp"] = ntpRaw();
+                    data["MsgType"] = "Data";
                     data["Value"][0]["Port"] = IO_name;
                     data["Value"][0]["Value"] = "LOW";
-                    serializeJsonPretty(data, message);
-                    Serial.println(message);
+                    serializeJson(data, message);
+                    // Serial.println(message);
                     mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), wifiClient, keep_alive_topic_publish.c_str(), keep_alive_topic_publish.c_str(),
                                message.c_str());
                 }
@@ -261,12 +267,12 @@ public:
                     DynamicJsonDocument data(512);
                     data["DeviceId"] = String(ESP.getChipId());
                     data["DeviceName"] = deviceName.c_str();
-                    data["Timestamp"] = formatedTime();
+                    data["Timestamp"] = ntpRaw();
                     data["MsgType"] = "Data";
                     data["Value"][0]["Port"] = IO_name;
                     data["Value"][0]["Value"] = "HIGH";
-                    serializeJsonPretty(data, message);
-                    Serial.println(message);
+                    serializeJson(data, message);
+                    // Serial.println(message);
                     mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), wifiClient, keep_alive_topic_publish.c_str(), keep_alive_topic_publish.c_str(),
                                message.c_str());
                 }
@@ -276,12 +282,12 @@ public:
                     DynamicJsonDocument data(512);
                     data["DeviceId"] = String(ESP.getChipId());
                     data["DeviceName"] = deviceName.c_str();
-                    data["Timestamp"] = formatedTime();
+                    data["Timestamp"] = ntpRaw();
                     data["MsgType"] = "Data";
                     data["Value"][0]["Port"] = IO_name;
                     data["Value"][0]["Value"] = "LOW";
-                    serializeJsonPretty(data, message);
-                    Serial.println(message);
+                    serializeJson(data, message);
+                    // Serial.println(message);
                     mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), wifiClient, keep_alive_topic_publish.c_str(), keep_alive_topic_publish.c_str(),
                                message.c_str());
                 }
@@ -300,12 +306,12 @@ public:
                     DynamicJsonDocument data(512);
                     data["DeviceId"] = String(ESP.getChipId());
                     data["DeviceName"] = deviceName.c_str();
-                    data["Timestamp"] = formatedTime();
+                    data["Timestamp"] = ntpRaw();
                     data["MsgType"] = "Data";
                     data["Value"][0]["Port"] = IO_name;
                     data["Value"][0]["Value"] = "HIGH";
-                    serializeJsonPretty(data, message);
-                    Serial.println(message);
+                    serializeJson(data, message);
+                    // Serial.println(message);
                     mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), wifiClient, keep_alive_topic_publish.c_str(), keep_alive_topic_publish.c_str(),
                                message.c_str());
                 }
@@ -315,12 +321,12 @@ public:
                     DynamicJsonDocument data(512);
                     data["DeviceId"] = String(ESP.getChipId());
                     data["DeviceName"] = deviceName.c_str();
-                    data["Timestamp"] = formatedTime();
+                    data["Timestamp"] = ntpRaw();
                     data["MsgType"] = "Data";
                     data["Value"][0]["Port"] = IO_name;
                     data["Value"][0]["Value"] = "LOW";
-                    serializeJsonPretty(data, message);
-                    Serial.println(message);
+                    serializeJson(data, message);
+                    // Serial.println(message);
                     mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), wifiClient, keep_alive_topic_publish.c_str(), keep_alive_topic_publish.c_str(),
                                message.c_str());
                 }
@@ -353,7 +359,7 @@ public:
                 DynamicJsonDocument data(512);
                 data["DeviceId"] = String(ESP.getChipId());
                 data["DeviceName"] = deviceName.c_str();
-                data["Timestamp"] = formatedTime();
+                data["Timestamp"] = ntpRaw();
                 data["MsgType"] = "Data";
                 if (!digitalRead(Input0))
                 {
@@ -366,8 +372,8 @@ public:
                     data["Value"][0]["Value"] = "LOW";
                 }
 
-                serializeJsonPretty(data, message);
-                Serial.println(message);
+                serializeJson(data, message);
+                // Serial.println(message);
                 mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), wifiClient, keep_alive_topic_publish.c_str(), keep_alive_topic_publish.c_str(),
                            message.c_str());
             }
@@ -393,7 +399,7 @@ public:
                 DynamicJsonDocument data(512);
                 data["DeviceId"] = String(ESP.getChipId());
                 data["DeviceName"] = deviceName.c_str();
-                data["Timestamp"] = formatedTime();
+                data["Timestamp"] = ntpRaw();
                 data["MsgType"] = "Data";
                 if (!digitalRead(Input1))
                 {
@@ -406,8 +412,8 @@ public:
                     data["Value"][0]["Value"] = "LOW";
                 }
 
-                serializeJsonPretty(data, message);
-                Serial.println(message);
+                serializeJson(data, message);
+                // Serial.println(message);
                 mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), wifiClient, keep_alive_topic_publish.c_str(), keep_alive_topic_publish.c_str(),
                            message.c_str());
             }
@@ -433,7 +439,7 @@ public:
                 DynamicJsonDocument data(512);
                 data["DeviceId"] = String(ESP.getChipId());
                 data["DeviceName"] = deviceName.c_str();
-                data["Timestamp"] = formatedTime();
+                data["Timestamp"] = ntpRaw();
                 data["MsgType"] = "Data";
                 if (!digitalRead(Input2))
                 {
@@ -446,9 +452,9 @@ public:
                     data["Value"][0]["Value"] = "LOW";
                 }
 
-                serializeJsonPretty(data, message);
-                Serial.println(message);
-                // Device hard reset check
+                serializeJson(data, message);
+                // Serial.println(message);
+                //  Device hard reset check
                 checkReset(message.c_str());
                 mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), wifiClient, keep_alive_topic_publish.c_str(), keep_alive_topic_publish.c_str(),
                            message.c_str());
@@ -475,7 +481,7 @@ public:
                 DynamicJsonDocument data(512);
                 data["DeviceId"] = String(ESP.getChipId());
                 data["DeviceName"] = deviceName.c_str();
-                data["Timestamp"] = formatedTime();
+                data["Timestamp"] = ntpRaw();
                 data["MsgType"] = "Data";
                 if (!digitalRead(Input3))
                 {
@@ -488,8 +494,8 @@ public:
                     data["Value"][0]["Value"] = "LOW";
                 }
 
-                serializeJsonPretty(data, message);
-                Serial.println(message);
+                serializeJson(data, message);
+                // Serial.println(message);
                 mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), wifiClient, keep_alive_topic_publish.c_str(), keep_alive_topic_publish.c_str(),
                            message.c_str());
             }

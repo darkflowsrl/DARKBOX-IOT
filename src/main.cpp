@@ -94,7 +94,7 @@ void loop()
   }*/
   // HTTP and mDNS loop
   myInputs.inputData();
-  // setupHttpServer();
+  setupHttpServer();
   //  Data to screen
   //  refreshScreen();
   //  Temporal data to EEPROM
@@ -115,14 +115,14 @@ void loop()
 
     dataJson_0["DeviceId"] = String(ESP.getChipId());
     dataJson_0["DeviceName"] = deviceName.c_str();
-    dataJson_0["Timestamp"] = formatedTime();
+    dataJson_0["Timestamp"] = ntpRaw();
     dataJson_0["MsgType"] = "Data";
     dataJson_0["Value"][0]["Port"] = "DHT_TEMPERATURE";
     dataJson_0["Value"][0]["Value"] = mySensors.singleSensorRawdataDHT(false);
     serializeJson(dataJson_0, data_0);
     serializeJsonPretty(dataJson_0, dataPretty_0);
 
-    Serial.println(dataPretty_0.c_str());
+    //Serial.println(dataPretty_0.c_str());
     mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), espClient, keep_alive_topic_publish.c_str(), root_topic_publish.c_str(),
                data_0.c_str());
     previousTimeMQTTtemp = millis();
@@ -137,14 +137,14 @@ void loop()
 
     dataJson_1["DeviceId"] = String(ESP.getChipId());
     dataJson_1["DeviceName"] = deviceName.c_str();
-    dataJson_1["Timestamp"] = formatedTime();
+    dataJson_1["Timestamp"] = ntpRaw();
     dataJson_1["MsgType"] = "Data";
     dataJson_1["Value"][0]["Port"] = "DHT_HUMIDITY";
     dataJson_1["Value"][0]["Value"] = mySensors.singleSensorRawdataDHT(true);
     serializeJson(dataJson_1, data_1);
     serializeJsonPretty(dataJson_1, dataPretty);
 
-    Serial.println(dataPretty.c_str());
+    //Serial.println(dataPretty.c_str());
     mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), espClient, keep_alive_topic_publish.c_str(), root_topic_publish.c_str(),
                data_1.c_str());
     previousTimeMQTThum = millis();
@@ -195,7 +195,7 @@ void refreshScreen()
   if (currentTime - previousTimeScreen >= eventInterval)
   {
     myScreen.printScreen("SENSORS DATA:", 0, 0, false);
-    myScreen.printScreen(ntpRawNoDay(), 15, 0, false);
+    myScreen.printScreen(formatedTime(), 15, 0, false);
     myScreen.printScreen(tempString0, 0, 1, false);
     myScreen.printScreen(tempString1, 0, 2, false);
     myScreen.printScreen(tempString2, 0, 3, false);

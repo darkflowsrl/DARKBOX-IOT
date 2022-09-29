@@ -37,7 +37,8 @@ void mqttSetup(const char *MQTT_SERVER, uint16_t MQTT_PORT, const char *PATH, Wi
   int count = 0;
   while (!mqttClient.connect(MQTT_SERVER, MQTT_PORT))
   {
-    if(count != 600){ //600 (15 min aprox)
+    if(count != 500){ //500 (15 min aprox)
+    Serial.print(String(count) + String(") "));
     Serial.print("MQTT connection failed! Error code: ");
     Serial.println(std::to_string(mqttClient.connectError()).c_str());
     count++;
