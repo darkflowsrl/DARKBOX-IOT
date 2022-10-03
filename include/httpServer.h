@@ -35,12 +35,15 @@ void setupServer()
 
   // ESPAsyncWebServer Setup
   // Web Server Root URL
-   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
             { request->send(LittleFS, "/index.html", "text/html"); });
-   server.on("/allvalues", HTTP_GET, [](AsyncWebServerRequest *request)
-            {
-            request->send(200, "application/json", proccesor());
-            });
+  server.on("/allvalues", HTTP_GET, [](AsyncWebServerRequest *request)
+            { request->send(200, "application/json", proccesor()); });
+
+  server.on("/gota", HTTP_GET, [](AsyncWebServerRequest *request)
+            { request->send(LittleFS, "/gota.gif", "image/png"); });
+  server.on("/termp", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send(LittleFS, "/termp.gif", "image/png");});
 
   server.begin();
 }
@@ -62,5 +65,5 @@ String proccesor()
 
   String allValues = t0 + String(";") + t1 + String(";") + h0 + String(";") + d0 + String(";") + d1 + String(";") + d2 + String(";") + d3;
 
-  return allValues; 
+  return allValues;
 }
