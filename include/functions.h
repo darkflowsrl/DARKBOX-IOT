@@ -176,6 +176,8 @@ int updateConfig(fs::FS &fs, const char *json)
 
     File fileWrite = fs.open("/config.json", "w");
 
+    Serial.println("*** Opening new file...");
+
     if (!fileWrite)
     {
         Serial.println("Error opening config file");

@@ -42,8 +42,18 @@ void setupServer()
 
   server.on("/gota", HTTP_GET, [](AsyncWebServerRequest *request)
             { request->send(LittleFS, "/gota.gif", "image/png"); });
-  server.on("/termp", HTTP_GET, [](AsyncWebServerRequest *request){
-    request->send(LittleFS, "/termp.gif", "image/png");});
+  server.on("/termp", HTTP_GET, [](AsyncWebServerRequest *request)
+            { request->send(LittleFS, "/termp.gif", "image/png"); });
+  server.on("/relay", HTTP_GET, [](AsyncWebServerRequest *request)
+            { request->send(LittleFS, "/relay.gif", "image/png"); });
+  server.on("/reset", HTTP_POST, [](AsyncWebServerRequest *request)
+            {
+            request->send(200,"text/plain","ok");
+            delay(2000);
+            restoreConfig(LittleFS);
+            ESP.eraseConfig();
+            ESP.reset();
+            ESP.restart(); });
 
   server.begin();
 }
@@ -62,8 +72,19 @@ String proccesor()
   d1 = String(TemporalAccess.d1);
   d2 = String(TemporalAccess.d2);
   d3 = String(TemporalAccess.d3);
+  heap = String(ESP.getFreeHeap());
+  bootVersion = String(ESP.getBootVersion());
+  chipId_ = String(ESP.getChipId());
+  CPUfreq = String(ESP.getCpuFreqMHz());
+  coreVersion = String(ESP.getCoreVersion());
+  flashChipId = String(ESP.getFlashChipId());
+  flashRealSize = String(ESP.getFlashChipRealSize());
+  flashChipSpeed = String(ESP.getFlashChipSpeed());
+  freeSketchSize = String(ESP.getFreeSketchSpace());
+  fullVersion = String(ESP.getFullVersion());
+  vcc = String(ESP.getVcc());
 
-  String allValues = t0 + String(";") + t1 + String(";") + h0 + String(";") + d0 + String(";") + d1 + String(";") + d2 + String(";") + d3;
+  String allValues = t0 + String(";") + t1 + String(";") + h0 + String(";") + d0 + String(";") + d1 + String(";") + d2 + String(";") + d3 + String(";") + heap + String(";") + bootVersion + String(";") + chipId_ + String(";") + CPUfreq + String(";") + coreVersion + String(";") + flashChipId + String(";") + flashRealSize + String(";") + flashChipSpeed + String(";") + freeSketchSize + String(";") + fullVersion + String(";") + vcc + fullVersion + String(";") + releStatus;
 
   return allValues;
 }

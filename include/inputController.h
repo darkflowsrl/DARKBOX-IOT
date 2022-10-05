@@ -506,22 +506,27 @@ public:
         if (!digitalRead(Input1))
         {
             digitalWrite(Output1, HIGH);
+            releStatus = "HIGH";
         }
         if (!digitalRead(Input2))
         {
             digitalWrite(Output1, HIGH);
+            releStatus = "HIGH";
         }
         if (!digitalRead(Input3))
         {
             digitalWrite(Output1, HIGH);
+            releStatus = "HIGH";
         }
         if (!digitalRead(Input0))
         {
             digitalWrite(Output1, HIGH);
+            releStatus = "HIGH";
         }
         if (digitalRead(Input1) && digitalRead(Input2) && digitalRead(Input3) && digitalRead(Input0))
         {
             digitalWrite(Output1, LOW);
+            releStatus = "LOW";
         }
     }
     std::string returnSingleInput(uint8_t customInput)

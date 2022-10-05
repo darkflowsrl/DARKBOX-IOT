@@ -60,7 +60,7 @@ void setup()
   {
     myScreen.screenClean();
     myScreen.printScreen("Failed to mount...", 0, 1, true);
-    Serial.println("SPIFFS Mount Failed");
+    Serial.println("(Setup Instance) SPIFFS Mount Failed");
     return;
   }
   // Load and visualize data
@@ -293,6 +293,7 @@ void loadData(fs::FS &fs, const char *path)
   {
     Serial.println("Failed to deserialize");
     Serial.println(error.f_str());
+    restoreConfig(LittleFS);
   }
 
   // Serial.println(config.size());

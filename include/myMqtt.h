@@ -39,7 +39,7 @@ void mqttSetup(const char *MQTT_SERVER, uint16_t MQTT_PORT, const char *PATH, Wi
   {
     if(count != 500){ //500 (15 min aprox)
     Serial.print(String(count) + String(") "));
-    Serial.print("MQTT connection failed! Error code: ");
+    Serial.print("(MQTT instance) MQTT connection failed! Error code: ");
     Serial.println(std::to_string(mqttClient.connectError()).c_str());
     count++;
     delay(1500);
@@ -59,7 +59,7 @@ void mqttSetup(const char *MQTT_SERVER, uint16_t MQTT_PORT, const char *PATH, Wi
 
   mqttClient.subscribe(configTopic.c_str(), 2);
 
-  Serial.println("You're connected to the MQTT broker!");
+  Serial.println("(MQTT instance) You're connected to the MQTT broker!");
 }
 
 /**

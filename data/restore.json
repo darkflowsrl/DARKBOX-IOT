@@ -11,8 +11,8 @@
     "gateway": ""
   },
   "smtp": {
-    "mailSender": "giulicrenna@outlook.com",
-    "mailPassword": "kirchhoff2002",
+    "mailSender": "admin@outlook.com",
+    "mailPassword": "adminadmin",
     "mailReceiver": "",
     "smtpServer": "smtp.office365.com",
     "smtpPort": "587"
