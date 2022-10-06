@@ -21,15 +21,16 @@
 #include <vector>
 #include <cstdlib>
 
-#include "global.h"
-#include "apMode.h"
-#include "dataSensors.h"
-#include "screenController.h"
-#include "inputController.h"
-#include "jsonizer.h"
-#include "functions.h"
-#include "httpServer.h"
-#include "myMqtt.h"
+#include "global.hpp"
+#include "apMode.hpp"
+#include "dataSensors.hpp"
+#include "screenController.hpp"
+#include "inputController.hpp"
+#include "jsonizer.hpp"
+#include "functions.hpp"
+#include "httpServer.hpp"
+#include "myMqtt.hpp"
+#include "smtp.hpp"
 
 void listDir(fs::FS &fs, const char *dirname, uint8_t levels);
 void readFile(fs::FS &fs, const char *path);
@@ -86,12 +87,11 @@ void setup()
 void loop()
 {
   // SMTP test
-  /*
   if (std::atof(mySensors.singleSensorRawdataTemp(0).c_str()) >= std::atof("50"))
   {
-    sendEmail(smtpSender.c_str(), smtpPass.c_str(), SmtpReceiver.c_str(),
-              SmtpServer.c_str(), 587);
-  }*/
+    sendMail("Alerta", "You have Overpass the temperature");
+  }
+
   // HTTP and mDNS loop
   myInputs.inputData();
   setupHttpServer();
@@ -122,7 +122,7 @@ void loop()
     serializeJson(dataJson_0, data_0);
     serializeJsonPretty(dataJson_0, dataPretty_0);
 
-    //Serial.println(dataPretty_0.c_str());
+    // Serial.println(dataPretty_0.c_str());
     mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), espClient, keep_alive_topic_publish.c_str(), root_topic_publish.c_str(),
                data_0.c_str());
     previousTimeMQTTtemp = millis();
@@ -144,7 +144,7 @@ void loop()
     serializeJson(dataJson_1, data_1);
     serializeJsonPretty(dataJson_1, dataPretty);
 
-    //Serial.println(dataPretty.c_str());
+    // Serial.println(dataPretty.c_str());
     mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), espClient, keep_alive_topic_publish.c_str(), root_topic_publish.c_str(),
                data_1.c_str());
     previousTimeMQTThum = millis();
@@ -304,10 +304,11 @@ void loadData(fs::FS &fs, const char *path)
   subnetMaskAP = (const char *)config["network"]["subnetMask"];
   gatewayAP = (const char *)config["network"]["gateway"];
 
-  smtpSender = (const char *)config["smtp"]["mailSender"];
-  smtpPass = (const char *)config["smtp"]["mailPassword"];
+  SmtpSender = (const char *)config["smtp"]["mailSender"];
+  SmtpPass = (const char *)config["smtp"]["mailPassword"];
   SmtpReceiver = (const char *)config["smtp"]["mailReceiver"];
   SmtpServer = (const char *)config["smtp"]["smtpServer"];
+  SmtpPort = std::stoi((const char *)config["smtp"]["smtpPort"]);
 
   IO_0 = (const char *)config["ports"]["IO_0"];
   IO_1 = (const char *)config["ports"]["IO_1"];

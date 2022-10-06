@@ -9,6 +9,7 @@ unsigned int temporalDataRefreshTime = 10;
 unsigned int MQTTtemp;
 unsigned int MQTThum;
 unsigned int keepAliveTime;
+unsigned int SmtpPort;
 
 String chipId = String(ESP.getChipId());
 String IO_0;
@@ -19,8 +20,8 @@ String deviceName;
 String staticIpAP;
 String subnetMaskAP;
 String gatewayAP;
-String smtpSender;
-String smtpPass;
+String SmtpSender;
+String SmtpPass;
 String SmtpReceiver;
 String SmtpServer;
 String heap;

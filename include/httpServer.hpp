@@ -1,7 +1,7 @@
 #define WEBSERVER_H
 #include <ESPAsyncWebServer.h>
 #include <ESP8266mDNS.h>
-#include "dataSensors.h"
+#include "dataSensors.hpp"
 
 void changeCredentials(fs::FS &fs, const char *path, const char *device0, const char *device1, const char *device2);
 void loadDevices(fs::FS &fs, const char *path);

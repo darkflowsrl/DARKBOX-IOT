@@ -25,8 +25,8 @@ is the UID (Unique ID) of the device.
 
 #include <WiFiManager.h>
 #include <ArduinoJson.h>
-#include "functions.h"
-#include "screenController.h"
+#include "functions.hpp"
+#include "screenController.hpp"
 
 IPAddress local_ip(192, 168, 1, 1);
 IPAddress gateway(192, 168, 1, 1);

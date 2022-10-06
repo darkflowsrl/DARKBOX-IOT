@@ -9,8 +9,8 @@ MqttClient mqttClient(client_);
 
 /**
  * @brief This function handle the incomming messages from a particular topic
- * 
- * @param messageSize 
+ *
+ * @param messageSize
  */
 void onMqttMessage(int messageSize)
 {
@@ -22,7 +22,7 @@ void onMqttMessage(int messageSize)
   Serial.println(" bytes:");
 
   String newContent;
-  
+
   // use the Stream interface to print the contents
   while (mqttClient.available())
   {
@@ -37,13 +37,16 @@ void mqttSetup(const char *MQTT_SERVER, uint16_t MQTT_PORT, const char *PATH, Wi
   int count = 0;
   while (!mqttClient.connect(MQTT_SERVER, MQTT_PORT))
   {
-    if(count != 500){ //500 (15 min aprox)
-    Serial.print(String(count) + String(") "));
-    Serial.print("(MQTT instance) MQTT connection failed! Error code: ");
-    Serial.println(std::to_string(mqttClient.connectError()).c_str());
-    count++;
-    delay(1500);
-    }else{
+    if (count != 500)
+    { // 500 (15 min aprox)
+      Serial.print(String(count) + String(") "));
+      Serial.print("(MQTT instance) MQTT connection failed! Error code: ");
+      Serial.println(std::to_string(mqttClient.connectError()).c_str());
+      count++;
+      delay(1500);
+    }
+    else
+    {
       restoreConfig(LittleFS);
       ESP.restart();
     }
@@ -76,6 +79,10 @@ void mqttSetup(const char *MQTT_SERVER, uint16_t MQTT_PORT, const char *PATH, Wi
 void mqttOnLoop(const char *MQTT_SERVER, uint16_t MQTT_PORT, const char *PATH, WiFiClient client, const char *PATH_ALT = "",
                 const char *TOPIC = "$SYS", const char *MESSAGE = "")
 {
+  if (!mqttClient.connected())
+  {
+    mqttClient.connect(MQTT_SERVER, MQTT_PORT);
+  }
   mqttClient.poll();
 
   if (!mqttClient.beginMessage(PATH))
