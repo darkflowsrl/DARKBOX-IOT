@@ -57,10 +57,10 @@ and where are the neccessary methods to setup all the connections.
 class apMode
 {
 private:
-  const char *ssid = String("darkflow-" + ESP.getChipId()).c_str();
+  const char *ssid = String("darkflow-" + chipId).c_str();
   const char *password = "123456789";
   const char *icon = "<link rel='icon' type='image/png' sizes='16x16' href='data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAADv7+//7+/v/+/v7//v7+//7+/v//Hw7//y8e//8fHv//Lx7//y8u//8vHv/+/v7//v7+//7+/v/+/v7//v7+//FxcX/xcXF/8XFxf/FxcX/xcXF/8QERf/DA4X/wwOF/8MDhf/CQsW/w0OF/8YGBf/GBgX/xcXF/8XFxf/FxcX/wAAAP8AAAD/AAAA/wIBAP8AAAD/XE0A/5R7AP+JcgD/iHEA/21bAP8uJQD/AAAA/wAAAP8AAAD/AAAA/wAAAP8BAQH/AQEB/wAAAf8EAwL/AAAB/5V+CP/sxwv/478L/+zGC//wygv/478L/5eAB/8YFAL/AAAB/wMDAv8BAQH/AAAA/wwKAf9iUwT/NSwC/wAAAP+KdAb/478K/1JFBP8kHgL/XE0E/66SB//sxwr/spYI/xANAf8AAAD/AQEA/wAAAP9wXgX/+dEK/0k9A/8AAAD/i3UG/+G9Cv9qWQX/NCwD/wMCAP8FBAD/kHkG/+3ICv95ZQX/AAAA/wMCAP8AAAD/c2EF/+rFCv9DOQP/AAAA/5mBBv/uyAr/6cQK//LLCv80LAL/AAAA/xkVAf/JqQn/w6QI/wsJAf8AAAD/AAAA/3JgBf/txwr/QzkD/wAAAP9SRAT/fGgF/29dBf96ZwX/LygC/wAAAP8AAAD/lHwG/967Cv8iHQL/AAAA/wAAAP9yYAX/7ccK/0M5A/8AAAD/YVIE/5R9Bv+Icwb/knoG/3FfBf8AAAD/AAAA/4dyBv/jvwn/KCEC/wAAAP8AAAD/cmAF/+3HCv9EOgP/AAAA/52EB//0zgr/478K/+rFCv/Ztwn/HBcC/wAAAP+skQf/1rQJ/xoWAf8AAAD/AAAA/3JgBf/txwr/RDkD/wAAAP8oIQL/OC8C/zUtAv81LQL/OzED/wQDAP86MQP/4L0J/62SB/8AAAD/AAAA/wAAAP9yYAX/7ccK/0A2A/8AAAD/AwIA/wAAAP8AAAD/AQEA/wAAAP8qIwL/vZ8I/+fDCv9URwT/AAAA/wMCAP8AAAD/cV8F/+XACv9wXgX/PzUD/0s/A/9KPgP/T0IE/2NTBP+QeQb/1LMJ/+rFCv+FcAb/AAAA/wEBAP8AAAD/AAAA/35qBf/yywr/58EK/+/ICv/uyAr/7sgK/+/ICv/wygr/68YK/8ioCP9lVQX/AwMA/wEAAP8AAAD/AAAA/wAAAP9BNwP/fGgF/3BeBf9xXwX/cmAF/3JfBf9yYAX/alkF/0c8A/8SDwH/AAAA/wICAP8BAAD/AAAA/wAAAP8BAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wMCAP8BAAD/AAAA/wAAAP8AAAD/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==' />";
-  String name = String("darkflow-") + String(ESP.getChipId());
+  String name = String("darkflow-") + chipId;
   char smtpMail[40];
   char staticIPAP[40];
   char gatewayAP[40];
@@ -77,7 +77,6 @@ public:
   */
   void setupServer(String staticIpAP, String gatewayAP_, String subnetMaskAP)
   {
-
     // Library Configuration
     WiFi.mode(WIFI_STA);
 
@@ -213,7 +212,7 @@ void changeCredentials(fs::FS &fs, const char *path, String mailReceiver,
   }
   StaticJsonDocument<1024> config;
 
-  config["device"]["UID"] = ESP.getChipId();
+  config["device"]["UID"] = chipId;
   config["device"]["name"] = deviceName.c_str();
   config["network"]["SSID"] = ssid.c_str();
   config["network"]["wifiPassword"] = password.c_str();

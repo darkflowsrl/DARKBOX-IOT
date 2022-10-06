@@ -13,7 +13,7 @@ dataSensors _mySensors;
 AsyncWebServer server(80);
 MDNSResponder mDns;
 
-String localDeviceName = String("darkflow-") + String(ESP.getChipId());
+String localDeviceName = String("darkflow-") + chipId;
 String t0, t1, h0, d0, d1, d2, d3, io0, io1, io2, io3, allvalues;
 
 void setupServer()
@@ -74,7 +74,7 @@ String proccesor()
   d3 = String(TemporalAccess.d3);
   heap = String(ESP.getFreeHeap());
   bootVersion = String(ESP.getBootVersion());
-  chipId_ = String(ESP.getChipId());
+  chipId_ = chipId;
   CPUfreq = String(ESP.getCpuFreqMHz());
   coreVersion = String(ESP.getCoreVersion());
   flashChipId = String(ESP.getFlashChipId());

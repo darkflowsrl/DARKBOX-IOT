@@ -52,7 +52,7 @@ void mqttSetup(const char *MQTT_SERVER, uint16_t MQTT_PORT, const char *PATH, Wi
     }
   }
 
-  mqttClient.setId(String(ESP.getChipId()));
+  mqttClient.setId(chipId);
 
   mqttClient.setUsernamePassword("", "");
 
@@ -95,3 +95,4 @@ void mqttOnLoop(const char *MQTT_SERVER, uint16_t MQTT_PORT, const char *PATH, W
 }
 
 #endif
+
