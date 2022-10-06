@@ -2,69 +2,32 @@
 #define FUNCTIONS_H
 #include <WiFiUdp.h>
 #include <NTPClient.h>
-#include <EMailSender.h>
 
 const int utcOffset = -10800;
 unsigned long previousTime2 = 0;
 
 WiFiUDP ntpUDP;
-NTPClient timeClient(ntpUDP, "0.south-america.pool.ntp.org", utcOffset);
+NTPClient timeClient(ntpUDP, "time.google.com", 0);
 
-void sendEmail(const char *sender, const char *password, const char *receiver, const char *host, int port)
-{
-    String msg = "Sending from " + String(sender) + " to " + String(receiver) + " over " + String(host);
-    Serial.println(msg);
-    EMailSender emailSend(sender, password, sender, "Darkflow-Device");
-
-    emailSend.setSMTPServer(host);
-    emailSend.setSMTPPort((uint16_t)port);
-
-    EMailSender::EMailMessage message;
-    message.subject = "Alerta";
-    message.message = "El sensor superó la temperatura dada";
-
-    EMailSender::Response response = emailSend.send(receiver, message);
-
-    Serial.println(response.status);
-    Serial.println(response.code);
-    Serial.println(response.desc);
-}
-
-String ntpRawNoDay()
+String ntpRaw()
 {
     timeClient.update();
 
-    String minutes, seconds, hour;
-
-    if (String(timeClient.getMinutes()).length() == 1)
-    {
-        minutes = "0" + String(timeClient.getMinutes());
-    }
-    else
-    {
-        minutes = String(timeClient.getMinutes());
-    }
-    if (String(timeClient.getHours()).length() == 1)
-    {
-        hour = "0" + String(timeClient.getHours());
-    }
-    else
-    {
-        hour = String(timeClient.getHours());
-    }
-    if (String(timeClient.getSeconds()).length() == 1)
-    {
-        seconds = "0" + String(timeClient.getSeconds());
-    }
-    else
-    {
-        seconds = String(timeClient.getSeconds());
-    }
-
-    String data = hour + ":" + minutes + ":" + seconds;
-
-    return data;
+    return String(timeClient.getEpochTime());
 }
+
+String refactor(int time)
+{
+    if (time < 10)
+    {
+        String refactor = String("0") + String(time);
+        return refactor;
+    }
+    else
+    {
+        return String(time);
+    }
+};
 
 String formatedTime()
 {
@@ -73,11 +36,7 @@ String formatedTime()
     timeClient.update();
     struct tm *ptm = gmtime((time_t *)&epochTime);
 
-    uint16_t monthDay = ptm->tm_mday;
-    uint16_t currentMonth = ptm->tm_mon + 1;
-    uint16_t currentYear = ptm->tm_year + 1900;
-
-    String data = String(monthDay) + "-" + String(currentMonth) + "-" + String(currentYear) + " " + String(timeClient.getHours()) + ":" + String(timeClient.getMinutes()) + ":" + String(timeClient.getSeconds());
+    String data = refactor(ptm->tm_mday) + "-" + refactor(ptm->tm_mon + 1) + "-" + String(ptm->tm_year + 1900) + " " + refactor(timeClient.getHours()) + ":" + refactor(timeClient.getMinutes()) + ":" + refactor(timeClient.getSeconds());
     return data;
 }
 
@@ -94,7 +53,39 @@ IPAddress strToIp(String miIp)
 
     return IPAddress(oct0, oct1, oct2, oct3);
 }
-
+/*
+{
+  "device": {
+    "UID": "296876",
+    "name": "default"
+  },
+  "network": {
+    "SSID": "default",
+    "wifiPassword": "default",
+    "ip": "",
+    "subnetMask": "",
+    "gateway": ""
+  },
+  "smtp": {
+    "mailSender": "giulicrenna@outlook.com",
+    "mailPassword": "kirchhoff2002",
+    "mailReceiver": "",
+    "smtpServer": "smtp.office365.com",
+    "smtpPort": "587"
+  },
+  "ports": {
+    "IO_0": "OTU",
+    "IO_1": "OTD",
+    "IO_2": "OTD",
+    "IO_3": "OTD"
+  },
+  "etc": {
+    "MQTTtemp": "1000",
+    "MQTThum": "10000",
+    "keepAlive": "600000"
+  }
+}
+*/
 /**
  * @brief
  *
@@ -105,7 +96,7 @@ IPAddress strToIp(String miIp)
 int updateConfig(fs::FS &fs, const char *json)
 {
     Serial.println("UPDATING CONFIGURATION");
-
+    Serial.println(json);
     delay(2000);
 
     StaticJsonDocument<1024> newConfig;
@@ -120,17 +111,14 @@ int updateConfig(fs::FS &fs, const char *json)
         return 1;
     }
 
-    File fileWrite = fs.open("/config.json", "w");
-
-
     String device_uid = newConfig["device"]["UID"];
-    String device_name = newConfig["device"]["name"]; 
+    String device_name = newConfig["device"]["name"];
     String new_network_SSID = newConfig["network"]["SSID"];
     String new_network_wifiPassword = newConfig["network"]["wifiPassword"];
     String new_network_ip = newConfig["network"]["ip"];
     String new_network_submask = newConfig["network"]["subnetMask"];
     String new_network_gateway = newConfig["network"]["gateway"];
-    String smtp_sender = newConfig["smtp"]["mailSender"]; 
+    String smtp_sender = newConfig["smtp"]["mailSender"];
     String smtp_passw = newConfig["smtp"]["mailPassword"];
     String smtp_receiver = newConfig["smtp"]["mailReceiver"];
     String smpt_server = newConfig["smtp"]["smtpServer"];
@@ -139,8 +127,9 @@ int updateConfig(fs::FS &fs, const char *json)
     String ports_IO1 = newConfig["ports"]["IO_1"];
     String ports_IO2 = newConfig["ports"]["IO_2"];
     String ports_IO3 = newConfig["ports"]["IO_3"];
-    String ports_mqttmsg = newConfig["ports"]["MQTTmsg"];
-    String ports_keepalive = newConfig["ports"]["keepAlive"];
+    String ports_mqttMQTTtemp = newConfig["etc"]["MQTTtemp"];
+    String ports_mqttMQTThum = newConfig["etc"]["MQTThum"];
+    String ports_keepalive = newConfig["etc"]["keepAlive"];
 
     Serial.println("*** Starting new configuration...");
 
@@ -160,9 +149,18 @@ int updateConfig(fs::FS &fs, const char *json)
     writeConfig["ports"]["IO_1"] = ports_IO1;
     writeConfig["ports"]["IO_2"] = ports_IO2;
     writeConfig["ports"]["IO_3"] = ports_IO3;
-    writeConfig["ports"]["MQTTmsg"] = ports_mqttmsg;
-    writeConfig["ports"]["keepAlive"] = ports_keepalive;
+    writeConfig["etc"]["MQTTtemp"] = ports_mqttMQTTtemp;
+    writeConfig["etc"]["MQTThum"] = ports_mqttMQTThum;
+    writeConfig["etc"]["keepAlive"] = ports_keepalive;
 
+    File fileWrite = fs.open("/config.json", "w");
+
+    Serial.println("*** Opening new file...");
+
+    if (!fileWrite)
+    {
+        Serial.println("Error opening config file");
+    }
     auto error3 = serializeJsonPretty(writeConfig, fileWrite);
 
     if (!error3)
@@ -177,4 +175,34 @@ int updateConfig(fs::FS &fs, const char *json)
     return 0;
 }
 
+int restoreConfig(fs::FS &fs)
+{
+    Serial.println("*** Restoring default configuration ***");
+
+    fs.remove("/config.json");
+    File restoreFile = fs.open("/restore.json", "r");
+    File configFile = fs.open("/config.json", "w+");
+
+    String content;
+    if (!restoreFile.available())
+    {
+        Serial.println("Couldn't open the file");
+        return 1;
+    }
+    while (restoreFile.available())
+    {
+        content += restoreFile.readString();
+        break;
+    }
+
+    configFile.print(content);
+
+    configFile.close();
+    restoreFile.close();
+
+    return 0;
+}
 #endif
+
+
+

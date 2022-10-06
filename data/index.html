@@ -1,56 +1,168 @@
-<!DOCTYPE html>
 <html>
+<header>
+  <style>
+    body {
+      font-family: verdana, sans-serif;
+      font-size: 12px;
+      color: #000000;
+      font-style: normal;
+      font-weight: normal;
+      font-variant: normal;
+      text-align: left;
+      letter-spacing: 0px;
+      line-height: 20px;
+    }
 
-<head>
-  <title>Darkflow Device</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css"
-    integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-  <link rel="stylesheet" type="text/css" href="style.css">
-</head>
+    input[type=button],
+    input[type=submit],
+    input[type=reset] {
+      background-color: #9b0556;
+      border: none;
+      color: white;
+      font-weight: bold;
+      padding: 8px 16px;
+      text-decoration: none;
+      margin: 2px 2px;
+      cursor: pointer;
+    }
+  </style>
+</header>
 
 <body>
-  <div class="topnav">
-    <h1>Darkflow Device</h1>
-  </div>
+  <center>
+    <table style="border-collapse: collapse; width: 400px; height: 284px; border: 1px solid #3c0471;" border="0">
+      <tbody>
+        <tr style="height: 55px;">
+          <td style="text-align: center; background-color: #3c0471; height: 55px; width: 396px;color: #ffffff;"
+            colspan="3" valign="center">
+            <h2><strong>DARKFLOW DEVICE</span></h2>
+          </td>
+        </tr>
+        <tr style="height: 54px;">
+          <td style="width: 36.875px; text-align: center; height: 54px;"><img src="termp" alt="" width="32"
+              height="32" /></td>
+          <td style="width: 176.547px; height: 54px;">Temperatura 1</td>
+          <td style="width: 176.578px; text-align: center; height: 54px;">
+            <h3 id="temperature0"><strong>%TEMPERATURE0%</strong>
+            </h3>
+          </td>
+        </tr>
+        <tr style="height: 54px;">
+          <td style="width: 36.875px; text-align: center; height: 54px;"><img src="termp" alt="" width="32"
+              height="32" /></td>
+          <td style="width: 176.547px; height: 54px;">Temperatura 2</td>
+          <td style="width: 176.578px; height: 54px;">
+            <h3 style="text-align: center;" id="temperature1"><strong>%TEMPERATURE1%</strong>
+            </h3>
+          </td>
+        </tr>
+        <tr style="height: 54px;">
+          <td style="width: 36.875px; text-align: center; height: 54px;"><img src="gota" alt="" width="32"
+              height="32" /></td>
+          <td style="width: 176.547px; height: 54px;">Humedad</td>
+          <td style="width: 176.578px; height: 54px;">
+            <h3 style="text-align: center;" id="humidity"><strong>%HUMIDITY%</strong>
+            </h3>
+          </td>       
+        </tr>
+        <tr>
+          <td style="width: 36.875px; text-align: center; height: 54px;"><img src="relay" alt="" width="32"
+            height="32" /></td>
+          <td style="width: 176.547px; height: 54px;">Estado del rele</td>
+          <td style="width: 176.578px; height: 54px;">
+            <h3 style="text-align: center;" id="rele"><strong>%RELE%</strong>
+            </h3>
+          </td>
+        </tr>
+        <tr style="height: 43px;">
+          <td style="height: 43px; width: 396px;" colspan="3">
+            <table style="border-collapse: collapse; width: 100%; height: 36px; border-color: #3c0471;" border="0">
+              <tbody>
+                <tr style="text-align: center; ; background-color: #5705a3;">
+                  <td style="width: 25%; text-align: center; height: 18px;"><span style="color: #ffffff;">Button
+                      1</span></td>
+                  <td style="width: 25%; text-align: center; height: 18px;"><span style="color: #ffffff;">Button
+                      2</span></td>
+                  <td style="width: 25%; text-align: center; height: 18px;"><span style="color: #ffffff;">Button
+                      3</span></td>
+                  <td style="width: 25%; text-align: center; height: 18px;"><span style="color: #ffffff;">Button
+                      4</span></td>
+                </tr>
+                <tr style="height: 18px;">
+                  <td style="width: 25%; text-align: center; height: 18px;"><strong><span id="io0">%IO0%</span></strong>
+                  </td>
+                  <td style="width: 25%; text-align: center; height: 18px;"><strong><span id="io1">%IO1%</span></strong>
+                  </td>
+                  <td style="width: 25%; text-align: center; height: 18px;"><strong><span id="io2">%IO2%</span></strong>
+                  </td>
+                  <td style="width: 25%; text-align: center; height: 18px;"><strong><span id="io3">%IO3%</span></strong>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
 
-  <div class="card">
-    <div class="container">
-      <p>
-        <i class="fas fa-thermometer-half" style="color:#059e8a;"></i>
-        <span class="dht-labels">OneWire -> Temperature 0: </span>
-      </p>
-      <span id="temperature">%TEMPERATURE0%</span>
-      <sup class="units">&deg;C</sup>
-    </div>
-  </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <table style="border-collapse: collapse; width: 400px; height: 66px;" border="0">
+      <tbody>
 
-  <div class="card">
-    <div class="container">
-      <p>
-        <i class="fas fa-thermometer-half" style="color:#059e8a;"></i>
-        <span class="dht-labels">DHT -> Temperature 1: </span>
-      </p>
-      <span id="temperature">%TEMPERATURE1%</span>
-      <sup class="units">&deg;C</sup>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="container">
-      <p>
-        <i class="fas fa-tint" style="color:#00add6;"></i>
-        <span class="dht-labels">DHT -> Humidity: </span>
-      </p>
-      <span id="humidity">%HUMIDITY%</span>
-      <sup class="units">&percnt;</sup>
-    </div>
-  </div>
-
-  </div>
-
-
+        <tr>
+          <td><a href="/reset"><input type="button" value="RESET" /></a></td>
+          <td align="center"><input type="button" value="Boton2" onclick="alert()" /></td>
+          <td align="right"><input type="button" value="Boton3" onclick="alert()" /></td>
+        </tr>
+    </table>
+    <h1>Hardware Information</h1>
+    <table style="border-collapse: collapse; width: 400px; height: 100px;" border="2">
+      <tbody>
+        <tr>
+          <td style="width: 35%; text-align: center; height: 18px;"><strong><span>Device Voltage</span></strong></td>
+          <td style="width: 25%; text-align: center; height: 18px;" id="VCC"><span>%VCC</span></td>
+        </tr>
+        <tr>
+          <td style="width: 25%; text-align: center; height: 18px;"><strong><span>Boot Version:</span></strong></td>
+          <td style="width: 25%; text-align: center; height: 18px;" id="BOOTVERSION"><span>%BOOTVERSION</span></td>
+        </tr>
+        <tr>
+          <td style="width: 35%; text-align: center; height: 18px;"><strong><span>CPU frequency:</span></strong></td>
+          <td style="width: 25%; text-align: center; height: 18px;" id="CPU"><span>%CPU</span></td>
+        </tr>
+        <tr>
+          <td style="width: 25%; text-align: center; height: 18px;"><strong><span>Free Heap:</span></strong></td>
+          <td style="width: 25%; text-align: center; height: 18px;" id="heap"><span>%HEAP</span></td>
+        </tr>
+        <tr>
+          <td style="width: 35%; text-align: center; height: 18px;"><strong><span>Chip ID:</span></strong></td>
+          <td style="width: 25%; text-align: center; height: 18px;" id="chipid"><span>%chipid</span></td>
+        </tr>
+        <tr>
+          <td style="width: 25%; text-align: center; height: 18px;"><strong><span>Core Version:</span></strong></td>
+          <td style="width: 25%; text-align: center; height: 18px;" id="CORE"><span>%CORE</span></td>
+        </tr>
+        <tr>
+          <td style="width: 35%; text-align: center; height: 18px;"><strong><span>Flash Chip ID:</span></strong></td>
+          <td style="width: 25%; text-align: center; height: 18px;" id="FCID"><span>%FCID</span></td>
+        </tr>
+        <tr>
+          <td style="width: 25%; text-align: center; height: 18px;"><strong><span>Flash Real Size:</span></strong></td>
+          <td style="width: 25%; text-align: center; height: 18px;" id="FRS"><span>%FRS</span></td>
+        </tr>
+        <tr>
+          <td style="width: 35%; text-align: center; height: 18px;"><strong><span>Flash Chip Speed:</span></strong></td>
+          <td style="width: 25%; text-align: center; height: 18px;" id="FCS"><span>%FCS</span></td>
+        </tr>
+        <tr>
+          <td style="width: 25%; text-align: center; height: 18px;"><strong><span>Free Sketch Size:</span></strong></td>
+          <td style="width: 25%; text-align: center; height: 18px;" id="FSS"><span>%FSS</span></td>
+        </tr>
+        <tr>
+          <td style="width: 35%; text-align: center; height: 18px;"><strong><span>Full Version:</span></strong></td>
+          <td style="width: 25%; text-align: center; height: 18px;" id="FVV"><span>%FVV</span></td>
+        </tr>
+    </table>
+  </center>
 </body>
 
 <script>
@@ -58,32 +170,32 @@
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function () {
       if (this.readyState == 4 && this.status == 200) {
-        document.getElementById("temperature0").innerHTML = this.responseText;
+        var a = this.responseText.split(';');
+
+        document.getElementById("temperature0").innerHTML = a[0] + "&#8451";
+        document.getElementById("temperature1").innerHTML = a[1] + "&#8451";
+        document.getElementById("humidity").innerHTML = a[2] + "%";
+        document.getElementById("io0").innerHTML = a[3];
+        document.getElementById("io1").innerHTML = a[4];
+        document.getElementById("io2").innerHTML = a[5];
+        document.getElementById("io3").innerHTML = a[6];
+        document.getElementById("heap").innerHTML = a[7];
+        document.getElementById("BOOTVERSION").innerHTML = a[8];
+        document.getElementById("chipid").innerHTML = a[9];
+        document.getElementById("CPU").innerHTML = a[10] + " MHz";
+        document.getElementById("CORE").innerHTML = a[11];
+        document.getElementById("FCID").innerHTML = a[12];
+        document.getElementById("FRS").innerHTML = a[13] + " bytes";
+        document.getElementById("FCS").innerHTML = a[14];
+        document.getElementById("FSS").innerHTML = a[15] + " bytes";
+        document.getElementById("FVV").innerHTML = a[16];
+        document.getElementById("VCC").innerHTML = a[17];
+        document.getElementById("rele").innerHTML = a[18];
       }
     };
-    xhttp.open("GET", "/temperature0", true);
+    xhttp.open("GET", "/allvalues", true);
     xhttp.send();
-  }, 10000);
-  setInterval(function () {
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function () {
-      if (this.readyState == 4 && this.status == 200) {
-        document.getElementById("temperature1").innerHTML = this.responseText;
-      }
-    };
-    xhttp.open("GET", "/temperature1", true);
-    xhttp.send();
-  }, 10000);
-  setInterval(function () {
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function () {
-      if (this.readyState == 4 && this.status == 200) {
-        document.getElementById("humidity").innerHTML = this.responseText;
-      }
-    };
-    xhttp.open("GET", "/humidity  ", true);
-    xhttp.send();
-  }, 10000);
+  }, 50);
 </script>
 
 </html>

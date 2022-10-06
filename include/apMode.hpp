@@ -22,9 +22,11 @@ is the UID (Unique ID) of the device.
 
 #ifndef APMODE_H
 #define APMODE_H
+
 #include <WiFiManager.h>
-#include "functions.h"
-#include "screenController.h"
+#include <ArduinoJson.h>
+#include "functions.hpp"
+#include "screenController.hpp"
 
 IPAddress local_ip(192, 168, 1, 1);
 IPAddress gateway(192, 168, 1, 1);
@@ -41,12 +43,24 @@ Screen myScreenAp;
 
 bool shouldSaveConfig = false;
 
+/**
+ * @brief apMode class
+ *
+ */
+
+/*
+apMode is the main class is where is stored all the required data to make the library work
+and where are the neccessary methods to setup all the connections.
+
+*/
+
 class apMode
 {
 private:
-  const char *ssid = String("Darkflow-" + ESP.getChipId()).c_str();
+  const char *ssid = String("darkflow-" + ESP.getChipId()).c_str();
   const char *password = "123456789";
   const char *icon = "<link rel='icon' type='image/png' sizes='16x16' href='data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAADv7+//7+/v/+/v7//v7+//7+/v//Hw7//y8e//8fHv//Lx7//y8u//8vHv/+/v7//v7+//7+/v/+/v7//v7+//FxcX/xcXF/8XFxf/FxcX/xcXF/8QERf/DA4X/wwOF/8MDhf/CQsW/w0OF/8YGBf/GBgX/xcXF/8XFxf/FxcX/wAAAP8AAAD/AAAA/wIBAP8AAAD/XE0A/5R7AP+JcgD/iHEA/21bAP8uJQD/AAAA/wAAAP8AAAD/AAAA/wAAAP8BAQH/AQEB/wAAAf8EAwL/AAAB/5V+CP/sxwv/478L/+zGC//wygv/478L/5eAB/8YFAL/AAAB/wMDAv8BAQH/AAAA/wwKAf9iUwT/NSwC/wAAAP+KdAb/478K/1JFBP8kHgL/XE0E/66SB//sxwr/spYI/xANAf8AAAD/AQEA/wAAAP9wXgX/+dEK/0k9A/8AAAD/i3UG/+G9Cv9qWQX/NCwD/wMCAP8FBAD/kHkG/+3ICv95ZQX/AAAA/wMCAP8AAAD/c2EF/+rFCv9DOQP/AAAA/5mBBv/uyAr/6cQK//LLCv80LAL/AAAA/xkVAf/JqQn/w6QI/wsJAf8AAAD/AAAA/3JgBf/txwr/QzkD/wAAAP9SRAT/fGgF/29dBf96ZwX/LygC/wAAAP8AAAD/lHwG/967Cv8iHQL/AAAA/wAAAP9yYAX/7ccK/0M5A/8AAAD/YVIE/5R9Bv+Icwb/knoG/3FfBf8AAAD/AAAA/4dyBv/jvwn/KCEC/wAAAP8AAAD/cmAF/+3HCv9EOgP/AAAA/52EB//0zgr/478K/+rFCv/Ztwn/HBcC/wAAAP+skQf/1rQJ/xoWAf8AAAD/AAAA/3JgBf/txwr/RDkD/wAAAP8oIQL/OC8C/zUtAv81LQL/OzED/wQDAP86MQP/4L0J/62SB/8AAAD/AAAA/wAAAP9yYAX/7ccK/0A2A/8AAAD/AwIA/wAAAP8AAAD/AQEA/wAAAP8qIwL/vZ8I/+fDCv9URwT/AAAA/wMCAP8AAAD/cV8F/+XACv9wXgX/PzUD/0s/A/9KPgP/T0IE/2NTBP+QeQb/1LMJ/+rFCv+FcAb/AAAA/wEBAP8AAAD/AAAA/35qBf/yywr/58EK/+/ICv/uyAr/7sgK/+/ICv/wygr/68YK/8ioCP9lVQX/AwMA/wEAAP8AAAD/AAAA/wAAAP9BNwP/fGgF/3BeBf9xXwX/cmAF/3JfBf9yYAX/alkF/0c8A/8SDwH/AAAA/wICAP8BAAD/AAAA/wAAAP8BAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wMCAP8BAAD/AAAA/wAAAP8AAAD/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==' />";
+  String name = String("darkflow-") + String(ESP.getChipId());
   char smtpMail[40];
   char staticIPAP[40];
   char gatewayAP[40];
@@ -71,7 +85,6 @@ public:
     IPAddress miGateway = strToIp(gatewayAP_.c_str());
     IPAddress miSubnet = strToIp(subnetMaskAP.c_str());
 
-
     myManager.setCustomHeadElement(icon);
 
     myManager.setAPStaticIPConfig(local_ip, gateway, subnet);
@@ -82,13 +95,13 @@ public:
 
     myManager.setTitle("Darkflow Device");
 
-    //myManager.setTimeout(520);
+    myManager.setTimeout(520);
 
     myManager.setScanDispPerc(true);
 
     myManager.setCaptivePortalEnable(true);
 
-    // myManager.setHostname("dfdevice");
+    myManager.setHostname(name.c_str());
 
     // Shows information trough the I2C screen
 
@@ -117,7 +130,7 @@ public:
     //<-
 
     //-> Start the client
-    String name = String("Darkflow_") + String(ESP.getChipId());
+
     bool isConnected = myManager.autoConnect(name.c_str());
 
     if (staticIpAP != "" && subnetMaskAP != "" && gatewayAP_ != "")
@@ -125,7 +138,7 @@ public:
       myManager.setSTAStaticIPConfig(miIp, miGateway, miSubnet, IPAddress(8, 8, 8, 8)); // Repair this, static ip detected but no configured
       WiFi.config(miIp, miGateway, miSubnet);
     }
-    
+
     //-> Save config into JSON
     strcpy(smtpMail, smtpUser.getValue());
     strcpy(staticIPAP, StaticIpParam.getValue());
@@ -139,7 +152,6 @@ public:
                         String(gatewayAP), String(subnetAP), myManager.getWiFiSSID(), myManager.getWiFiPass(), String(deviceName_));
       ESP.restart();
     }
-
 
     if (!isConnected)
     {
@@ -160,7 +172,7 @@ public:
   void reset()
   {
     Serial.println("*** Resetting WiFi credentials ***");
-    myScreenAp.printScreen("  Resetting Device ", 0, 1, true);
+    myScreenAp.printScreen("Resetting Device ", 0, 1, true);
     delay(5000);
     myManager.resetSettings();
     ESP.eraseConfig();
@@ -175,7 +187,7 @@ saveConfigCallback: None -> None
 This function is used by the library WiFimanager.h as a flag to save the parameters at the
 end of the configuration instance of the library.
 In conclution this function is used to call only one time another funtion to do wherever
-the programmer wants. (In this case changeCredentials will be called) 
+the programmer wants. (In this case changeCredentials will be called)
 */
 void saveConfigCallback()
 {
@@ -217,8 +229,9 @@ void changeCredentials(fs::FS &fs, const char *path, String mailReceiver,
   config["ports"]["IO_1"] = "5000";
   config["ports"]["IO_2"] = "5000";
   config["ports"]["IO_3"] = "5000";
-  config["ports"]["MQTTmsg"] = "5000";
-  config["ports"]["keepAlive"] = "600000";
+  config["etc"]["MQTTtemp"] = "5000";
+  config["etc"]["MQTThum"] = "5000";
+  config["etc"]["keepAlive"] = "600000";
 
   Serial.println("#### CONFIG WRITTEN ####");
 

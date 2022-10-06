@@ -11,8 +11,8 @@
     "gateway": ""
   },
   "smtp": {
-    "mailSender": "giulicrenna@outlook.com",
-    "mailPassword": "kirchhoff2002",
+    "mailSender": "admin@outlook.com",
+    "mailPassword": "adminadmin",
     "mailReceiver": "",
     "smtpServer": "smtp.office365.com",
     "smtpPort": "587"
@@ -24,8 +24,8 @@
     "IO_3": "OTD"
   },
   "etc": {
-    "MQTTtemp": "1000",
-    "MQTThum": "10000",
+    "MQTTtemp": "5000",
+    "MQTThum": "7000",
     "keepAlive": "600000"
   }
 }

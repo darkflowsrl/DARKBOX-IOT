@@ -19,16 +19,18 @@
 #include <ArduinoJson.h>
 #include <Arduino.h>
 #include <vector>
+#include <cstdlib>
 
-#include "global.h"
-#include "apMode.h"
-#include "dataSensors.h"
-#include "screenController.h"
-#include "inputController.h"
-#include "jsonizer.h"
-#include "functions.h"
-#include "httpServer.h"
-#include "myMqtt.h"
+#include "global.hpp"
+#include "apMode.hpp"
+#include "dataSensors.hpp"
+#include "screenController.hpp"
+#include "inputController.hpp"
+#include "jsonizer.hpp"
+#include "functions.hpp"
+#include "httpServer.hpp"
+#include "myMqtt.hpp"
+#include "smtp.hpp"
 
 void listDir(fs::FS &fs, const char *dirname, uint8_t levels);
 void readFile(fs::FS &fs, const char *path);
@@ -38,7 +40,6 @@ void renameFile(fs::FS &fs, const char *path1, const char *path2);
 void deleteFile(fs::FS &fs, const char *path);
 void loadData(fs::FS &fs, const char *path);
 void callback(char *topic, byte *payload, unsigned int lenght);
-void checkReset(std::string inputJson);
 void loadTemporalData(fs::FS &fs, std::string t0, std::string t1, std::string h0,
                       std::string d0, std::string d1, std::string d2, std::string d3);
 void reconnect();
@@ -60,7 +61,7 @@ void setup()
   {
     myScreen.screenClean();
     myScreen.printScreen("Failed to mount...", 0, 1, true);
-    Serial.println("SPIFFS Mount Failed");
+    Serial.println("(Setup Instance) SPIFFS Mount Failed");
     return;
   }
   // Load and visualize data
@@ -86,83 +87,76 @@ void setup()
 void loop()
 {
   // SMTP test
-  /*
   if (std::atof(mySensors.singleSensorRawdataTemp(0).c_str()) >= std::atof("50"))
   {
-    sendEmail(smtpSender.c_str(), smtpPass.c_str(), SmtpReceiver.c_str(),
-              SmtpServer.c_str(), 587);
-  }*/
+    sendMail("Alerta", "You have Overpass the temperature");
+  }
+
   // HTTP and mDNS loop
   myInputs.inputData();
   setupHttpServer();
-  // Data to screen
-  // refreshScreen();
-  // Temporal data to EEPROM
+  //  Data to screen
+  //  refreshScreen();
+  //  Temporal data to EEPROM
   if (millis() - previousTimeTemporalData >= temporalDataRefreshTime)
   {
     loadTemporalData(LittleFS, mySensors.singleSensorRawdataTemp(0).c_str(), mySensors.singleSensorRawdataDHT(false).c_str(), mySensors.singleSensorRawdataDHT(true).c_str(),
-                     myInputs.returnSingleInput(12), myInputs.returnSingleInput(13),
+                     myInputs.returnSingleInput(13), myInputs.returnSingleInput(12),
                      myInputs.returnSingleInput(14), myInputs.returnSingleInput(16));
     previousTimeTemporalData = millis();
   }
-  // MQTT
-  if (millis() - previousTimeMQTT > MQTTmsgTime)
+  // MQTT temp
+  if (millis() - previousTimeMQTTtemp > MQTTtemp)
   {
     myInputs.readInputs();
     // JSON data creation
-    DynamicJsonDocument data(512);
-    std::string data_, dataPretty;
+    DynamicJsonDocument dataJson_0(512);
+    std::string data_0, dataPretty_0;
 
-    data["DeviceId"] = String(ESP.getChipId());
-    data["DeviceName"] = deviceName.c_str();
-    data["Timestamp"] = formatedTime();
-    data["MsgType"] = "Data";
-    data["Value"]["Temperature_0"] = mySensors.singleSensorRawdataTemp(0);
-    data["Value"]["DHT_temperature"] = mySensors.singleSensorRawdataDHT(false);
-    data["Value"]["DHT_humidity"] = mySensors.singleSensorRawdataDHT(true);
-    serializeJson(data, data_);
-    serializeJsonPretty(data, dataPretty);
+    dataJson_0["DeviceId"] = String(ESP.getChipId());
+    dataJson_0["DeviceName"] = deviceName.c_str();
+    dataJson_0["Timestamp"] = ntpRaw();
+    dataJson_0["MsgType"] = "Data";
+    dataJson_0["Value"][0]["Port"] = "DHT_TEMPERATURE";
+    dataJson_0["Value"][0]["Value"] = mySensors.singleSensorRawdataDHT(false);
+    serializeJson(dataJson_0, data_0);
+    serializeJsonPretty(dataJson_0, dataPretty_0);
 
-    // Device hard reset check
-    checkReset(data_.c_str());
-
-    Serial.println(dataPretty.c_str());
+    // Serial.println(dataPretty_0.c_str());
     mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), espClient, keep_alive_topic_publish.c_str(), root_topic_publish.c_str(),
-               data_.c_str());
-    previousTimeMQTT = millis();
+               data_0.c_str());
+    previousTimeMQTTtemp = millis();
+  }
+  // MQTT Humidity
+  if (millis() - previousTimeMQTThum > MQTThum)
+  {
+    myInputs.readInputs();
+    // JSON data creation
+    DynamicJsonDocument dataJson_1(512);
+    std::string data_1, dataPretty;
+
+    dataJson_1["DeviceId"] = String(ESP.getChipId());
+    dataJson_1["DeviceName"] = deviceName.c_str();
+    dataJson_1["Timestamp"] = ntpRaw();
+    dataJson_1["MsgType"] = "Data";
+    dataJson_1["Value"][0]["Port"] = "DHT_HUMIDITY";
+    dataJson_1["Value"][0]["Value"] = mySensors.singleSensorRawdataDHT(true);
+    serializeJson(dataJson_1, data_1);
+    serializeJsonPretty(dataJson_1, dataPretty);
+
+    // Serial.println(dataPretty.c_str());
+    mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), espClient, keep_alive_topic_publish.c_str(), root_topic_publish.c_str(),
+               data_1.c_str());
+    previousTimeMQTThum = millis();
   }
   if (millis() - previousKeepAliveTime > keepAliveTime)
   {
     String aliveMessage = String("{\"deviceStatus\": \"") + String(ESP.getChipId()) + String("\"}");
-    mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), espClient, keep_alive_topic_publish.c_str(), keep_alive_topic_publish.c_str(),
+    mqttOnLoop(host.c_str(), port, keep_alive_topic_publish.c_str(), espClient, keep_alive_topic_publish.c_str(), keep_alive_topic_publish.c_str(),
                aliveMessage.c_str());
     previousKeepAliveTime = millis();
   }
   myInputs.readInputs();
-}
-
-void checkReset(std::string inputJson)
-{
-  StaticJsonDocument<1024> config;
-  auto error = deserializeJson(config, inputJson.c_str());
-  if (error)
-  {
-    Serial.println("Failed to deserialize");
-    Serial.println(error.f_str());
-  }
-  // String inputState = config["Input2"];
-  // Serial.println(inputState);
-  if (config["Value"]["Digital_2"] == "HIGH")
-  {
-    for (int i = 0; i <= 2; i++)
-    {
-      delay(1000);
-      if (i == 2)
-      {
-        apInstance.reset();
-      }
-    }
-  }
 }
 
 /**
@@ -181,27 +175,13 @@ void checkReset(std::string inputJson)
 void loadTemporalData(fs::FS &fs, std::string t0, std::string t1, std::string h0,
                       std::string d0, std::string d1, std::string d2, std::string d3)
 {
-
-  File file_ = fs.open("temp.json", "w");
-  if (!file_)
-  {
-    Serial.print("error > ");
-    Serial.print(file_.available());
-    Serial.println(" (temporal file creation instance) Couldn't open the file");
-  }
-  StaticJsonDocument<512> temporalData;
-
-  temporalData["temp0"] = t0;
-  temporalData["tempDHT"] = t1;
-  temporalData["humDHT"] = h0;
-  temporalData["digital0"] = d0;
-  temporalData["digital1"] = d1;
-  temporalData["digital2"] = d2;
-  temporalData["digital3"] = d3;
-
-  serializeJsonPretty(temporalData, file_);
-
-  file_.close();
+  TemporalAccess.t0 = std::atoi(t0.c_str());
+  TemporalAccess.t1 = std::atoi(t1.c_str());
+  TemporalAccess.h0 = std::atoi(h0.c_str());
+  TemporalAccess.d0 = d0.c_str();
+  TemporalAccess.d1 = d1.c_str();
+  TemporalAccess.d2 = d2.c_str();
+  TemporalAccess.d3 = d3.c_str();
 }
 
 void refreshScreen()
@@ -215,7 +195,7 @@ void refreshScreen()
   if (currentTime - previousTimeScreen >= eventInterval)
   {
     myScreen.printScreen("SENSORS DATA:", 0, 0, false);
-    myScreen.printScreen(ntpRawNoDay(), 15, 0, false);
+    myScreen.printScreen(formatedTime(), 15, 0, false);
     myScreen.printScreen(tempString0, 0, 1, false);
     myScreen.printScreen(tempString1, 0, 2, false);
     myScreen.printScreen(tempString2, 0, 3, false);
@@ -313,6 +293,7 @@ void loadData(fs::FS &fs, const char *path)
   {
     Serial.println("Failed to deserialize");
     Serial.println(error.f_str());
+    restoreConfig(LittleFS);
   }
 
   // Serial.println(config.size());
@@ -323,17 +304,19 @@ void loadData(fs::FS &fs, const char *path)
   subnetMaskAP = (const char *)config["network"]["subnetMask"];
   gatewayAP = (const char *)config["network"]["gateway"];
 
-  smtpSender = (const char *)config["smtp"]["mailSender"];
-  smtpPass = (const char *)config["smtp"]["mailPassword"];
+  SmtpSender = (const char *)config["smtp"]["mailSender"];
+  SmtpPass = (const char *)config["smtp"]["mailPassword"];
   SmtpReceiver = (const char *)config["smtp"]["mailReceiver"];
   SmtpServer = (const char *)config["smtp"]["smtpServer"];
+  SmtpPort = std::stoi((const char *)config["smtp"]["smtpPort"]);
 
   IO_0 = (const char *)config["ports"]["IO_0"];
   IO_1 = (const char *)config["ports"]["IO_1"];
   IO_2 = (const char *)config["ports"]["IO_2"];
   IO_3 = (const char *)config["ports"]["IO_3"];
-  MQTTmsgTime = std::stoi((const char *)config["ports"]["MQTTmsg"]);
-  keepAliveTime = std::stoi((const char *)config["ports"]["keepAlive"]);
+  MQTTtemp = std::stoi((const char *)config["etc"]["MQTTtemp"]);
+  MQTThum = std::stoi((const char *)config["etc"]["MQTThum"]);
+  keepAliveTime = std::stoi((const char *)config["etc"]["keepAlive"]);
 
   Serial.println("#### CONFIG LOADED ####");
 

@@ -1,10 +1,17 @@
 #ifndef MYMQTT_H
 #define MYMQTT_H
 #include <ArduinoMqttClient.h>
+#include <WiFiClient.h>
+#include <string.h>
 
 WiFiClient client_;
 MqttClient mqttClient(client_);
 
+/**
+ * @brief This function handle the incomming messages from a particular topic
+ *
+ * @param messageSize
+ */
 void onMqttMessage(int messageSize)
 {
   // we received a message, print out the topic and contents
@@ -15,25 +22,34 @@ void onMqttMessage(int messageSize)
   Serial.println(" bytes:");
 
   String newContent;
-  
+
   // use the Stream interface to print the contents
   while (mqttClient.available())
   {
     newContent += (char)mqttClient.read();
   }
 
-  Serial.println(newContent);
-
   updateConfig(LittleFS, newContent.c_str());
 }
 
 void mqttSetup(const char *MQTT_SERVER, uint16_t MQTT_PORT, const char *PATH, WiFiClient client, const char *PATH_ALT = "")
 {
+  int count = 0;
   while (!mqttClient.connect(MQTT_SERVER, MQTT_PORT))
   {
-    Serial.print("MQTT connection failed! Error code: ");
-    Serial.println(std::to_string(mqttClient.connectError()).c_str());
-    delay(1500);
+    if (count != 500)
+    { // 500 (15 min aprox)
+      Serial.print(String(count) + String(") "));
+      Serial.print("(MQTT instance) MQTT connection failed! Error code: ");
+      Serial.println(std::to_string(mqttClient.connectError()).c_str());
+      count++;
+      delay(1500);
+    }
+    else
+    {
+      restoreConfig(LittleFS);
+      ESP.restart();
+    }
   }
 
   mqttClient.setId(String(ESP.getChipId()));
@@ -46,7 +62,7 @@ void mqttSetup(const char *MQTT_SERVER, uint16_t MQTT_PORT, const char *PATH, Wi
 
   mqttClient.subscribe(configTopic.c_str(), 2);
 
-  Serial.println("You're connected to the MQTT broker!");
+  Serial.println("(MQTT instance) You're connected to the MQTT broker!");
 }
 
 /**
@@ -63,6 +79,10 @@ void mqttSetup(const char *MQTT_SERVER, uint16_t MQTT_PORT, const char *PATH, Wi
 void mqttOnLoop(const char *MQTT_SERVER, uint16_t MQTT_PORT, const char *PATH, WiFiClient client, const char *PATH_ALT = "",
                 const char *TOPIC = "$SYS", const char *MESSAGE = "")
 {
+  if (!mqttClient.connected())
+  {
+    mqttClient.connect(MQTT_SERVER, MQTT_PORT);
+  }
   mqttClient.poll();
 
   if (!mqttClient.beginMessage(PATH))
