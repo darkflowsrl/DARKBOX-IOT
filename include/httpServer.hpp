@@ -73,18 +73,17 @@ String proccesor()
   d2 = String(TemporalAccess.d2);
   d3 = String(TemporalAccess.d3);
   heap = String(ESP.getFreeHeap());
-  bootVersion = String(ESP.getBootVersion());
-  chipId_ = chipId;
-  CPUfreq = String(ESP.getCpuFreqMHz());
-  coreVersion = String(ESP.getCoreVersion());
-  flashChipId = String(ESP.getFlashChipId());
-  flashRealSize = String(ESP.getFlashChipRealSize());
-  flashChipSpeed = String(ESP.getFlashChipSpeed());
-  freeSketchSize = String(ESP.getFreeSketchSpace());
-  fullVersion = String(ESP.getFullVersion());
   vcc = String(ESP.getVcc());
+  bootVersion;
+  CPUfreq;
+  coreVersion;
+  flashChipId;
+  flashRealSize;
+  flashChipSpeed;
+  freeSketchSize;
+  fullVersion;
 
-  String allValues = t0 + String(";") + t1 + String(";") + h0 + String(";") + d0 + String(";") + d1 + String(";") + d2 + String(";") + d3 + String(";") + heap + String(";") + bootVersion + String(";") + chipId_ + String(";") + CPUfreq + String(";") + coreVersion + String(";") + flashChipId + String(";") + flashRealSize + String(";") + flashChipSpeed + String(";") + freeSketchSize + String(";") + fullVersion + String(";") + vcc + fullVersion + String(";") + releStatus;
+  String allValues = t0 + String(";") + t1 + String(";") + h0 + String(";") + d0 + String(";") + d1 + String(";") + d2 + String(";") + d3 + String(";") + heap + String(";") + bootVersion + String(";") + chipId + String(";") + CPUfreq + String(";") + coreVersion + String(";") + flashChipId + String(";") + flashRealSize + String(";") + flashChipSpeed + String(";") + freeSketchSize + String(";") + fullVersion + String(";") + vcc + fullVersion + String(";") + releStatus;
 
   return allValues;
 }

@@ -183,7 +183,7 @@ public:
                 {
                     String message;
                     DynamicJsonDocument data(512);
-                    data["DeviceId"] = String(ESP.getChipId());
+                    data["DeviceId"] = chipId;
                     data["DeviceName"] = deviceName.c_str();
                     data["Timestamp"] = ntpRaw();
                     data["MsgType"] = "Data";
@@ -200,7 +200,7 @@ public:
                 {
                     String message;
                     DynamicJsonDocument data(512);
-                    data["DeviceId"] = String(ESP.getChipId());
+                    data["DeviceId"] = chipId;
                     data["DeviceName"] = deviceName.c_str();
                     data["Timestamp"] = ntpRaw();
                     data["MsgType"] = "Data";
@@ -225,7 +225,7 @@ public:
                 {
                     String message;
                     DynamicJsonDocument data(512);
-                    data["DeviceId"] = String(ESP.getChipId());
+                    data["DeviceId"] = chipId;
                     data["DeviceName"] = deviceName.c_str();
                     data["Timestamp"] = ntpRaw();
                     data["MsgType"] = "Data";
@@ -241,7 +241,7 @@ public:
                 {
                     String message;
                     DynamicJsonDocument data(512);
-                    data["DeviceId"] = String(ESP.getChipId());
+                    data["DeviceId"] = chipId;
                     data["DeviceName"] = deviceName.c_str();
                     data["Timestamp"] = ntpRaw();
                     data["MsgType"] = "Data";
@@ -265,7 +265,7 @@ public:
                 {
                     String message;
                     DynamicJsonDocument data(512);
-                    data["DeviceId"] = String(ESP.getChipId());
+                    data["DeviceId"] = chipId;
                     data["DeviceName"] = deviceName.c_str();
                     data["Timestamp"] = ntpRaw();
                     data["MsgType"] = "Data";
@@ -280,7 +280,7 @@ public:
                 {
                     String message;
                     DynamicJsonDocument data(512);
-                    data["DeviceId"] = String(ESP.getChipId());
+                    data["DeviceId"] = chipId;
                     data["DeviceName"] = deviceName.c_str();
                     data["Timestamp"] = ntpRaw();
                     data["MsgType"] = "Data";
@@ -304,7 +304,7 @@ public:
                 {
                     String message;
                     DynamicJsonDocument data(512);
-                    data["DeviceId"] = String(ESP.getChipId());
+                    data["DeviceId"] = chipId;
                     data["DeviceName"] = deviceName.c_str();
                     data["Timestamp"] = ntpRaw();
                     data["MsgType"] = "Data";
@@ -319,7 +319,7 @@ public:
                 {
                     String message;
                     DynamicJsonDocument data(512);
-                    data["DeviceId"] = String(ESP.getChipId());
+                    data["DeviceId"] = chipId;
                     data["DeviceName"] = deviceName.c_str();
                     data["Timestamp"] = ntpRaw();
                     data["MsgType"] = "Data";
@@ -357,7 +357,7 @@ public:
                 previousTime_IO_0 = millis();
                 String message;
                 DynamicJsonDocument data(512);
-                data["DeviceId"] = String(ESP.getChipId());
+                data["DeviceId"] = chipId;
                 data["DeviceName"] = deviceName.c_str();
                 data["Timestamp"] = ntpRaw();
                 data["MsgType"] = "Data";
@@ -397,7 +397,7 @@ public:
                 previousTime_IO_1 = millis();
                 String message;
                 DynamicJsonDocument data(512);
-                data["DeviceId"] = String(ESP.getChipId());
+                data["DeviceId"] = chipId;
                 data["DeviceName"] = deviceName.c_str();
                 data["Timestamp"] = ntpRaw();
                 data["MsgType"] = "Data";
@@ -437,7 +437,7 @@ public:
                 previousTime_IO_2 = millis();
                 String message;
                 DynamicJsonDocument data(512);
-                data["DeviceId"] = String(ESP.getChipId());
+                data["DeviceId"] = chipId;
                 data["DeviceName"] = deviceName.c_str();
                 data["Timestamp"] = ntpRaw();
                 data["MsgType"] = "Data";
@@ -479,7 +479,7 @@ public:
                 previousTime_IO_3 = millis();
                 String message;
                 DynamicJsonDocument data(512);
-                data["DeviceId"] = String(ESP.getChipId());
+                data["DeviceId"] = chipId;
                 data["DeviceName"] = deviceName.c_str();
                 data["Timestamp"] = ntpRaw();
                 data["MsgType"] = "Data";
