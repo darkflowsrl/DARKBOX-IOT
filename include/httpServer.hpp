@@ -13,7 +13,7 @@ dataSensors _mySensors;
 AsyncWebServer server(80);
 MDNSResponder mDns;
 
-String localDeviceName = String("darkflow-") + String(ESP.getChipId());
+String localDeviceName = String("darkflow-") + chipId;
 String t0, t1, h0, d0, d1, d2, d3, io0, io1, io2, io3, allvalues;
 
 void setupServer()
@@ -48,7 +48,7 @@ void setupServer()
             { request->send(LittleFS, "/relay.gif", "image/png"); });
   server.on("/reset", HTTP_POST, [](AsyncWebServerRequest *request)
             {
-            request->send(200,"text/plain","ok");
+            request->send(LittleFS, "/reset.html", "text/html");
             delay(2000);
             restoreConfig(LittleFS);
             ESP.eraseConfig();
@@ -73,18 +73,9 @@ String proccesor()
   d2 = String(TemporalAccess.d2);
   d3 = String(TemporalAccess.d3);
   heap = String(ESP.getFreeHeap());
-  bootVersion = String(ESP.getBootVersion());
-  chipId_ = String(ESP.getChipId());
-  CPUfreq = String(ESP.getCpuFreqMHz());
-  coreVersion = String(ESP.getCoreVersion());
-  flashChipId = String(ESP.getFlashChipId());
-  flashRealSize = String(ESP.getFlashChipRealSize());
-  flashChipSpeed = String(ESP.getFlashChipSpeed());
-  freeSketchSize = String(ESP.getFreeSketchSpace());
-  fullVersion = String(ESP.getFullVersion());
   vcc = String(ESP.getVcc());
 
-  String allValues = t0 + String(";") + t1 + String(";") + h0 + String(";") + d0 + String(";") + d1 + String(";") + d2 + String(";") + d3 + String(";") + heap + String(";") + bootVersion + String(";") + chipId_ + String(";") + CPUfreq + String(";") + coreVersion + String(";") + flashChipId + String(";") + flashRealSize + String(";") + flashChipSpeed + String(";") + freeSketchSize + String(";") + fullVersion + String(";") + vcc + fullVersion + String(";") + releStatus;
+  String allValues = t0 + String(";") + t1 + String(";") + h0 + String(";") + d0 + String(";") + d1 + String(";") + d2 + String(";") + d3 + String(";") + heap + String(";") + bootVersion + String(";") + chipId + String(";") + CPUfreq + String(";") + coreVersion + String(";") + flashChipId + String(";") + flashRealSize + String(";") + flashChipSpeed + String(";") + freeSketchSize + String(";") + fullVersion + String(";") + vcc + fullVersion + String(";") + releStatus;
 
   return allValues;
 }

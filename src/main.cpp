@@ -113,7 +113,7 @@ void loop()
     DynamicJsonDocument dataJson_0(512);
     std::string data_0, dataPretty_0;
 
-    dataJson_0["DeviceId"] = String(ESP.getChipId());
+    dataJson_0["DeviceId"] = chipId;
     dataJson_0["DeviceName"] = deviceName.c_str();
     dataJson_0["Timestamp"] = ntpRaw();
     dataJson_0["MsgType"] = "Data";
@@ -135,7 +135,7 @@ void loop()
     DynamicJsonDocument dataJson_1(512);
     std::string data_1, dataPretty;
 
-    dataJson_1["DeviceId"] = String(ESP.getChipId());
+    dataJson_1["DeviceId"] = chipId;
     dataJson_1["DeviceName"] = deviceName.c_str();
     dataJson_1["Timestamp"] = ntpRaw();
     dataJson_1["MsgType"] = "Data";
@@ -151,7 +151,7 @@ void loop()
   }
   if (millis() - previousKeepAliveTime > keepAliveTime)
   {
-    String aliveMessage = String("{\"deviceStatus\": \"") + String(ESP.getChipId()) + String("\"}");
+    String aliveMessage = String("{\"deviceStatus\": \"") + chipId + String("\"}");
     mqttOnLoop(host.c_str(), port, keep_alive_topic_publish.c_str(), espClient, keep_alive_topic_publish.c_str(), keep_alive_topic_publish.c_str(),
                aliveMessage.c_str());
     previousKeepAliveTime = millis();

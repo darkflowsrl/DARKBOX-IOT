@@ -48,6 +48,13 @@ int previousTime_IO_1 = 0;
 int previousTime_IO_2 = 0;
 int previousTime_IO_3 = 0;
 
+void changeStatus(bool state);
+
+/**
+ * @brief 
+ * 
+ * @param inputJson 
+ */
 void checkReset(std::string inputJson)
 {
     StaticJsonDocument<1024> config;
@@ -183,7 +190,7 @@ public:
                 {
                     String message;
                     DynamicJsonDocument data(512);
-                    data["DeviceId"] = String(ESP.getChipId());
+                    data["DeviceId"] = chipId;
                     data["DeviceName"] = deviceName.c_str();
                     data["Timestamp"] = ntpRaw();
                     data["MsgType"] = "Data";
@@ -200,7 +207,7 @@ public:
                 {
                     String message;
                     DynamicJsonDocument data(512);
-                    data["DeviceId"] = String(ESP.getChipId());
+                    data["DeviceId"] = chipId;
                     data["DeviceName"] = deviceName.c_str();
                     data["Timestamp"] = ntpRaw();
                     data["MsgType"] = "Data";
@@ -225,7 +232,7 @@ public:
                 {
                     String message;
                     DynamicJsonDocument data(512);
-                    data["DeviceId"] = String(ESP.getChipId());
+                    data["DeviceId"] = chipId;
                     data["DeviceName"] = deviceName.c_str();
                     data["Timestamp"] = ntpRaw();
                     data["MsgType"] = "Data";
@@ -241,7 +248,7 @@ public:
                 {
                     String message;
                     DynamicJsonDocument data(512);
-                    data["DeviceId"] = String(ESP.getChipId());
+                    data["DeviceId"] = chipId;
                     data["DeviceName"] = deviceName.c_str();
                     data["Timestamp"] = ntpRaw();
                     data["MsgType"] = "Data";
@@ -265,7 +272,7 @@ public:
                 {
                     String message;
                     DynamicJsonDocument data(512);
-                    data["DeviceId"] = String(ESP.getChipId());
+                    data["DeviceId"] = chipId;
                     data["DeviceName"] = deviceName.c_str();
                     data["Timestamp"] = ntpRaw();
                     data["MsgType"] = "Data";
@@ -280,7 +287,7 @@ public:
                 {
                     String message;
                     DynamicJsonDocument data(512);
-                    data["DeviceId"] = String(ESP.getChipId());
+                    data["DeviceId"] = chipId;
                     data["DeviceName"] = deviceName.c_str();
                     data["Timestamp"] = ntpRaw();
                     data["MsgType"] = "Data";
@@ -304,7 +311,7 @@ public:
                 {
                     String message;
                     DynamicJsonDocument data(512);
-                    data["DeviceId"] = String(ESP.getChipId());
+                    data["DeviceId"] = chipId;
                     data["DeviceName"] = deviceName.c_str();
                     data["Timestamp"] = ntpRaw();
                     data["MsgType"] = "Data";
@@ -319,7 +326,7 @@ public:
                 {
                     String message;
                     DynamicJsonDocument data(512);
-                    data["DeviceId"] = String(ESP.getChipId());
+                    data["DeviceId"] = chipId;
                     data["DeviceName"] = deviceName.c_str();
                     data["Timestamp"] = ntpRaw();
                     data["MsgType"] = "Data";
@@ -357,7 +364,7 @@ public:
                 previousTime_IO_0 = millis();
                 String message;
                 DynamicJsonDocument data(512);
-                data["DeviceId"] = String(ESP.getChipId());
+                data["DeviceId"] = chipId;
                 data["DeviceName"] = deviceName.c_str();
                 data["Timestamp"] = ntpRaw();
                 data["MsgType"] = "Data";
@@ -397,7 +404,7 @@ public:
                 previousTime_IO_1 = millis();
                 String message;
                 DynamicJsonDocument data(512);
-                data["DeviceId"] = String(ESP.getChipId());
+                data["DeviceId"] = chipId;
                 data["DeviceName"] = deviceName.c_str();
                 data["Timestamp"] = ntpRaw();
                 data["MsgType"] = "Data";
@@ -437,7 +444,7 @@ public:
                 previousTime_IO_2 = millis();
                 String message;
                 DynamicJsonDocument data(512);
-                data["DeviceId"] = String(ESP.getChipId());
+                data["DeviceId"] = chipId;
                 data["DeviceName"] = deviceName.c_str();
                 data["Timestamp"] = ntpRaw();
                 data["MsgType"] = "Data";
@@ -479,7 +486,7 @@ public:
                 previousTime_IO_3 = millis();
                 String message;
                 DynamicJsonDocument data(512);
-                data["DeviceId"] = String(ESP.getChipId());
+                data["DeviceId"] = chipId;
                 data["DeviceName"] = deviceName.c_str();
                 data["Timestamp"] = ntpRaw();
                 data["MsgType"] = "Data";
@@ -505,28 +512,23 @@ public:
     {
         if (!digitalRead(Input1))
         {
-            digitalWrite(Output1, HIGH);
-            releStatus = "HIGH";
+            changeStatus(true);
         }
         if (!digitalRead(Input2))
         {
-            digitalWrite(Output1, HIGH);
-            releStatus = "HIGH";
+           changeStatus(true);
         }
         if (!digitalRead(Input3))
         {
-            digitalWrite(Output1, HIGH);
-            releStatus = "HIGH";
+           changeStatus(true);
         }
         if (!digitalRead(Input0))
         {
-            digitalWrite(Output1, HIGH);
-            releStatus = "HIGH";
+            changeStatus(true);
         }
         if (digitalRead(Input1) && digitalRead(Input2) && digitalRead(Input3) && digitalRead(Input0))
         {
-            digitalWrite(Output1, LOW);
-            releStatus = "LOW";
+            changeStatus(false);
         }
     }
     std::string returnSingleInput(uint8_t customInput)
@@ -538,3 +540,17 @@ public:
         return "LOW";
     }
 };
+
+void changeStatus(bool state)
+{
+    if (state)
+    {
+        digitalWrite(Output1, HIGH);
+        releStatus = "HIGH";
+    }
+    else
+    {
+        digitalWrite(Output1, LOW);
+        releStatus = "LOW";
+    }
+}
