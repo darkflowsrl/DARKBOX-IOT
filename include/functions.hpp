@@ -16,6 +16,10 @@ String ntpRaw()
     return String(timeClient.getEpochTime());
 }
 
+/*
+this function is used to re format the date and add the zeros when a date, or time
+lenght is minor to 2
+*/
 String refactor(int time)
 {
     if (time < 10)

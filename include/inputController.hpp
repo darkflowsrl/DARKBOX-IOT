@@ -50,6 +50,11 @@ int previousTime_IO_3 = 0;
 
 void changeStatus(bool state);
 
+/**
+ * @brief 
+ * 
+ * @param inputJson 
+ */
 void checkReset(std::string inputJson)
 {
     StaticJsonDocument<1024> config;

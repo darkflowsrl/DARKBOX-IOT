@@ -48,7 +48,7 @@ void setupServer()
             { request->send(LittleFS, "/relay.gif", "image/png"); });
   server.on("/reset", HTTP_POST, [](AsyncWebServerRequest *request)
             {
-            request->send(200,"text/plain","ok");
+            request->send(LittleFS, "/reset.html", "text/html");
             delay(2000);
             restoreConfig(LittleFS);
             ESP.eraseConfig();
@@ -74,14 +74,6 @@ String proccesor()
   d3 = String(TemporalAccess.d3);
   heap = String(ESP.getFreeHeap());
   vcc = String(ESP.getVcc());
-  bootVersion;
-  CPUfreq;
-  coreVersion;
-  flashChipId;
-  flashRealSize;
-  flashChipSpeed;
-  freeSketchSize;
-  fullVersion;
 
   String allValues = t0 + String(";") + t1 + String(";") + h0 + String(";") + d0 + String(";") + d1 + String(";") + d2 + String(";") + d3 + String(";") + heap + String(";") + bootVersion + String(";") + chipId + String(";") + CPUfreq + String(";") + coreVersion + String(";") + flashChipId + String(";") + flashRealSize + String(";") + flashChipSpeed + String(";") + freeSketchSize + String(";") + fullVersion + String(";") + vcc + fullVersion + String(";") + releStatus;
 
