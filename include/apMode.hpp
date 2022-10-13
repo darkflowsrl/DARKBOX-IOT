@@ -23,10 +23,15 @@ is the UID (Unique ID) of the device.
 #ifndef APMODE_H
 #define APMODE_H
 
+#ifndef AP_OUTLINE
 #include <WiFiManager.h>
+#include <ESP8266WebServer.h>
 #include <ArduinoJson.h>
+#endif
 #include "functions.hpp"
+#ifdef I2C
 #include "screenController.hpp"
+#endif
 
 IPAddress local_ip(192, 168, 1, 1);
 IPAddress gateway(192, 168, 1, 1);
@@ -39,7 +44,10 @@ void saveConfigCallback();
 String dataAsString(const char *path);
 
 WiFiManager myManager;
+
+#ifdef I2C
 Screen myScreenAp;
+#endif
 
 bool shouldSaveConfig = false;
 
@@ -75,14 +83,14 @@ public:
 
   Observation: The method setuServer() has to be executed in the setup line from the main file
   */
-  void setupServer(String staticIpAP, String gatewayAP_, String subnetMaskAP)
+  void setupServer()
   {
     // Library Configuration
     WiFi.mode(WIFI_STA);
 
-    IPAddress miIp = strToIp(staticIpAP.c_str());
-    IPAddress miGateway = strToIp(gatewayAP_.c_str());
-    IPAddress miSubnet = strToIp(subnetMaskAP.c_str());
+    //WiFi.setSleepMode(WIFI_NONE_SLEEP);
+
+    //myManager.setHostname(localDeviceName);
 
     myManager.setCustomHeadElement(icon);
 
@@ -90,11 +98,17 @@ public:
 
     myManager.setSaveConfigCallback(saveConfigCallback);
 
-    myManager.setDarkMode(true);
+    //myManager.setDarkMode(true);
 
     myManager.setTitle("Darkflow Device");
 
     myManager.setTimeout(520);
+
+    myManager.setRemoveDuplicateAPs(true);
+
+    myManager.setCleanConnect(true);
+
+    myManager.setMinimumSignalQuality(35);
 
     myManager.setScanDispPerc(true);
 
@@ -104,13 +118,13 @@ public:
 
     // Shows information trough the I2C screen
 
-    /*
+    #ifdef I2C
     String msg0 = "SSID:" + String(ssid);
     myScreenAp.printScreen("CONFIGURE WIFI HDP..", 0, 0, true);
     myScreenAp.printScreen(msg0, 0, 1, false);
     myScreenAp.printScreen("IP: 192.168.1.1", 0, 2, false);
     myScreenAp.printScreen("2 Minutes timeout", 0, 3, false);
-    */
+    #endif
 
     // Custom parameters
     WiFiManagerParameter deviceName("deviceName", "Nombre del dispositivo (Campo obligatorio)", deviceName_, 40, "required");
@@ -129,14 +143,7 @@ public:
     //<-
 
     //-> Start the client
-
-    bool isConnected = myManager.autoConnect(name.c_str());
-
-    if (staticIpAP != "" && subnetMaskAP != "" && gatewayAP_ != "")
-    {
-      myManager.setSTAStaticIPConfig(miIp, miGateway, miSubnet, IPAddress(8, 8, 8, 8)); // Repair this, static ip detected but no configured
-      WiFi.config(miIp, miGateway, miSubnet);
-    }
+    myManager.autoConnect(name.c_str());
 
     //-> Save config into JSON
     strcpy(smtpMail, smtpUser.getValue());
@@ -152,16 +159,6 @@ public:
       ESP.restart();
     }
 
-    if (!isConnected)
-    {
-      myScreenAp.printScreen("Hit timeout...", 0, 1, true);
-      myScreenAp.printScreen("Restarting Device", 0, 2, false);
-      Serial.println("Time Out...");
-      delay(2000);
-
-      ESP.restart();
-    }
-
     Serial.println(WiFi.localIP());
   }
   /*
@@ -171,7 +168,6 @@ public:
   void reset()
   {
     Serial.println("*** Resetting WiFi credentials ***");
-    myScreenAp.printScreen("Resetting Device ", 0, 1, true);
     delay(5000);
     myManager.resetSettings();
     ESP.eraseConfig();
@@ -244,4 +240,18 @@ void changeCredentials(fs::FS &fs, const char *path, String mailReceiver,
   file_.close();
 }
 
+int DHCPtoStatic(String staticIpAP, String gatewayAP_, String subnetMaskAP)
+{
+  IPAddress miIp = strToIp(staticIpAP.c_str());
+  IPAddress miGateway = strToIp(gatewayAP_.c_str());
+  IPAddress miSubnet = strToIp(subnetMaskAP.c_str());
+
+  if (staticIpAP != "" && subnetMaskAP != "" && gatewayAP_ != "")
+  {
+    myManager.setSTAStaticIPConfig(miIp, miGateway, miSubnet, IPAddress(8, 8, 8, 8)); // Repair this, static ip detected but no configured
+    WiFi.config(miIp, miGateway, miSubnet);
+  }
+
+  return 0;
+}
 #endif

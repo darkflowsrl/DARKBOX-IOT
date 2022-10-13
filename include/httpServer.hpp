@@ -1,28 +1,25 @@
+#ifndef WEBSERVER_H
 #define WEBSERVER_H
+#ifndef DASHBOARD_OUTLINE
 #include <ESPAsyncWebServer.h>
 #include <ESP8266mDNS.h>
+#endif
 #include "dataSensors.hpp"
 
-void changeCredentials(fs::FS &fs, const char *path, const char *device0, const char *device1, const char *device2);
-void loadDevices(fs::FS &fs, const char *path);
-void readVariables(fs::FS &fs);
 String proccesor();
-String getReadings();
 
 dataSensors _mySensors;
 AsyncWebServer server(80);
 MDNSResponder mDns;
 
-String localDeviceName = String("darkflow-") + chipId;
 String t0, t1, h0, d0, d1, d2, d3, io0, io1, io2, io3, allvalues;
 
 void setupServer()
 {
   // mDNS setup
   Serial.print("Local DNS: " + localDeviceName + ".local ");
-  const char *resolutionName = localDeviceName.c_str();
-
-  if (!mDns.begin(resolutionName, WiFi.localIP()))
+  
+  if (!mDns.begin(localDeviceName.c_str(), WiFi.localIP()))
   {
     Serial.println("(mDns instance) Error setting up DNS server");
   }
@@ -36,20 +33,20 @@ void setupServer()
   // ESPAsyncWebServer Setup
   // Web Server Root URL
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
-            { request->send(LittleFS, "/index.html", "text/html"); });
+            { request->send(LittleFS, "/www/index.html", "text/html"); });
   server.on("/allvalues", HTTP_GET, [](AsyncWebServerRequest *request)
             { request->send(200, "application/json", proccesor()); });
 
   server.on("/gota", HTTP_GET, [](AsyncWebServerRequest *request)
-            { request->send(LittleFS, "/gota.gif", "image/png"); });
+            { request->send(LittleFS, "/www/gota.gif", "image/png"); });
   server.on("/termp", HTTP_GET, [](AsyncWebServerRequest *request)
-            { request->send(LittleFS, "/termp.gif", "image/png"); });
+            { request->send(LittleFS, "/www/termp.gif", "image/png"); });
   server.on("/relay", HTTP_GET, [](AsyncWebServerRequest *request)
-            { request->send(LittleFS, "/relay.gif", "image/png"); });
+            { request->send(LittleFS, "/www/relay.gif", "image/png"); });
   server.on("/reset", HTTP_POST, [](AsyncWebServerRequest *request)
             {
-            request->send(LittleFS, "/reset.html", "text/html");
-            delay(2000);
+            request->send(200, "text/plain", "Resetting Device...");
+            delay(5000);
             restoreConfig(LittleFS);
             ESP.eraseConfig();
             ESP.reset();
@@ -79,3 +76,5 @@ String proccesor()
 
   return allValues;
 }
+
+#endif

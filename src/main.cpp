@@ -20,17 +20,26 @@
 #include <Arduino.h>
 #include <vector>
 #include <cstdlib>
+#include <WiFiManager.h>
 
 #include "global.hpp"
+#include "functions.hpp"
+#ifdef AP_CUSTOM_PORTAL
 #include "apMode.hpp"
+#endif
+#ifdef SMTP_CLIENT
+#include "smtp.hpp"
+#endif
 #include "dataSensors.hpp"
+#ifdef I2C
 #include "screenController.hpp"
+#endif
+#ifdef LOCAL_DASHBOARD
+#include "httpServer.hpp"
+#endif
 #include "inputController.hpp"
 #include "jsonizer.hpp"
-#include "functions.hpp"
-#include "httpServer.hpp"
 #include "myMqtt.hpp"
-#include "smtp.hpp"
 
 void listDir(fs::FS &fs, const char *dirname, uint8_t levels);
 void readFile(fs::FS &fs, const char *path);
@@ -46,42 +55,51 @@ void reconnect();
 void refreshScreen();
 
 // Constructor for the sensors, the wifi and the MQTT Object
+#ifdef AP_CUSTOM_PORTAL
+apMode apInstance;
+#else
+WiFiManager myManager;
+#endif
 WiFiClient espClient;
 dataSensors mySensors;
-apMode apInstance;
+#ifdef I2C
 Screen myScreen;
+#endif
 inputController myInputs;
 JSONIZER jsonSession;
 
 void setup()
 {
+  // Serial setup
   Serial.begin(115000);
+  // AP setup
+  apInstance.setupServer();
+  DHCPtoStatic(staticIpAP, gatewayAP, subnetMaskAP);
   // File System and configuration setup
   if (!LittleFS.begin())
   {
-    myScreen.screenClean();
-    myScreen.printScreen("Failed to mount...", 0, 1, true);
     Serial.println("(Setup Instance) SPIFFS Mount Failed");
-    return;
   }
   // Load and visualize data
   listDir(LittleFS, "/", 0);
   readFile(LittleFS, "/config.json");
   loadData(LittleFS, "/config.json");
-  // AP setup
-  apInstance.setupServer(staticIpAP, gatewayAP, subnetMaskAP);
   // Devices setup
   mySensors.sensorsSetup();
+  #ifdef I2C
   myScreen.screenSetup();
-  myInputs.inputSetup();
   // Screen
-  myScreen.printScreen("Starting device...", 0, 1, true);
-  delay(2000);
   myScreen.screenClean();
-  // mDNS setup
-  setupServer();
+  myScreen.printScreen("Starting device...", 0, 1, true);
+  #endif
+  myInputs.inputSetup();
+  delay(2000);
   // MQTT
   mqttSetup(host.c_str(), port, root_topic_publish.c_str(), espClient, keep_alive_topic_publish.c_str());
+  // Local Dashboard
+  #ifdef LOCAL_DASHBOARD
+  setupServer();
+  #endif
 }
 
 void loop()
@@ -89,7 +107,7 @@ void loop()
   // SMTP test
   if (std::atof(mySensors.singleSensorRawdataTemp(0).c_str()) >= std::atof("50"))
   {
-    sendMail("Alerta", "You have Overpass the temperature");
+    // sendMail("Alerta", "You have Overpass the temperature");
   }
 
   // HTTP and mDNS loop
@@ -184,6 +202,7 @@ void loadTemporalData(fs::FS &fs, std::string t0, std::string t1, std::string h0
   TemporalAccess.d3 = d3.c_str();
 }
 
+#ifdef I2C
 void refreshScreen()
 {
   unsigned long currentTime = millis();
@@ -205,6 +224,7 @@ void refreshScreen()
   tempString2 = "";
   previousTimeScreen = currentTime;
 }
+#endif
 
 /**
  * @brief

@@ -1,3 +1,10 @@
+#define AP_OUTLINE
+#define AP_CUSTOM_PORTAL
+//#define DASHBOARD_OUTLINE
+#define LOCAL_DASHBOARD
+//#define SMTP_CLIENT
+//#define I2C 
+
 unsigned int port = 1883;
 unsigned int eventInterval = 1500;
 unsigned int previousTimeScreen = 0;
@@ -36,6 +43,7 @@ String freeSketchSize = String(ESP.getFreeSketchSpace());
 String fullVersion = String(ESP.getFullVersion());
 String vcc;
 String releStatus = "LOW";
+String localDeviceName = String("darkflow-") + chipId;
 String tempString0, tempString1, tempString2;
 String host = "mqtt.darkflow.com.ar";
 String configTopic = "DeviceConfig/" + chipId;

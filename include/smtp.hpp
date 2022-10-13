@@ -1,3 +1,5 @@
+#ifndef SMTPS_H
+#define SMTPS_H
 #include <ENC28J60lwIP.h>
 #include <ESP_Mail_Client.h>
 
@@ -163,3 +165,5 @@ void smtpCallback(SMTP_Status status)
     smtp.sendingResult.clear();
   }
 }
+
+#endif
