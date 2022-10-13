@@ -72,9 +72,10 @@ void checkReset(std::string inputJson)
             if (i == 2)
             {
                 Serial.println("*** Resetting WiFi credentials ***");
+                #ifdef I2C
                 myScreenAp.printScreen("Resetting Device ", 0, 1, true);
+                #endif
                 delay(5000);
-                myManager.resetSettings();
                 ESP.eraseConfig();
                 ESP.reset();
                 ESP.restart();
