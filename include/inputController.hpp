@@ -49,11 +49,12 @@ int previousTime_IO_2 = 0;
 int previousTime_IO_3 = 0;
 
 void changeStatus(bool state);
+int debounce(int pin);
 
 /**
- * @brief 
- * 
- * @param inputJson 
+ * @brief
+ *
+ * @param inputJson
  */
 void checkReset(std::string inputJson)
 {
@@ -72,9 +73,9 @@ void checkReset(std::string inputJson)
             if (i == 2)
             {
                 Serial.println("*** Resetting WiFi credentials ***");
-                #ifdef I2C
+#ifdef I2C
                 myScreenAp.printScreen("Resetting Device ", 0, 1, true);
-                #endif
+#endif
                 delay(5000);
                 ESP.eraseConfig();
                 ESP.reset();
@@ -183,7 +184,7 @@ public:
     {
         if (IO_name == "Input_0")
         {
-            IO_0_State = digitalRead(Input);
+            IO_0_State = debounce(Input);
 
             if (IO_0_State != last_IO_0_State)
             {
@@ -225,7 +226,7 @@ public:
         }
         else if (IO_name == "Input_1")
         {
-            IO_1_State = digitalRead(Input);
+            IO_1_State = debounce(Input);
 
             if (IO_1_State != last_IO_1_State)
             {
@@ -265,7 +266,7 @@ public:
         }
         if (IO_name == "Input_2")
         {
-            IO_2_State = digitalRead(Input);
+            IO_2_State = debounce(Input);
 
             if (IO_2_State != last_IO_2_State)
             {
@@ -304,7 +305,7 @@ public:
         }
         if (IO_name == "Input_3")
         {
-            IO_3_State = digitalRead(Input);
+            IO_3_State = debounce(Input);
 
             if (IO_3_State != last_IO_3_State)
             {
@@ -369,8 +370,9 @@ public:
                 data["DeviceName"] = deviceName.c_str();
                 data["Timestamp"] = ntpRaw();
                 data["MsgType"] = "Data";
-                if (!digitalRead(Input0))
+                if (!debounce(Input0))
                 {
+
                     data["Value"][0]["Port"] = "Input_0";
                     data["Value"][0]["Value"] = "HIGH";
                 }
@@ -409,7 +411,7 @@ public:
                 data["DeviceName"] = deviceName.c_str();
                 data["Timestamp"] = ntpRaw();
                 data["MsgType"] = "Data";
-                if (!digitalRead(Input1))
+                if (!debounce(Input1))
                 {
                     data["Value"][0]["Port"] = "Input_1";
                     data["Value"][0]["Value"] = "HIGH";
@@ -449,7 +451,7 @@ public:
                 data["DeviceName"] = deviceName.c_str();
                 data["Timestamp"] = ntpRaw();
                 data["MsgType"] = "Data";
-                if (!digitalRead(Input2))
+                if (!debounce(Input2))
                 {
                     data["Value"][0]["Port"] = "Input_2";
                     data["Value"][0]["Value"] = "HIGH";
@@ -491,7 +493,7 @@ public:
                 data["DeviceName"] = deviceName.c_str();
                 data["Timestamp"] = ntpRaw();
                 data["MsgType"] = "Data";
-                if (!digitalRead(Input3))
+                if (!debounce(Input3))
                 {
                     data["Value"][0]["Port"] = "Input_3";
                     data["Value"][0]["Value"] = "HIGH";
@@ -517,11 +519,11 @@ public:
         }
         if (!digitalRead(Input2))
         {
-           changeStatus(true);
+            changeStatus(true);
         }
         if (!digitalRead(Input3))
         {
-           changeStatus(true);
+            changeStatus(true);
         }
         if (!digitalRead(Input0))
         {
@@ -554,4 +556,19 @@ void changeStatus(bool state)
         digitalWrite(Output1, LOW);
         releStatus = "LOW";
     }
+}
+
+int debounce(int pin)
+{
+    uint8 counter = 0;
+
+    int state = digitalRead(pin);
+
+    do
+    {
+        counter++;
+        delay(1);
+    } while (counter < debouncerTime);
+
+    return state;
 }
