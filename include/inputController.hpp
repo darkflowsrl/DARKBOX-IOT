@@ -1,4 +1,5 @@
 #include "myMqtt.hpp"
+#include "detectFlag.hpp" 
 /*
 pinMode(switchUpPin, INPUT_PULLUP)
 
@@ -51,6 +52,8 @@ int previousTime_IO_3 = 0;
 void changeStatus(bool state);
 int debounce(int pin);
 
+DetectaFlanco input0_(Input0), input1_(Input1), input2_(Input2), input3_(Input3);
+
 /**
  * @brief
  *
@@ -93,10 +96,10 @@ private:
 public:
     void inputSetup()
     {
-        pinMode(Input0, INPUT_PULLUP);
-        pinMode(Input1, INPUT_PULLUP);
-        pinMode(Input2, INPUT_PULLUP);
-        pinMode(Input3, INPUT_PULLUP);
+        input0_.inicio(INPUT_PULLUP);
+        input1_.inicio(INPUT_PULLUP);
+        input2_.inicio(INPUT_PULLUP);
+        input3_.inicio(INPUT_PULLUP);
         pinMode(Output1, OUTPUT);
         // Serial.println(IO_0 + " " + IO_1 + " " + IO_2 + " " + IO_3);
         if (IO_0 == "OTU" || IO_0 == "OTD")
@@ -184,177 +187,161 @@ public:
     {
         if (IO_name == "Input_0")
         {
-            IO_0_State = debounce(Input);
-
-            if (IO_0_State != last_IO_0_State)
+            if (ascendant)
             {
-                if (ascendant)
-                {
-                    String message;
-                    DynamicJsonDocument data(512);
-                    data["DeviceId"] = chipId;
-                    data["DeviceName"] = deviceName.c_str();
-                    data["Timestamp"] = ntpRaw();
-                    data["MsgType"] = "Data";
-                    data["MsgType"] = "Data";
-                    data["MsgType"] = "Data";
-                    data["Value"][0]["Port"] = IO_name;
-                    data["Value"][0]["Value"] = "HIGH";
-                    serializeJson(data, message);
-                    // Serial.println(message);
-                    mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), wifiClient, keep_alive_topic_publish.c_str(), keep_alive_topic_publish.c_str(),
-                               message.c_str());
-                }
-                else
-                {
-                    String message;
-                    DynamicJsonDocument data(512);
-                    data["DeviceId"] = chipId;
-                    data["DeviceName"] = deviceName.c_str();
-                    data["Timestamp"] = ntpRaw();
-                    data["MsgType"] = "Data";
-                    data["MsgType"] = "Data";
-                    data["Value"][0]["Port"] = IO_name;
-                    data["Value"][0]["Value"] = "LOW";
-                    serializeJson(data, message);
-                    // Serial.println(message);
-                    mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), wifiClient, keep_alive_topic_publish.c_str(), keep_alive_topic_publish.c_str(),
-                               message.c_str());
-                }
+                String message;
+                DynamicJsonDocument data(512);
+                data["DeviceId"] = chipId;
+                data["DeviceName"] = deviceName.c_str();
+                data["Timestamp"] = ntpRaw();
+                data["MsgType"] = "Data";
+                data["MsgType"] = "Data";
+                data["MsgType"] = "Data";
+                data["Value"][0]["Port"] = IO_name;
+                data["Value"][0]["Value"] = "HIGH";
+                serializeJson(data, message);
+                // Serial.println(message);
+                mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), wifiClient, keep_alive_topic_publish.c_str(), keep_alive_topic_publish.c_str(),
+                           message.c_str());
             }
-            last_IO_0_State = IO_0_State;
+            else
+            {
+                String message;
+                DynamicJsonDocument data(512);
+                data["DeviceId"] = chipId;
+                data["DeviceName"] = deviceName.c_str();
+                data["Timestamp"] = ntpRaw();
+                data["MsgType"] = "Data";
+                data["MsgType"] = "Data";
+                data["Value"][0]["Port"] = IO_name;
+                data["Value"][0]["Value"] = "LOW";
+                serializeJson(data, message);
+                // Serial.println(message);
+                mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), wifiClient, keep_alive_topic_publish.c_str(), keep_alive_topic_publish.c_str(),
+                           message.c_str());
+            }
         }
         else if (IO_name == "Input_1")
         {
-            IO_1_State = debounce(Input);
-
-            if (IO_1_State != last_IO_1_State)
+            if (ascendant)
             {
-                if (ascendant)
-                {
-                    String message;
-                    DynamicJsonDocument data(512);
-                    data["DeviceId"] = chipId;
-                    data["DeviceName"] = deviceName.c_str();
-                    data["Timestamp"] = ntpRaw();
-                    data["MsgType"] = "Data";
-                    data["MsgType"] = "Data";
-                    data["Value"][0]["Port"] = IO_name;
-                    data["Value"][0]["Value"] = "HIGH";
-                    serializeJson(data, message);
-                    // Serial.println(message);
-                    mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), wifiClient, keep_alive_topic_publish.c_str(), keep_alive_topic_publish.c_str(),
-                               message.c_str());
-                }
-                else
-                {
-                    String message;
-                    DynamicJsonDocument data(512);
-                    data["DeviceId"] = chipId;
-                    data["DeviceName"] = deviceName.c_str();
-                    data["Timestamp"] = ntpRaw();
-                    data["MsgType"] = "Data";
-                    data["Value"][0]["Port"] = IO_name;
-                    data["Value"][0]["Value"] = "LOW";
-                    serializeJson(data, message);
-                    // Serial.println(message);
-                    mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), wifiClient, keep_alive_topic_publish.c_str(), keep_alive_topic_publish.c_str(),
-                               message.c_str());
-                }
+                String message;
+                DynamicJsonDocument data(512);
+                data["DeviceId"] = chipId;
+                data["DeviceName"] = deviceName.c_str();
+                data["Timestamp"] = ntpRaw();
+                data["MsgType"] = "Data";
+                data["MsgType"] = "Data";
+                data["Value"][0]["Port"] = IO_name;
+                data["Value"][0]["Value"] = "HIGH";
+                serializeJson(data, message);
+                // Serial.println(message);
+                mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), wifiClient, keep_alive_topic_publish.c_str(), keep_alive_topic_publish.c_str(),
+                           message.c_str());
             }
-            last_IO_1_State = IO_1_State;
+            else
+            {
+                String message;
+                DynamicJsonDocument data(512);
+                data["DeviceId"] = chipId;
+                data["DeviceName"] = deviceName.c_str();
+                data["Timestamp"] = ntpRaw();
+                data["MsgType"] = "Data";
+                data["Value"][0]["Port"] = IO_name;
+                data["Value"][0]["Value"] = "LOW";
+                serializeJson(data, message);
+                // Serial.println(message);
+                mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), wifiClient, keep_alive_topic_publish.c_str(), keep_alive_topic_publish.c_str(),
+                           message.c_str());
+            }
         }
         if (IO_name == "Input_2")
         {
-            IO_2_State = debounce(Input);
-
-            if (IO_2_State != last_IO_2_State)
+            if (ascendant)
             {
-                if (ascendant)
-                {
-                    String message;
-                    DynamicJsonDocument data(512);
-                    data["DeviceId"] = chipId;
-                    data["DeviceName"] = deviceName.c_str();
-                    data["Timestamp"] = ntpRaw();
-                    data["MsgType"] = "Data";
-                    data["Value"][0]["Port"] = IO_name;
-                    data["Value"][0]["Value"] = "HIGH";
-                    serializeJson(data, message);
-                    // Serial.println(message);
-                    mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), wifiClient, keep_alive_topic_publish.c_str(), keep_alive_topic_publish.c_str(),
-                               message.c_str());
-                }
-                else
-                {
-                    String message;
-                    DynamicJsonDocument data(512);
-                    data["DeviceId"] = chipId;
-                    data["DeviceName"] = deviceName.c_str();
-                    data["Timestamp"] = ntpRaw();
-                    data["MsgType"] = "Data";
-                    data["Value"][0]["Port"] = IO_name;
-                    data["Value"][0]["Value"] = "LOW";
-                    serializeJson(data, message);
-                    // Serial.println(message);
-                    mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), wifiClient, keep_alive_topic_publish.c_str(), keep_alive_topic_publish.c_str(),
-                               message.c_str());
-                }
+                String message;
+                DynamicJsonDocument data(512);
+                data["DeviceId"] = chipId;
+                data["DeviceName"] = deviceName.c_str();
+                data["Timestamp"] = ntpRaw();
+                data["MsgType"] = "Data";
+                data["Value"][0]["Port"] = IO_name;
+                data["Value"][0]["Value"] = "HIGH";
+                serializeJson(data, message);
+                // Serial.println(message);
+                mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), wifiClient, keep_alive_topic_publish.c_str(), keep_alive_topic_publish.c_str(),
+                           message.c_str());
             }
-            last_IO_2_State = IO_2_State;
+            else
+            {
+                String message;
+                DynamicJsonDocument data(512);
+                data["DeviceId"] = chipId;
+                data["DeviceName"] = deviceName.c_str();
+                data["Timestamp"] = ntpRaw();
+                data["MsgType"] = "Data";
+                data["Value"][0]["Port"] = IO_name;
+                data["Value"][0]["Value"] = "LOW";
+                serializeJson(data, message);
+                // Serial.println(message);
+                mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), wifiClient, keep_alive_topic_publish.c_str(), keep_alive_topic_publish.c_str(),
+                           message.c_str());
+            }
         }
         if (IO_name == "Input_3")
         {
             IO_3_State = debounce(Input);
-
-            if (IO_3_State != last_IO_3_State)
+            if (ascendant)
             {
-                if (ascendant)
-                {
-                    String message;
-                    DynamicJsonDocument data(512);
-                    data["DeviceId"] = chipId;
-                    data["DeviceName"] = deviceName.c_str();
-                    data["Timestamp"] = ntpRaw();
-                    data["MsgType"] = "Data";
-                    data["Value"][0]["Port"] = IO_name;
-                    data["Value"][0]["Value"] = "HIGH";
-                    serializeJson(data, message);
-                    // Serial.println(message);
-                    mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), wifiClient, keep_alive_topic_publish.c_str(), keep_alive_topic_publish.c_str(),
-                               message.c_str());
-                }
-                else
-                {
-                    String message;
-                    DynamicJsonDocument data(512);
-                    data["DeviceId"] = chipId;
-                    data["DeviceName"] = deviceName.c_str();
-                    data["Timestamp"] = ntpRaw();
-                    data["MsgType"] = "Data";
-                    data["Value"][0]["Port"] = IO_name;
-                    data["Value"][0]["Value"] = "LOW";
-                    serializeJson(data, message);
-                    // Serial.println(message);
-                    mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), wifiClient, keep_alive_topic_publish.c_str(), keep_alive_topic_publish.c_str(),
-                               message.c_str());
-                }
+                String message;
+                DynamicJsonDocument data(512);
+                data["DeviceId"] = chipId;
+                data["DeviceName"] = deviceName.c_str();
+                data["Timestamp"] = ntpRaw();
+                data["MsgType"] = "Data";
+                data["Value"][0]["Port"] = IO_name;
+                data["Value"][0]["Value"] = "HIGH";
+                serializeJson(data, message);
+                // Serial.println(message);
+                mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), wifiClient, keep_alive_topic_publish.c_str(), keep_alive_topic_publish.c_str(),
+                           message.c_str());
             }
-            last_IO_3_State = IO_3_State;
+            else
+            {
+                String message;
+                DynamicJsonDocument data(512);
+                data["DeviceId"] = chipId;
+                data["DeviceName"] = deviceName.c_str();
+                data["Timestamp"] = ntpRaw();
+                data["MsgType"] = "Data";
+                data["Value"][0]["Port"] = IO_name;
+                data["Value"][0]["Value"] = "LOW";
+                serializeJson(data, message);
+                // Serial.println(message);
+                mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), wifiClient, keep_alive_topic_publish.c_str(), keep_alive_topic_publish.c_str(),
+                           message.c_str());
+            }
         }
     }
     void inputData()
     {
-
         std::vector<std::string> myVector;
+
+        int flag0 = input0_.comprueba();
+        int flag1 = input1_.comprueba();
+        int flag2 = input2_.comprueba();
+        int flag3 = input3_.comprueba();
 
         if (OTU_IO0 || OTD_IO0)
         {
             if (OTU_IO0)
             {
-                onTriggerFlag(Input0, "Input_0");
+                if (flag0 == 1)
+                {
+                    onTriggerFlag(Input0, "Input_0");
+                }
             }
-            else
+            else if(flag0 == -1)
             {
                 onTriggerFlag(Input0, "Input_0", false);
             }
@@ -393,9 +380,12 @@ public:
         {
             if (OTU_IO1)
             {
-                onTriggerFlag(Input1, "Input_1");
+                if (flag1 == 1)
+                {
+                    onTriggerFlag(Input1, "Input_1");
+                }
             }
-            else
+            else if(flag1 == -1)
             {
                 onTriggerFlag(Input1, "Input_1", false);
             }
@@ -433,9 +423,12 @@ public:
         {
             if (OTU_IO2)
             {
-                onTriggerFlag(Input2, "Input_2");
+                if (flag2 == 1)
+                {
+                    onTriggerFlag(Input2, "Input_2");
+                }
             }
-            else
+            else if(flag2 == -1)
             {
                 onTriggerFlag(Input2, "Input_2", false);
             }
@@ -475,9 +468,12 @@ public:
         {
             if (OTU_IO3)
             {
-                onTriggerFlag(Input3, "Input_3");
+                if (flag3 == 1)
+                {
+                    onTriggerFlag(Input3, "Input_3");
+                }
             }
-            else
+            else if(flag3 == -1)
             {
                 onTriggerFlag(Input3, "Input_3", false);
             }
@@ -548,7 +544,7 @@ void changeStatus(bool state)
 {
     if (state)
     {
-        digitalWrite(Output1, HIGH);
+        // digitalWrite(Output1, HIGH);
         releStatus = "HIGH";
     }
     else
@@ -558,17 +554,3 @@ void changeStatus(bool state)
     }
 }
 
-int debounce(int pin)
-{
-    uint8 counter = 0;
-
-    int state = digitalRead(pin);
-
-    do
-    {
-        counter++;
-        delay(1);
-    } while (counter < debouncerTime);
-
-    return state;
-}

@@ -29,7 +29,7 @@ void onMqttMessage(int messageSize)
     newContent += (char)mqttClient.read();
   }
 
-  updateConfig(LittleFS, newContent.c_str());
+  updateConfig(LittleFS, newContent);
 }
 
 void mqttSetup(const char *MQTT_SERVER, uint16_t MQTT_PORT, const char *PATH, WiFiClient client, const char *PATH_ALT = "")

@@ -97,7 +97,7 @@ IPAddress strToIp(String miIp)
  * @param json
  * @return int
  */
-int updateConfig(fs::FS &fs, const char *json)
+int updateConfig(fs::FS &fs, String json)
 {
     Serial.println("UPDATING CONFIGURATION");
     Serial.println(json);
