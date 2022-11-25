@@ -49,7 +49,7 @@ void renameFile(fs::FS &fs, const char *path1, const char *path2);
 void deleteFile(fs::FS &fs, const char *path);
 void loadData(fs::FS &fs, const char *path);
 void callback(char *topic, byte *payload, unsigned int lenght);
-void loadTemporalData(fs::FS &fs, std::string t0, std::string t1, std::string h0,
+void loadTemporalData(std::string t0, std::string t1, std::string h0,
                       std::string d0, std::string d1, std::string d2, std::string d3);
 void reconnect();
 void refreshScreen();
@@ -72,6 +72,12 @@ void setup()
 {
   // Serial setup
   Serial.begin(115000);
+  // Load and visualize data
+  LittleFS.begin();
+  listDir(LittleFS, "/", 1);
+  readFile(LittleFS, "/config.json");
+  loadData(LittleFS, "/config.json");
+  LittleFS.end();
   // AP setup
   apInstance.setupServer();
   DHCPtoStatic(staticIpAP, gatewayAP, subnetMaskAP);
@@ -80,51 +86,61 @@ void setup()
   {
     Serial.println("(Setup Instance) SPIFFS Mount Failed");
   }
-  // Load and visualize data
-  listDir(LittleFS, "/", 0);
-  readFile(LittleFS, "/config.json");
-  loadData(LittleFS, "/config.json");
   // Devices setup
   mySensors.sensorsSetup();
-  #ifdef I2C
+#ifdef I2C
   myScreen.screenSetup();
   // Screen
   myScreen.screenClean();
   myScreen.printScreen("Starting device...", 0, 1, true);
-  #endif
+#endif
   myInputs.inputSetup();
   delay(2000);
   // MQTT
   mqttSetup(host.c_str(), port, root_topic_publish.c_str(), espClient, keep_alive_topic_publish.c_str());
-  // Local Dashboard
-  #ifdef LOCAL_DASHBOARD
+// Local Dashboard
+#ifdef LOCAL_DASHBOARD
   setupServer();
-  #endif
+#endif
+}
+
+void checkConn()
+{
+  bool conn = WiFi.isConnected();
+  delay(100);
+  if (!conn)
+  {
+    ESP.restart();
+  }
 }
 
 void loop()
 {
+  checkConn();
+  myInputs.inputData();
   // SMTP test
   if (std::atof(mySensors.singleSensorRawdataTemp(0).c_str()) >= std::atof("50"))
   {
-    // sendMail("Alerta", "You have Overpass the temperature");
+#ifdef SMTP_CLIENT
+    sendMail("Alerta", "You have Overpass the temperature");
+#endif
   }
 
   // HTTP and mDNS loop
-  myInputs.inputData();
   setupHttpServer();
-  //  Data to screen
-  //  refreshScreen();
+#ifdef I2C
+  refreshScreen();
+#endif
   //  Temporal data to EEPROM
   if (millis() - previousTimeTemporalData >= temporalDataRefreshTime)
   {
-    loadTemporalData(LittleFS, mySensors.singleSensorRawdataTemp(0).c_str(), mySensors.singleSensorRawdataDHT(false).c_str(), mySensors.singleSensorRawdataDHT(true).c_str(),
-                     myInputs.returnSingleInput(13), myInputs.returnSingleInput(12),
-                     myInputs.returnSingleInput(14), myInputs.returnSingleInput(16));
+    loadTemporalData(mySensors.singleSensorRawdataTemp(0).c_str(), mySensors.singleSensorRawdataDHT(false).c_str(), mySensors.singleSensorRawdataDHT(true).c_str(),
+                     myInputs.returnSingleInput(16), myInputs.returnSingleInput(14),
+                     myInputs.returnSingleInput(12), myInputs.returnSingleInput(13));
     previousTimeTemporalData = millis();
   }
   // MQTT temp
-  if (millis() - previousTimeMQTTtemp > MQTTtemp)
+  if (millis() - previousTimeMQTT_DHT > MQTTDHT)
   {
     myInputs.readInputs();
     // JSON data creation
@@ -135,38 +151,43 @@ void loop()
     dataJson_0["DeviceName"] = deviceName.c_str();
     dataJson_0["Timestamp"] = ntpRaw();
     dataJson_0["MsgType"] = "Data";
-    dataJson_0["Value"][0]["Port"] = "DHT_TEMPERATURE";
+    dataJson_0["Value"][0]["Port"] = portsNames.DHTSensor_temp_name;
     dataJson_0["Value"][0]["Value"] = mySensors.singleSensorRawdataDHT(false);
+    dataJson_0["Value"][1]["Port"] = portsNames.DHTSensor_hum_name;
+    dataJson_0["Value"][1]["Value"] = mySensors.singleSensorRawdataDHT(true);
     serializeJson(dataJson_0, data_0);
     serializeJsonPretty(dataJson_0, dataPretty_0);
-
     // Serial.println(dataPretty_0.c_str());
     mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), espClient, keep_alive_topic_publish.c_str(), root_topic_publish.c_str(),
                data_0.c_str());
-    previousTimeMQTTtemp = millis();
+    previousTimeMQTT_DHT = millis();
   }
-  // MQTT Humidity
-  if (millis() - previousTimeMQTThum > MQTThum)
+  // MQTT Sigle temperature
+  if (millis() - previousMQTTsingleTemp > MQTTsingleTemp)
   {
     myInputs.readInputs();
     // JSON data creation
     DynamicJsonDocument dataJson_1(512);
     std::string data_1, dataPretty;
 
+    String sensorData = mySensors.singleSensorRawdataTemp(0);
     dataJson_1["DeviceId"] = chipId;
     dataJson_1["DeviceName"] = deviceName.c_str();
     dataJson_1["Timestamp"] = ntpRaw();
     dataJson_1["MsgType"] = "Data";
-    dataJson_1["Value"][0]["Port"] = "DHT_HUMIDITY";
-    dataJson_1["Value"][0]["Value"] = mySensors.singleSensorRawdataDHT(true);
+    dataJson_1["Value"][0]["Port"] = portsNames.TempSensor_name;
+    dataJson_1["Value"][0]["Value"] = sensorData;
     serializeJson(dataJson_1, data_1);
     serializeJsonPretty(dataJson_1, dataPretty);
 
-    // Serial.println(dataPretty.c_str());
-    mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), espClient, keep_alive_topic_publish.c_str(), root_topic_publish.c_str(),
-               data_1.c_str());
-    previousTimeMQTThum = millis();
+    if (sensorData != "None")
+    {
+      mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), espClient, keep_alive_topic_publish.c_str(), root_topic_publish.c_str(),
+                 data_1.c_str());
+      previousMQTTsingleTemp = millis();
+    }
   }
+  // Keep alive message
   if (millis() - previousKeepAliveTime > keepAliveTime)
   {
     String aliveMessage = String("{\"deviceStatus\": \"") + chipId + String("\"}");
@@ -174,7 +195,8 @@ void loop()
                aliveMessage.c_str());
     previousKeepAliveTime = millis();
   }
-  myInputs.readInputs();
+
+  delay(1);
 }
 
 /**
@@ -190,7 +212,7 @@ void loop()
  * @param d2 digital io 2
  * @param d3 digital io 3
  */
-void loadTemporalData(fs::FS &fs, std::string t0, std::string t1, std::string h0,
+void loadTemporalData(std::string t0, std::string t1, std::string h0,
                       std::string d0, std::string d1, std::string d2, std::string d3)
 {
   TemporalAccess.t0 = std::atoi(t0.c_str());
@@ -334,8 +356,17 @@ void loadData(fs::FS &fs, const char *path)
   IO_1 = (const char *)config["ports"]["IO_1"];
   IO_2 = (const char *)config["ports"]["IO_2"];
   IO_3 = (const char *)config["ports"]["IO_3"];
-  MQTTtemp = std::stoi((const char *)config["etc"]["MQTTtemp"]);
-  MQTThum = std::stoi((const char *)config["etc"]["MQTThum"]);
+
+  portsNames.DHTSensor_hum_name = String((const char *)config["names"]["DHTSensor_hum_name"]);
+  portsNames.DHTSensor_temp_name = String((const char *)config["names"]["DHTSensor_temp_name"]);
+  portsNames.TempSensor_name = String((const char *)config["names"]["TempSensor_name"]);
+  portsNames.d0_name = String((const char *)config["names"]["d0_name"]);
+  portsNames.d1_name = String((const char *)config["names"]["d1_name"]);
+  portsNames.d2_name = String((const char *)config["names"]["d2_name"]);
+  portsNames.d3_name = String((const char *)config["names"]["d3_name"]);
+
+  MQTTDHT = std::stoi((const char *)config["etc"]["DHT"]);
+  MQTTsingleTemp = std::stoi((const char *)config["etc"]["SingleTemp"]);
   keepAliveTime = std::stoi((const char *)config["etc"]["keepAlive"]);
 
   Serial.println("#### CONFIG LOADED ####");

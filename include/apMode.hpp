@@ -112,7 +112,7 @@ public:
 
     myManager.setScanDispPerc(true);
 
-    myManager.setCaptivePortalEnable(true);
+    //myManager.setCaptivePortalEnable(true);
 
     myManager.setHostname(name.c_str());
 
@@ -200,6 +200,7 @@ instance of StaticJsonDocument. This is a class fromr ArduinoJson.h
 void changeCredentials(fs::FS &fs, const char *path, String mailReceiver,
                        String StaticIP, String gateway, String subnet, String ssid, String password, String deviceName)
 {
+  fs.begin();
   File file_ = fs.open(path, "w");
   String content;
   if (!file_.available())
@@ -220,13 +221,20 @@ void changeCredentials(fs::FS &fs, const char *path, String mailReceiver,
   config["smtp"]["mailReceiver"] = mailReceiver.c_str();
   config["smtp"]["smtpServer"] = "smtp.office365.com";
   config["smtp"]["smtpPort"] = "587";
-  config["ports"]["IO_0"] = "5000";
-  config["ports"]["IO_1"] = "5000";
-  config["ports"]["IO_2"] = "5000";
-  config["ports"]["IO_3"] = "5000";
-  config["etc"]["MQTTtemp"] = "5000";
-  config["etc"]["MQTThum"] = "5000";
-  config["etc"]["keepAlive"] = "600000";
+  config["ports"]["IO_0"] = "OTD";
+  config["ports"]["IO_1"] = "OTD";
+  config["ports"]["IO_2"] = "OTD";
+  config["ports"]["IO_3"] = "OTD";
+  config["names"]["DHTSensor_hum_name"] = "humedad";
+  config["names"]["DHTSensor_temp_name"] = "temperatura";
+  config["names"]["TempSensor_name"] = "temperatura";
+  config["names"]["d0_name"] = "digital0";
+  config["names"]["d1_name"] = "digital1";
+  config["names"]["d2_name"] = "digital2";
+  config["names"]["d3_name"] = "digital3";
+  config["etc"]["DHT"] = "50000";
+  config["etc"]["SingleTemp"] = "50000";
+  config["etc"]["keepAlive"] = "60000";
 
   Serial.println("#### CONFIG WRITTEN ####");
 
@@ -238,6 +246,8 @@ void changeCredentials(fs::FS &fs, const char *path, String mailReceiver,
   }
 
   file_.close();
+
+  fs.end();
 }
 
 int DHCPtoStatic(String staticIpAP, String gatewayAP_, String subnetMaskAP)

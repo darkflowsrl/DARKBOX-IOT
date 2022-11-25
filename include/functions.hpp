@@ -99,90 +99,111 @@ IPAddress strToIp(String miIp)
  */
 int updateConfig(fs::FS &fs, String json)
 {
-    Serial.println("UPDATING CONFIGURATION");
-    Serial.println(json);
-    delay(2000);
-
-    StaticJsonDocument<1024> newConfig;
-    auto error = deserializeJson(newConfig, json);
-
-    StaticJsonDocument<1024> writeConfig;
-
-    if (error)
+    if (fs.begin())
     {
-        Serial.println("Failed to deserialize (1)");
-        Serial.println(error.f_str());
+        Serial.println("UPDATING CONFIGURATION");
+        Serial.println(json);
+        delay(2000);
+
+        StaticJsonDocument<1024> newConfig;
+        auto error = deserializeJson(newConfig, json);
+
+        StaticJsonDocument<1024> writeConfig;
+
+        if (error)
+        {
+            Serial.println("Failed to deserialize (1)");
+            Serial.println(error.f_str());
+            return 1;
+        }
+
+        Serial.println("*** Starting new configuration...");
+
+        writeConfig["device"]["UID"] = (const char *)newConfig["device"]["UID"];
+        writeConfig["device"]["name"] = (const char *)newConfig["device"]["name"];
+        writeConfig["network"]["SSID"] = (const char *)newConfig["network"]["SSID"];
+        writeConfig["network"]["wifiPassword"] = (const char *)newConfig["network"]["wifiPassword"];
+        writeConfig["network"]["ip"] = (const char *)newConfig["network"]["ip"];
+        writeConfig["network"]["subnetMask"] = (const char *)newConfig["network"]["subnetMask"];
+        writeConfig["network"]["gateway"] = (const char *)newConfig["network"]["gateway"];
+        writeConfig["smtp"]["mailSender"] = (const char *)newConfig["smtp"]["mailSender"];
+        writeConfig["smtp"]["mailPassword"] = (const char *)newConfig["smtp"]["mailPassword"];
+        writeConfig["smtp"]["mailReceiver"] = (const char *)newConfig["smtp"]["mailReceiver"];
+        writeConfig["smtp"]["smtpServer"] = (const char *)newConfig["smtp"]["smtpServer"];
+        writeConfig["smtp"]["smtpPort"] = (const char *)newConfig["smtp"]["smtpPort"];
+        writeConfig["ports"]["IO_0"] = (const char *)newConfig["ports"]["IO_0"];
+        writeConfig["ports"]["IO_1"] = (const char *)newConfig["ports"]["IO_1"];
+        writeConfig["ports"]["IO_2"] = (const char *)newConfig["ports"]["IO_2"];
+        writeConfig["ports"]["IO_3"] = (const char *)newConfig["ports"]["IO_3"];
+        writeConfig["names"]["DHTSensor_hum_name"] = (const char *)newConfig["names"]["DHTSensor_hum_name"];
+        writeConfig["names"]["DHTSensor_temp_name"] = (const char *)newConfig["names"]["DHTSensor_temp_name"];
+        writeConfig["names"]["TempSensor_name"] = (const char *)newConfig["names"]["TempSensor_name"];
+        writeConfig["names"]["d0_name"] = (const char *)newConfig["names"]["d0_name"];
+        writeConfig["names"]["d1_name"] = (const char *)newConfig["names"]["d1_name"];
+        writeConfig["names"]["d2_name"] = (const char *)newConfig["names"]["d2_name"];
+        writeConfig["names"]["d3_name"] = (const char *)newConfig["names"]["d3_name"];
+        writeConfig["etc"]["DHT"] = (const char *)newConfig["etc"]["DHT"];
+        writeConfig["etc"]["SingleTemp"] = (const char *)newConfig["etc"]["SingleTemp"];
+        writeConfig["etc"]["keepAlive"] = (const char *)newConfig["etc"]["keepAlive"];
+
+        Serial.println("*** Opening new file...");
+
+        if (fs.remove("/config.json"))
+        {
+            Serial.println("*** Old config erased...");
+
+            File fileWrite = fs.open("/config.json", "w+");
+
+            if (!fileWrite)
+            {
+                Serial.println("Error opening config file");
+            }
+
+            auto error3 = serializeJsonPretty(writeConfig, fileWrite);
+
+            if (!error3)
+            {
+                Serial.println("Failed to Serialize (3)");
+            }
+
+            fileWrite.close();
+        }
+        else
+        {
+            File fileWrite = fs.open("/config.json", "w");
+            if (!fileWrite)
+            {
+                Serial.println("Error opening config file");
+            }
+
+            auto error3 = serializeJsonPretty(writeConfig, fileWrite);
+
+            if (!error3)
+            {
+                Serial.println("Failed to Serialize (3)");
+            }
+
+            fileWrite.close();
+        }
+
+        fs.end();
+
+        ESP.restart();
+
+        return 0;
+    }
+    else
+    {
+        Serial.print("couldn't mount filesystem");
         return 1;
     }
-
-    String device_uid = newConfig["device"]["UID"];
-    String device_name = newConfig["device"]["name"];
-    String new_network_SSID = newConfig["network"]["SSID"];
-    String new_network_wifiPassword = newConfig["network"]["wifiPassword"];
-    String new_network_ip = newConfig["network"]["ip"];
-    String new_network_submask = newConfig["network"]["subnetMask"];
-    String new_network_gateway = newConfig["network"]["gateway"];
-    String smtp_sender = newConfig["smtp"]["mailSender"];
-    String smtp_passw = newConfig["smtp"]["mailPassword"];
-    String smtp_receiver = newConfig["smtp"]["mailReceiver"];
-    String smpt_server = newConfig["smtp"]["smtpServer"];
-    String smtp_port = newConfig["smtp"]["smtpPort"];
-    String ports_IO0 = newConfig["ports"]["IO_0"];
-    String ports_IO1 = newConfig["ports"]["IO_1"];
-    String ports_IO2 = newConfig["ports"]["IO_2"];
-    String ports_IO3 = newConfig["ports"]["IO_3"];
-    String ports_mqttMQTTtemp = newConfig["etc"]["MQTTtemp"];
-    String ports_mqttMQTThum = newConfig["etc"]["MQTThum"];
-    String ports_keepalive = newConfig["etc"]["keepAlive"];
-
-    Serial.println("*** Starting new configuration...");
-
-    writeConfig["device"]["UID"] = device_uid;
-    writeConfig["device"]["name"] = device_name;
-    writeConfig["network"]["SSID"] = new_network_SSID;
-    writeConfig["network"]["wifiPassword"] = new_network_wifiPassword;
-    writeConfig["network"]["ip"] = new_network_ip;
-    writeConfig["network"]["subnetMask"] = new_network_submask;
-    writeConfig["network"]["gateway"] = new_network_gateway;
-    writeConfig["smtp"]["mailSender"] = smtp_sender;
-    writeConfig["smtp"]["mailPassword"] = smtp_passw;
-    writeConfig["smtp"]["mailReceiver"] = smtp_receiver;
-    writeConfig["smtp"]["smtpServer"] = smpt_server;
-    writeConfig["smtp"]["smtpPort"] = smtp_port;
-    writeConfig["ports"]["IO_0"] = ports_IO0;
-    writeConfig["ports"]["IO_1"] = ports_IO1;
-    writeConfig["ports"]["IO_2"] = ports_IO2;
-    writeConfig["ports"]["IO_3"] = ports_IO3;
-    writeConfig["etc"]["MQTTtemp"] = ports_mqttMQTTtemp;
-    writeConfig["etc"]["MQTThum"] = ports_mqttMQTThum;
-    writeConfig["etc"]["keepAlive"] = ports_keepalive;
-
-    File fileWrite = fs.open("/config.json", "w");
-
-    Serial.println("*** Opening new file...");
-
-    if (!fileWrite)
-    {
-        Serial.println("Error opening config file");
-    }
-    auto error3 = serializeJsonPretty(writeConfig, fileWrite);
-
-    if (!error3)
-    {
-        Serial.println("Failed to Serialize (3)");
-    }
-
-    fileWrite.close();
-
-    ESP.restart();
-
-    return 0;
 }
 
 int restoreConfig(fs::FS &fs)
 {
     Serial.println("*** Restoring default configuration ***");
 
+    fs.begin();
     fs.remove("/config.json");
     File restoreFile = fs.open("/restore.json", "r");
     File configFile = fs.open("/config.json", "w+");
@@ -204,9 +225,8 @@ int restoreConfig(fs::FS &fs)
     configFile.close();
     restoreFile.close();
 
+    fs.end();
+
     return 0;
 }
 #endif
-
-
-

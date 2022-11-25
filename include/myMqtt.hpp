@@ -60,7 +60,7 @@ void mqttSetup(const char *MQTT_SERVER, uint16_t MQTT_PORT, const char *PATH, Wi
 
   mqttClient.onMessage(onMqttMessage);
 
-  mqttClient.subscribe(configTopic.c_str(), 2);
+  mqttClient.subscribe(configTopic.c_str(), 0);
 
   Serial.println("(MQTT instance) You're connected to the MQTT broker!");
 }
@@ -95,4 +95,3 @@ void mqttOnLoop(const char *MQTT_SERVER, uint16_t MQTT_PORT, const char *PATH, W
 }
 
 #endif
-

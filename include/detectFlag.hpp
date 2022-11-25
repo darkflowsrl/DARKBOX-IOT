@@ -22,6 +22,7 @@ public:
     pinMode(_pin, input);
     _anterior_estado = debounce(_pin);
   }; // INPUT or INPUT_PULLUP
+
   int comprueba()
   {
     _estado = debounce(_pin);
@@ -55,7 +56,7 @@ int debounce(int pin)
     {
         counter++;
         delay(1);
-    } while (counter < 20);
+    } while (counter < 50);
 
     return state;
 }
