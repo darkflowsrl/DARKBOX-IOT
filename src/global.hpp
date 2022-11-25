@@ -7,15 +7,14 @@
 
 unsigned int port = 1883;
 unsigned int eventInterval = 1500;
-unsigned int debouncerTime = 20;
 unsigned int previousTimeScreen = 0;
 unsigned int previousTimeTemporalData = 0;
-unsigned int previousTimeMQTTtemp = 0;
-unsigned int previousTimeMQTThum = 0;
+unsigned int previousTimeMQTT_DHT = 0;
 unsigned int previousKeepAliveTime = 0;
-unsigned int temporalDataRefreshTime = 10;
-unsigned int MQTTtemp;
-unsigned int MQTThum;
+unsigned int previousMQTTsingleTemp = 0;
+unsigned int temporalDataRefreshTime = 100;
+unsigned int MQTTDHT;
+unsigned int MQTTsingleTemp;
 unsigned int keepAliveTime;
 unsigned int SmtpPort;
 
@@ -53,6 +52,16 @@ String root_topic_publish = "DeviceData/" + chipId;
 String keep_alive_topic_publish = "DeviceStatus/" + chipId;
 
 struct {
+  String DHTSensor_hum_name;
+  String DHTSensor_temp_name;
+  String TempSensor_name;
+  String d0_name;
+  String d1_name;
+  String d2_name;
+  String d3_name;
+}portsNames;
+
+struct {
   int t0;
   int t1;
   int h0;
@@ -61,3 +70,15 @@ struct {
   String d2;
   String d3;
 }TemporalAccess;
+
+/*
+12860766
+12860349
+2415597
+2447631
+2462848
+12885481
+2365259
+2383886
+2384141
+*/

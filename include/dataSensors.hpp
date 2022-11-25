@@ -22,7 +22,7 @@ extraPin7 -> Output Salida 1
 
 // GPIO pins from the ESP-32
 #define EEPROM_SIZE 3
-#define OneWirePin 4 // One WIre will be the temp. and humidity sensors
+#define OneWirePin 4 // One Wire will be the temp. and humidity sensors
 #define DHTPin 5
 #define DHTType AM2301
 
@@ -89,8 +89,12 @@ public:
     }
     String singleSensorRawdataTemp(int sensorNumber)
     {
-        DS18B20.requestTemperatures();
-        return String(DS18B20.getTempCByIndex(sensorNumber));
+        if(sensorsCount != 0){
+            DS18B20.requestTemperatures();
+            return String(DS18B20.getTempCByIndex(sensorNumber));
+        }else{
+            return "None";
+        }
     }
 
     /*!

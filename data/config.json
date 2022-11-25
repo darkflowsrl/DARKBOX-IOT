@@ -23,9 +23,18 @@
     "IO_2": "OTD",
     "IO_3": "OTD"
   },
+  "names" : {
+    "DHTSensor_hum_name" : "humedad",
+    "DHTSensor_temp_name" : "temperatura",
+    "TempSensor_name" : "temperatura",
+    "d0_name" : "digital0",
+    "d1_name" : "digital1",
+    "d2_name" : "digital2",
+    "d3_name" : "digital3"
+  },
   "etc": {
-    "MQTTtemp": "1000",
-    "MQTThum": "10000",
-    "keepAlive": "600000"
+    "DHT": "50000",
+    "SingleTemp" : "10000",
+    "keepAlive": "60000"
   }
 }
