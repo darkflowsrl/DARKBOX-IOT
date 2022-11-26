@@ -4,6 +4,11 @@
 #define LOCAL_DASHBOARD
 //#define SMTP_CLIENT
 //#define I2C 
+#define PREFERENCES
+
+#ifdef PREFERENCES
+Preferences myPref;
+#endif
 
 unsigned int port = 1883;
 unsigned int eventInterval = 1500;
@@ -13,10 +18,10 @@ unsigned int previousTimeMQTT_DHT = 0;
 unsigned int previousKeepAliveTime = 0;
 unsigned int previousMQTTsingleTemp = 0;
 unsigned int temporalDataRefreshTime = 100;
-unsigned int MQTTDHT;
-unsigned int MQTTsingleTemp;
-unsigned int keepAliveTime;
 unsigned int SmtpPort;
+unsigned long long MQTTDHT;
+unsigned long long MQTTsingleTemp;
+unsigned long long keepAliveTime;
 
 String chipId = String(ESP.getChipId());
 String IO_0;
@@ -70,6 +75,7 @@ struct {
   String d2;
   String d3;
 }TemporalAccess;
+
 
 /*
 12860766
