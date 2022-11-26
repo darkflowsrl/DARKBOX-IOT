@@ -200,6 +200,18 @@ instance of StaticJsonDocument. This is a class fromr ArduinoJson.h
 void changeCredentials(fs::FS &fs, const char *path, String mailReceiver,
                        String StaticIP, String gateway, String subnet, String ssid, String password, String deviceName)
 {
+  #ifdef PREFERENCES
+  myPref.begin("EPM", false);
+  myPref.putString("deviceName", deviceName);
+  myPref.putString("ssid", ssid);
+  myPref.putString("wifiPassword", password);
+  myPref.putString("staticIpAP", StaticIP);
+  myPref.putString("subnetMaskAP", subnet);
+  myPref.putString("gatewayAP", gateway);
+  myPref.putString("SmtpReceiver", mailReceiver);
+  myPref.end();
+  #endif
+  #ifndef PREFERENCES
   fs.begin();
   File file_ = fs.open(path, "w");
   String content;
@@ -248,6 +260,7 @@ void changeCredentials(fs::FS &fs, const char *path, String mailReceiver,
   file_.close();
 
   fs.end();
+  #endif
 }
 
 int DHCPtoStatic(String staticIpAP, String gatewayAP_, String subnetMaskAP)

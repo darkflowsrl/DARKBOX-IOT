@@ -15,12 +15,14 @@
 #include <fstream>
 #include <iostream>
 #include <stdio.h>
-#include <LittleFS.h>
 #include <ArduinoJson.h>
 #include <Arduino.h>
 #include <vector>
 #include <cstdlib>
 #include <WiFiManager.h>
+#include <Preferences.h>
+#include <LittleFS.h>
+
 
 #include "global.hpp"
 #include "functions.hpp"
@@ -51,7 +53,7 @@ void loadData(fs::FS &fs, const char *path);
 void callback(char *topic, byte *payload, unsigned int lenght);
 void loadTemporalData(std::string t0, std::string t1, std::string h0,
                       std::string d0, std::string d1, std::string d2, std::string d3);
-void reconnect();
+void loadDataPreferences();
 void refreshScreen();
 
 // Constructor for the sensors, the wifi and the MQTT Object
@@ -73,11 +75,16 @@ void setup()
   // Serial setup
   Serial.begin(115000);
   // Load and visualize data
+  #ifdef PREFERENCES
+  loadDataPreferences();
+  #endif
+  #ifndef PREFERENCES
   LittleFS.begin();
   listDir(LittleFS, "/", 1);
   readFile(LittleFS, "/config.json");
   loadData(LittleFS, "/config.json");
   LittleFS.end();
+  #endif
   // AP setup
   apInstance.setupServer();
   DHCPtoStatic(staticIpAP, gatewayAP, subnetMaskAP);
@@ -159,7 +166,7 @@ void loop()
     serializeJsonPretty(dataJson_0, dataPretty_0);
     // Serial.println(dataPretty_0.c_str());
     mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), espClient, keep_alive_topic_publish.c_str(), root_topic_publish.c_str(),
-               data_0.c_str());
+              data_0.c_str());
     previousTimeMQTT_DHT = millis();
   }
   // MQTT Sigle temperature
@@ -248,6 +255,63 @@ void refreshScreen()
 }
 #endif
 
+#ifdef PREFERENCES
+void loadDataPreferences(){
+  myPref.begin("EPM", false);
+  deviceName = myPref.getString("deviceName", "default");
+
+  staticIpAP = myPref.getString("staticIpAP", "").c_str();
+  subnetMaskAP = myPref.getString("subnetMaskAP", "").c_str();
+  gatewayAP = myPref.getString("gatewayAP", "").c_str();
+
+  SmtpSender = myPref.getString("SmtpSender", "default@outlook.com").c_str();
+  SmtpPass = myPref.getString("SmtpPass", "default123").c_str();
+  SmtpReceiver = myPref.getString("SmtpReceiver", "default@outlook.com").c_str();
+  SmtpServer = myPref.getString("SmtpServer", "smtp.default.com").c_str();
+  SmtpPort = std::stoi(myPref.getString("SmtpPort", "587").c_str());
+
+  IO_0 = myPref.getString("IO_0", "OTU").c_str();
+  IO_1 = myPref.getString("IO_1", "OTU").c_str();
+  IO_2 = myPref.getString("IO_2", "OTU").c_str();
+  IO_3 = myPref.getString("IO_3", "OTU").c_str();
+
+  portsNames.DHTSensor_hum_name = myPref.getString("DHTSensor_hum_name", "humedad").c_str();
+  portsNames.DHTSensor_temp_name = myPref.getString("DHTSensor_temp_name", "temperatura").c_str();
+  portsNames.TempSensor_name = myPref.getString("TempSensor_name", "temperatura").c_str();
+  portsNames.d0_name = myPref.getString("d0_name", "digital0").c_str();
+  portsNames.d1_name = myPref.getString("d1_name", "digital1").c_str();
+  portsNames.d2_name = myPref.getString("d2_name", "digital2").c_str();
+  portsNames.d3_name = myPref.getString("d3_name", "digital3").c_str();
+
+  MQTTDHT = std::stoi(myPref.getString("MQTTDHT", "50000").c_str());
+  MQTTsingleTemp = std::stoi(myPref.getString("MQTTsingleTemp", "30000").c_str());
+  keepAliveTime = std::stoi(myPref.getString("keepAliveTime", "60000").c_str());
+  myPref.end();
+
+  Serial.print("\nCurrent Config:\nDevice Name: " + deviceName);
+  Serial.print("\nUID: " + String(ESP.getChipId()));
+  Serial.print("\nIP: " + staticIpAP);
+  Serial.print("\nSubnet: " + subnetMaskAP);
+  Serial.print("\nGateway: " + gatewayAP);
+  Serial.print("\nIO0 config: " + IO_0);
+  Serial.print("\nIO1 config: " + IO_1);
+  Serial.print("\nIO2 config: " + IO_2);
+  Serial.print("\nIO3 config: " + IO_3);
+  Serial.print("\nIO0 name: " + portsNames.d0_name);
+  Serial.print("\nIO1 name: " + portsNames.d1_name);
+  Serial.print("\nIO2 name: " + portsNames.d2_name);
+  Serial.print("\nIO3 name: " + portsNames.d3_name);
+  Serial.print("\nDHT humidity name: " + portsNames.DHTSensor_hum_name);
+  Serial.print("\nDHT temperature name: " + portsNames.DHTSensor_temp_name);
+  Serial.print("\nTemperature sensor name: " + portsNames.TempSensor_name);
+  Serial.print("\nDHT sensor sending time: " + String(MQTTDHT));
+  Serial.print("\nSingle sensor sending time: " + String(MQTTsingleTemp));
+  Serial.println("\nKeep alive sending time: " + String(keepAliveTime));
+  Serial.println("##########################################################");
+}
+
+#endif
+#ifndef PREFERENCES
 /**
  * @brief
  *
@@ -484,3 +548,5 @@ void testFileIO(fs::FS &fs, const char *path)
     Serial.println("...failed to open file for reading");
   }
 }
+
+#endif

@@ -4,6 +4,11 @@
 #define LOCAL_DASHBOARD
 //#define SMTP_CLIENT
 //#define I2C 
+#define PREFERENCES
+
+#ifdef PREFERENCES
+Preferences myPref;
+#endif
 
 unsigned int port = 1883;
 unsigned int eventInterval = 1500;
@@ -70,6 +75,7 @@ struct {
   String d2;
   String d3;
 }TemporalAccess;
+
 
 /*
 12860766

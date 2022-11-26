@@ -57,39 +57,7 @@ IPAddress strToIp(String miIp)
 
     return IPAddress(oct0, oct1, oct2, oct3);
 }
-/*
-{
-  "device": {
-    "UID": "296876",
-    "name": "default"
-  },
-  "network": {
-    "SSID": "default",
-    "wifiPassword": "default",
-    "ip": "",
-    "subnetMask": "",
-    "gateway": ""
-  },
-  "smtp": {
-    "mailSender": "giulicrenna@outlook.com",
-    "mailPassword": "kirchhoff2002",
-    "mailReceiver": "",
-    "smtpServer": "smtp.office365.com",
-    "smtpPort": "587"
-  },
-  "ports": {
-    "IO_0": "OTU",
-    "IO_1": "OTD",
-    "IO_2": "OTD",
-    "IO_3": "OTD"
-  },
-  "etc": {
-    "MQTTtemp": "1000",
-    "MQTThum": "10000",
-    "keepAlive": "600000"
-  }
-}
-*/
+
 /**
  * @brief
  *
@@ -99,6 +67,48 @@ IPAddress strToIp(String miIp)
  */
 int updateConfig(fs::FS &fs, String json)
 {
+#ifdef PREFERENCES
+    myPref.begin("EPM", false);
+    Serial.println("UPDATING CONFIGURATION");
+    Serial.println(json);
+    delay(2000);
+
+    StaticJsonDocument<1024> newConfig;
+    deserializeJson(newConfig, json);
+
+    // myPref.putString("", (const char*)newConfig["device"]["UID"]);
+    myPref.putString("deviceName", (const char *)newConfig["device"]["name"]);
+    myPref.putString("ssid", (const char *)newConfig["network"]["SSID"]);
+    myPref.putString("wifiPassword", (const char *)newConfig["network"]["wifiPassword"]);
+    myPref.putString("staticIpAP", (const char *)newConfig["network"]["ip"]);
+    myPref.putString("subnetMaskAP", (const char *)newConfig["network"]["subnetMask"]);
+    myPref.putString("gatewayAP", (const char *)newConfig["network"]["gateway"]);
+    myPref.putString("SmtpSender", (const char *)newConfig["smtp"]["mailSender"]);
+    myPref.putString("SmtpPass", (const char *)newConfig["smtp"]["mailPassword"]);
+    myPref.putString("SmtpReceiver", (const char *)newConfig["smtp"]["mailReceiver"]);
+    myPref.putString("SmtpServer", (const char *)newConfig["smtp"]["smtpServer"]);
+    myPref.putString("SmtpPort", (const char *)newConfig["smtp"]["smtpPort"]);
+    myPref.putString("IO_0", (const char *)newConfig["ports"]["IO_0"]);
+    myPref.putString("IO_1", (const char *)newConfig["ports"]["IO_1"]);
+    myPref.putString("IO_2", (const char *)newConfig["ports"]["IO_2"]);
+    myPref.putString("IO_3", (const char *)newConfig["ports"]["IO_3"]);
+    myPref.putString("DHTSensor_hum_name", (const char *)newConfig["names"]["DHTSensor_hum_name"]);
+    myPref.putString("DHTSensor_temp_name", (const char *)newConfig["names"]["DHTSensor_temp_name"]);
+    myPref.putString("TempSensor_name", (const char *)newConfig["names"]["TempSensor_name"]);
+    myPref.putString("d0_name", (const char *)newConfig["names"]["d0_name"]);
+    myPref.putString("d1_name", (const char *)newConfig["names"]["d1_name"]);
+    myPref.putString("d2_name", (const char *)newConfig["names"]["d2_name"]);
+    myPref.putString("d3_name", (const char *)newConfig["names"]["d3_name"]);
+    myPref.putString("MQTTDHT", (const char *)newConfig["etc"]["DHT"]);
+    myPref.putString("MQTTsingleTemp", (const char *)newConfig["etc"]["SingleTemp"]);
+    myPref.putString("keepAliveTime", (const char *)newConfig["etc"]["keepAlive"]);
+
+    ESP.restart();
+    myPref.end();
+    return 0;
+#endif
+
+#ifndef PREFERENCES
     if (fs.begin())
     {
         Serial.println("UPDATING CONFIGURATION");
@@ -197,10 +207,44 @@ int updateConfig(fs::FS &fs, String json)
         Serial.print("couldn't mount filesystem");
         return 1;
     }
+#endif
 }
 
 int restoreConfig(fs::FS &fs)
 {
+#ifdef PREFERENCES
+    myPref.begin("EPM", false);
+    Serial.println("*** Restoring default configuration ***");
+
+    myPref.putString("deviceName", "default");
+    myPref.putString("staticIpAP", "");
+    myPref.putString("subnetMaskAP", "");
+    myPref.putString("gatewayAP", "");
+    myPref.putString("SmtpSender", "default@outlook.com");
+    myPref.putString("SmtpPass", "default123");
+    myPref.putString("SmtpReceiver", "default@outlook.com");
+    myPref.putString("SmtpServer", "smtp.default.com");
+    myPref.putString("SmtpPort", "587");
+    myPref.putString("IO_0", "OTU");
+    myPref.putString("IO_1", "OTU");
+    myPref.putString("IO_2", "OTU");
+    myPref.putString("IO_3", "OTU");
+    myPref.putString("DHTSensor_hum_name", "humedad");
+    myPref.putString("DHTSensor_temp_name", "temperatura");
+    myPref.putString("TempSensor_name", "temperatura");
+    myPref.putString("d0_name", "digital0");
+    myPref.putString("d1_name", "digital1");
+    myPref.putString("d2_name", "digital2");
+    myPref.putString("d3_name", "digital3");
+    myPref.putString("MQTTDHT", "50000");
+    myPref.putString("MQTTsingleTemp", "30000");
+    myPref.putString("keepAliveTime", "60000");
+
+    myPref.end();
+    ESP.restart();
+    return 0;
+#endif
+#ifndef PREFERENCES
     Serial.println("*** Restoring default configuration ***");
 
     fs.begin();
@@ -228,5 +272,6 @@ int restoreConfig(fs::FS &fs)
     fs.end();
 
     return 0;
+#endif
 }
 #endif
