@@ -76,8 +76,7 @@ void mqttSetup(const char *MQTT_SERVER, uint16_t MQTT_PORT, const char *PATH, Wi
  * @param TOPIC System topic
  * @param MESSAGE Message to be sent
  */
-void mqttOnLoop(const char *MQTT_SERVER, uint16_t MQTT_PORT, const char *PATH, WiFiClient client, const char *PATH_ALT = "",
-                const char *TOPIC = "$SYS", const char *MESSAGE = "")
+void mqttOnLoop(const char *MQTT_SERVER, uint16_t MQTT_PORT, const char *PATH, const char *MESSAGE = "")
 {
   if (!mqttClient.connected())
   {
