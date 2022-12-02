@@ -14,6 +14,7 @@ unsigned int port = 1883;
 unsigned int eventInterval = 1500;
 unsigned int previousTimeScreen = 0;
 unsigned int previousTimeTemporalData = 0;
+unsigned int previousTimeTemporalCheckConnection = 0;
 unsigned int previousTimeMQTT_DHT = 0;
 unsigned int previousKeepAliveTime = 0;
 unsigned int previousMQTTsingleTemp = 0;

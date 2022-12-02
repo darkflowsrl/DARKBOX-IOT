@@ -199,8 +199,7 @@ public:
                 data["Value"][0]["Value"] = "HIGH";
                 serializeJson(data, message);
                 // Serial.println(message);
-                mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), wifiClient, keep_alive_topic_publish.c_str(), keep_alive_topic_publish.c_str(),
-                           message.c_str());
+                mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), message.c_str());
             }
             if (!ascendant)
             {
@@ -214,8 +213,7 @@ public:
                 data["Value"][0]["Value"] = "LOW";
                 serializeJson(data, message);
                 // Serial.println(message);
-                mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), wifiClient, keep_alive_topic_publish.c_str(), keep_alive_topic_publish.c_str(),
-                           message.c_str());
+                mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), message.c_str());
             }
         }
         else if (IO_name == portsNames.d1_name)
@@ -232,8 +230,7 @@ public:
                 data["Value"][0]["Value"] = "HIGH";
                 serializeJson(data, message);
                 // Serial.println(message);
-                mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), wifiClient, keep_alive_topic_publish.c_str(), keep_alive_topic_publish.c_str(),
-                           message.c_str());
+                mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), message.c_str());
             }
             if (!ascendant)
             {
@@ -247,8 +244,7 @@ public:
                 data["Value"][0]["Value"] = "LOW";
                 serializeJson(data, message);
                 // Serial.println(message);
-                mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), wifiClient, keep_alive_topic_publish.c_str(), keep_alive_topic_publish.c_str(),
-                           message.c_str());
+                mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), message.c_str());
             }
         }
         else if (IO_name == portsNames.d2_name)
@@ -265,8 +261,7 @@ public:
                 data["Value"][0]["Value"] = "HIGH";
                 serializeJson(data, message);
                 // Serial.println(message);
-                mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), wifiClient, keep_alive_topic_publish.c_str(), keep_alive_topic_publish.c_str(),
-                           message.c_str());
+                mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), message.c_str());
             }
             if (!ascendant)
             {
@@ -280,8 +275,7 @@ public:
                 data["Value"][0]["Value"] = "LOW";
                 serializeJson(data, message);
                 // Serial.println(message);
-                mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), wifiClient, keep_alive_topic_publish.c_str(), keep_alive_topic_publish.c_str(),
-                           message.c_str());
+                mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), message.c_str());
             }
         }
         else if (IO_name == portsNames.d3_name)
@@ -298,8 +292,7 @@ public:
                 data["Value"][0]["Value"] = "HIGH";
                 serializeJson(data, message);
                 // Serial.println(message);
-                mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), wifiClient, keep_alive_topic_publish.c_str(), keep_alive_topic_publish.c_str(),
-                           message.c_str());
+                mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), message.c_str());
             }
             if (!ascendant)
             {
@@ -313,8 +306,7 @@ public:
                 data["Value"][0]["Value"] = "LOW";
                 serializeJson(data, message);
                 // Serial.println(message);
-                mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), wifiClient, keep_alive_topic_publish.c_str(), keep_alive_topic_publish.c_str(),
-                           message.c_str());
+                mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), message.c_str());
             }
         }
     }
@@ -367,8 +359,7 @@ public:
 
                 serializeJson(data, message);
                 // Serial.println(message);
-                mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), wifiClient, keep_alive_topic_publish.c_str(), keep_alive_topic_publish.c_str(),
-                           message.c_str());
+                mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), message.c_str());
             }
 
             if (OTU_IO1 || OTD_IO1)
@@ -412,8 +403,7 @@ public:
 
                     serializeJson(data, message);
                     // Serial.println(message);
-                    mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), wifiClient, keep_alive_topic_publish.c_str(), keep_alive_topic_publish.c_str(),
-                               message.c_str());
+                    mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), message.c_str());
                 }
             }
         }
@@ -461,8 +451,7 @@ public:
                 // Serial.println(message);
                 //   Device hard reset check
                 // checkReset(message.c_str());
-                mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), wifiClient, keep_alive_topic_publish.c_str(), keep_alive_topic_publish.c_str(),
-                           message.c_str());
+                mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), message.c_str());
             }
         }
 
@@ -507,8 +496,7 @@ public:
 
                 serializeJson(data, message);
                 // Serial.println(message);
-                mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), wifiClient, keep_alive_topic_publish.c_str(), keep_alive_topic_publish.c_str(),
-                           message.c_str());
+                mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), message.c_str());
             }
         }
         readInputs();
