@@ -51,6 +51,11 @@ void setupServer()
             ESP.eraseConfig();
             ESP.reset();
             ESP.restart(); });
+    server.on("/reboot", HTTP_POST, [](AsyncWebServerRequest *request)
+            {
+            request->send(200, "text/plain", "Rebooting Device...");
+            delay(5000);
+            ESP.restart(); });
 
   server.begin();
 }

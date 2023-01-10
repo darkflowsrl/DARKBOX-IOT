@@ -63,9 +63,9 @@ IPAddress strToIp(String miIp)
  *
  * @param fs
  * @param json
- * @return int
+ * @return void
  */
-int updateConfig(fs::FS &fs, String json)
+void updateConfig(fs::FS &fs, String json)
 {
 #ifdef PREFERENCES
     myPref.begin("EPM", false);
@@ -77,20 +77,24 @@ int updateConfig(fs::FS &fs, String json)
 
     // myPref.putString("", (const char*)newConfig["device"]["UID"]);
     myPref.putString("deviceName", (const char *)newConfig["device"]["name"]);
+
     myPref.putString("ssid", (const char *)newConfig["network"]["SSID"]);
     myPref.putString("wifiPassword", (const char *)newConfig["network"]["wifiPassword"]);
     myPref.putString("staticIpAP", (const char *)newConfig["network"]["ip"]);
     myPref.putString("subnetMaskAP", (const char *)newConfig["network"]["subnetMask"]);
     myPref.putString("gatewayAP", (const char *)newConfig["network"]["gateway"]);
+
     myPref.putString("SmtpSender", (const char *)newConfig["smtp"]["mailSender"]);
     myPref.putString("SmtpPass", (const char *)newConfig["smtp"]["mailPassword"]);
     myPref.putString("SmtpReceiver", (const char *)newConfig["smtp"]["mailReceiver"]);
     myPref.putString("SmtpServer", (const char *)newConfig["smtp"]["smtpServer"]);
     myPref.putString("SmtpPort", (const char *)newConfig["smtp"]["smtpPort"]);
+
     myPref.putString("IO_0", (const char *)newConfig["ports"]["IO_0"]);
     myPref.putString("IO_1", (const char *)newConfig["ports"]["IO_1"]);
     myPref.putString("IO_2", (const char *)newConfig["ports"]["IO_2"]);
     myPref.putString("IO_3", (const char *)newConfig["ports"]["IO_3"]);
+
     myPref.putString("DHTSensor_hum_name", (const char *)newConfig["names"]["DHTSensor_hum_name"]);
     myPref.putString("DHTSensor_temp_name", (const char *)newConfig["names"]["DHTSensor_temp_name"]);
     myPref.putString("TempSensor_name", (const char *)newConfig["names"]["TempSensor_name"]);
@@ -98,16 +102,13 @@ int updateConfig(fs::FS &fs, String json)
     myPref.putString("d1_name", (const char *)newConfig["names"]["d1_name"]);
     myPref.putString("d2_name", (const char *)newConfig["names"]["d2_name"]);
     myPref.putString("d3_name", (const char *)newConfig["names"]["d3_name"]);
-    myPref.putString("MQTTDHT", (const char *)newConfig["etc"]["DHT"]);
-    myPref.putString("MQTTsingleTemp", (const char *)newConfig["etc"]["SingleTemp"]);
-    myPref.putString("keepAliveTime", (const char *)newConfig["etc"]["keepAlive"]);
-
-    myPref.end();
     
-    delay(1000);
+    myPref.putString("MQTTDHT", (const char *)newConfig["etc"]["DHT"]);
+    myPref.putString("keepAliveTime", (const char *)newConfig["etc"]["keepAliveTime"]);
+    myPref.putString("MQTTsingleTemp", (const char *)newConfig["etc"]["SingleTemp"]);
+    myPref.end();
 
     ESP.restart();
-    return 0;
 #endif
 
 #ifndef PREFERENCES
@@ -240,7 +241,7 @@ int restoreConfig(fs::FS &fs)
     myPref.putString("d3_name", "digital3");
     myPref.putString("MQTTDHT", "50000");
     myPref.putString("MQTTsingleTemp", "30000");
-    myPref.putString("keepAliveTime", "60000");
+    myPref.putString("keepAliveTime", "70000");
 
     myPref.end();
     ESP.restart();

@@ -78,7 +78,7 @@ void setup()
 	Serial.begin(115000);
 // Load and visualize data
 #ifdef PREFERENCES
-	listDir(LittleFS, "/", 1);
+	// listDir(LittleFS, "/", 1);
 	loadDataPreferences();
 #endif
 #ifndef PREFERENCES
