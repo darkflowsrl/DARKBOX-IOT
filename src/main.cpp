@@ -140,7 +140,7 @@ void loop()
 						 myInputs.returnSingleInput(12), myInputs.returnSingleInput(13));
 		previousTimeTemporalData = millis();
 	}
-	// MQTT temp
+	// MQTT DHT
 	if (millis() - previousTimeMQTT_DHT > MQTTDHT)
 	{
 		// JSON data creation
@@ -164,18 +164,18 @@ void loop()
 	// Keep alive message
 	if (millis() - previousKeepAliveTime > keepAliveTime)
 	{
-		String aliveMessage = String("{\"deviceStatus\": \"") + chipId + String("\"}");
-		mqttOnLoop(host.c_str(), port, keep_alive_topic_publish.c_str(), aliveMessage.c_str());
+		const char *data = makeJSON(2).c_str();
+		mqttOnLoop(host.c_str(), port, keep_alive_topic_publish.c_str(), data);
 		previousKeepAliveTime = millis();
 	}
 
-	delay(1);
+	mqttClient.poll();
 }
 
 String makeJSON(int typeOfValues, String dataExtra)
 {
 	std::string data, dataPretty;
-	DynamicJsonDocument dataJson(512);
+	DynamicJsonDocument dataJson(1024);
 	dataJson["DeviceId"] = chipId;
 	dataJson["DeviceName"] = deviceName.c_str();
 	dataJson["Timestamp"] = ntpRaw();
@@ -198,6 +198,14 @@ String makeJSON(int typeOfValues, String dataExtra)
 	{
 		dataJson["Value"][0]["Port"] = portsNames.TempSensor_name;
 		dataJson["Value"][0]["Value"] = dataExtra;
+		serializeJson(dataJson, data);
+		serializeJsonPretty(dataJson, dataPretty);
+		return String(data.c_str());
+	}
+	case 2:
+	{
+		dataJson["MsgType"] = "KeepAlive";
+		dataJson["ip"] = localIP;
 		serializeJson(dataJson, data);
 		serializeJsonPretty(dataJson, dataPretty);
 		return String(data.c_str());
@@ -292,15 +300,15 @@ void loadDataPreferences()
 
 	portsNames.DHTSensor_hum_name = myPref.getString("DHTSensor_hum_name", "humedad");
 	portsNames.DHTSensor_temp_name = myPref.getString("DHTSensor_temp_name", "temperatura");
-	portsNames.TempSensor_name = myPref.getString("TempSensor_name", "temperatura");
+	portsNames.TempSensor_name = myPref.getString("TempSensor_name", "sonda");
 	portsNames.d0_name = myPref.getString("d0_name", "digital0");
 	portsNames.d1_name = myPref.getString("d1_name", "digital1");
 	portsNames.d2_name = myPref.getString("d2_name", "digital2");
 	portsNames.d3_name = myPref.getString("d3_name", "digital3");
 
-	MQTTDHT = std::stoll(myPref.getString("MQTTDHT", "50000").c_str());
-	MQTTsingleTemp = std::stoll(myPref.getString("MQTTsingleTemp", "30000").c_str());
-	keepAliveTime = std::stoll(myPref.getString("keepAliveTime", "60000").c_str());
+	MQTTDHT = std::stoll(myPref.getString("MQTTDHT", "5000").c_str());
+	MQTTsingleTemp = std::stoll(myPref.getString("MQTTsingleTemp", "3000").c_str());
+	keepAliveTime = std::stoll(myPref.getString("keepAliveTime", "6000").c_str());
 	myPref.end();
 
 	Serial.println("#####################################################################");

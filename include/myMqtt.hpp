@@ -60,7 +60,7 @@ void mqttSetup(const char *MQTT_SERVER, uint16_t MQTT_PORT, const char *PATH, Wi
 
   mqttClient.onMessage(onMqttMessage);
 
-  mqttClient.subscribe(configTopic.c_str(), 0);
+  mqttClient.subscribe(configTopic.c_str(), 2);
 
   Serial.println("(MQTT instance) You're connected to the MQTT broker!");
 }
@@ -82,9 +82,8 @@ void mqttOnLoop(const char *MQTT_SERVER, uint16_t MQTT_PORT, const char *PATH, c
   {
     mqttClient.connect(MQTT_SERVER, MQTT_PORT);
   }
-  mqttClient.poll();
 
-  if (!mqttClient.beginMessage(PATH))
+  if (!mqttClient.beginMessage(PATH, false, 2, false))
   {
     Serial.println("(MQTT instance) could not publish into the topic");
   }

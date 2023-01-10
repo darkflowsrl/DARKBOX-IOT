@@ -71,9 +71,8 @@ int updateConfig(fs::FS &fs, String json)
     myPref.begin("EPM", false);
     Serial.println("UPDATING CONFIGURATION");
     Serial.println(json);
-    delay(2000);
 
-    StaticJsonDocument<1024> newConfig;
+    StaticJsonDocument<1512> newConfig;
     deserializeJson(newConfig, json);
 
     // myPref.putString("", (const char*)newConfig["device"]["UID"]);
@@ -103,8 +102,11 @@ int updateConfig(fs::FS &fs, String json)
     myPref.putString("MQTTsingleTemp", (const char *)newConfig["etc"]["SingleTemp"]);
     myPref.putString("keepAliveTime", (const char *)newConfig["etc"]["keepAlive"]);
 
-    ESP.restart();
     myPref.end();
+    
+    delay(1000);
+
+    ESP.restart();
     return 0;
 #endif
 

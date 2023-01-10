@@ -29,6 +29,7 @@ String IO_0;
 String IO_1;
 String IO_2;
 String IO_3;
+String localIP;
 String deviceName;
 String staticIpAP;
 String subnetMaskAP;
