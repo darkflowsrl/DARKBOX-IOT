@@ -25,3 +25,15 @@ CP210x
 ```
 Available on: https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers
 ```
+
+```
+
+//SMTP test
+if (std::atof(mySensors.singleSensorRawdataTemp(0).c_str()) >= std::atof("50"))
+{
+#ifdef SMTP_CLIENT
+sendMail("Alerta", "You have Overpass the temperature");
+#endif
+}
+
+```

@@ -159,7 +159,8 @@ public:
       ESP.restart();
     }
 
-    Serial.println(WiFi.localIP());
+    localIP = WiFi.localIP().toString();
+    Serial.println(localIP);
   }
   /*
   reset: None -> None

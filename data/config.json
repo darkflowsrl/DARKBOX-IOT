@@ -11,8 +11,8 @@
     "gateway": ""
   },
   "smtp": {
-    "mailSender": "giulicrenna@outlook.com",
-    "mailPassword": "kirchhoff2002",
+    "mailSender": "admin@outlook.com",
+    "mailPassword": "admin",
     "mailReceiver": "",
     "smtpServer": "smtp.office365.com",
     "smtpPort": "587"
@@ -26,15 +26,15 @@
   "names" : {
     "DHTSensor_hum_name" : "humedad",
     "DHTSensor_temp_name" : "temperatura",
-    "TempSensor_name" : "temperatura",
+    "TempSensor_name" : "sonda",
     "d0_name" : "digital0",
     "d1_name" : "digital1",
     "d2_name" : "digital2",
     "d3_name" : "digital3"
   },
   "etc": {
-    "DHT": "50000",
-    "SingleTemp" : "10000",
-    "keepAlive": "60000"
+    "DHT": "5000",
+    "SingleTemp" : "1000",
+    "keepAlive": "5000"
   }
 }
