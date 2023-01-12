@@ -9,7 +9,7 @@
  *
  */
 
-// SilFe2655
+// SilFe2655 darkflow-2296876
 #include <string>
 #include <sstream>
 #include <fstream>
@@ -71,9 +71,99 @@ Screen myScreen;
 inputController myInputs;
 JSONIZER jsonSession;
 
+void task()
+{
+	switch (currentState)
+	{
+	case DNS_UPDATE:
+	{
+		// HTTP and mDNS loop
+		setupHttpServer();
+		currentState = SCREEN_REFRESH;
+		break;
+	}
+	case SCREEN_REFRESH:
+	{
+#ifdef I2C
+		refreshScreen();
+#endif
+		currentState = TEMPORAL_DATA;
+		break;
+	}
+	case TEMPORAL_DATA:
+	{
+		//  Temporal data to EEPROM
+		if (millis() - previousTimeTemporalData >= temporalDataRefreshTime)
+		{
+			loadTemporalData(mySensors.singleSensorRawdataTemp(0).c_str(), mySensors.singleSensorRawdataDHT(false).c_str(), mySensors.singleSensorRawdataDHT(true).c_str(),
+							 myInputs.returnSingleInput(16), myInputs.returnSingleInput(14),
+							 myInputs.returnSingleInput(12), myInputs.returnSingleInput(13));
+			previousTimeTemporalData = millis();
+		}
+		currentState = MQTT_DHT;
+		break;
+	}
+	case MQTT_DHT:
+	{
+		// MQTT DHT
+		if (millis() - previousTimeMQTT_DHT > MQTTDHT)
+		{
+			// JSON data creation
+			const char *data_0 = makeJSON(0).c_str();
+			// Serial.println(dataPretty_0.c_str());
+			mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), data_0);
+			previousTimeMQTT_DHT = millis();
+		}
+		currentState = MQTT_SINGLE_TEMP;
+		break;
+	}
+	case MQTT_SINGLE_TEMP:
+	{
+		// MQTT Sigle temperature
+		if (millis() - previousMQTTsingleTemp > MQTTsingleTemp)
+		{
+			// JSON data creation
+			String sensorData = mySensors.singleSensorRawdataTemp(0);
+			const char *data = makeJSON(1, sensorData).c_str();
+			if (sensorData != "None")
+			{
+				mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), data);
+				previousMQTTsingleTemp = millis();
+			}
+		}
+		currentState = MQTT_KEEP_ALIVE;
+		break;
+	}
+	case MQTT_KEEP_ALIVE:
+	{
+		// Keep alive message
+		if (millis() - previousKeepAliveTime > keepAliveTime)
+		{
+			const char *data = makeJSON(2).c_str();
+			mqttOnLoop(host.c_str(), port, keep_alive_topic_publish.c_str(), data);
+			previousKeepAliveTime = millis();
+		}
+		currentState = MQTT_POLL;
+		break;
+	}
+	case MQTT_POLL:
+	{
+		mqttClient.poll();
+		currentState = CONN_CHECK;
+		break;
+	}
+	case CONN_CHECK:
+	{
+		checkConn();
+		currentState = DNS_UPDATE;
+	}
+	default:
+		break;
+	}
+}
+
 void setup()
 {
-
 	// Serial setup
 	Serial.begin(115000);
 // Load and visualize data
@@ -115,61 +205,7 @@ void setup()
 
 void loop()
 {
-	// SMTP test
-	/*
-	if (std::atof(mySensors.singleSensorRawdataTemp(0).c_str()) >= std::atof("50"))
-	{
-  #ifdef SMTP_CLIENT
-	sendMail("Alerta", "You have Overpass the temperature");
-  #endif
-	}
-	*/
-	myInputs.inputData();
-	checkConn();
-
-	// HTTP and mDNS loop
-	setupHttpServer();
-#ifdef I2C
-	refreshScreen();
-#endif
-	//  Temporal data to EEPROM
-	if (millis() - previousTimeTemporalData >= temporalDataRefreshTime)
-	{
-		loadTemporalData(mySensors.singleSensorRawdataTemp(0).c_str(), mySensors.singleSensorRawdataDHT(false).c_str(), mySensors.singleSensorRawdataDHT(true).c_str(),
-						 myInputs.returnSingleInput(16), myInputs.returnSingleInput(14),
-						 myInputs.returnSingleInput(12), myInputs.returnSingleInput(13));
-		previousTimeTemporalData = millis();
-	}
-	// MQTT DHT
-	if (millis() - previousTimeMQTT_DHT > MQTTDHT)
-	{
-		// JSON data creation
-		const char *data_0 = makeJSON(0).c_str();
-		// Serial.println(dataPretty_0.c_str());
-		mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), data_0);
-		previousTimeMQTT_DHT = millis();
-	}
-	// MQTT Sigle temperature
-	if (millis() - previousMQTTsingleTemp > MQTTsingleTemp)
-	{
-		// JSON data creation
-		String sensorData = mySensors.singleSensorRawdataTemp(0);
-		const char *data = makeJSON(1, sensorData).c_str();
-		if (sensorData != "None")
-		{
-			mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), data);
-			previousMQTTsingleTemp = millis();
-		}
-	}
-	// Keep alive message
-	if (millis() - previousKeepAliveTime > keepAliveTime)
-	{
-		const char *data = makeJSON(2).c_str();
-		mqttOnLoop(host.c_str(), port, keep_alive_topic_publish.c_str(), data);
-		previousKeepAliveTime = millis();
-	}
-
-	mqttClient.poll();
+	task();
 }
 
 String makeJSON(int typeOfValues, String dataExtra)
@@ -380,6 +416,7 @@ void listDir(fs::FS &fs, const char *dirname, uint8_t levels)
 		file = root.openNextFile();
 	}
 }
+
 #ifndef PREFERENCES
 
 void readFile(fs::FS &fs, const char *path)

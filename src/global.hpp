@@ -10,6 +10,19 @@
 Preferences myPref;
 #endif
 
+typedef enum{
+  DNS_UPDATE,
+  SCREEN_REFRESH,
+  TEMPORAL_DATA,
+  MQTT_DHT,
+  MQTT_SINGLE_TEMP,
+  MQTT_KEEP_ALIVE,
+  MQTT_POLL,
+  CONN_CHECK
+}States;
+
+States currentState = DNS_UPDATE;
+
 unsigned int port = 1883;
 unsigned int eventInterval = 1500;
 unsigned int previousTimeScreen = 0;
