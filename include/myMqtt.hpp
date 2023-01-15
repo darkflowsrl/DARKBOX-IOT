@@ -88,7 +88,7 @@ void mqttOnLoop(const char *MQTT_SERVER, uint16_t MQTT_PORT, const char *PATH, c
     Serial.println("(MQTT instance) could not publish into the topic");
   }
 
-  mqttClient.print(MESSAGE);
+  mqttClient.print(String(MESSAGE));
   mqttClient.endMessage();
 }
 
