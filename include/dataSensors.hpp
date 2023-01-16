@@ -111,7 +111,7 @@ public:
         }
         else
         {
-            return String(myDHT.readTemperature(false));
+            return String(myDHT.readTemperature());
         }
         return "None";
     }

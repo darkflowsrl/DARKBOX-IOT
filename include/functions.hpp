@@ -11,8 +11,7 @@ NTPClient timeClient(ntpUDP, "time.google.com", 0);
 
 String ntpRaw()
 {
-    timeClient.update();
-
+    //timeClient.update();
     return String(timeClient.getEpochTime());
 }
 
