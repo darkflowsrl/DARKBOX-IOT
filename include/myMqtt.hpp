@@ -76,19 +76,20 @@ void mqttSetup(const char *MQTT_SERVER, uint16_t MQTT_PORT, const char *PATH, Wi
  * @param TOPIC System topic
  * @param MESSAGE Message to be sent
  */
-void mqttOnLoop(const char *MQTT_SERVER, uint16_t MQTT_PORT, const char *PATH, const char *MESSAGE = "")
+void mqttOnLoop(const char *MQTT_SERVER, uint16_t MQTT_PORT, const char *PATH, String MESSAGE = "")
 {
   if (!mqttClient.connected())
   {
     mqttClient.connect(MQTT_SERVER, MQTT_PORT);
   }
-
-  if (!mqttClient.beginMessage(PATH, false, 2, false))
+  mqttClient.beginMessage(PATH);
+  /*
+  if (!mqttClient.beginMessage(PATH))
   {
     Serial.println("(MQTT instance) could not publish into the topic");
   }
-
-  mqttClient.print(String(MESSAGE));
+  */
+  mqttClient.print(MESSAGE);
   mqttClient.endMessage();
 }
 

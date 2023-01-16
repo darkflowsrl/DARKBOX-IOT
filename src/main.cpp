@@ -73,6 +73,7 @@ JSONIZER jsonSession;
 
 void task()
 {
+	timeClient.update();
 	switch (currentState)
 	{
 	case DNS_UPDATE:
@@ -109,7 +110,7 @@ void task()
 		if (millis() - previousTimeMQTT_DHT > MQTTDHT)
 		{
 			// JSON data creation
-			const char *data_0 = makeJSON(0).c_str();
+			String data_0 = makeJSON(0);
 			// Serial.println(dataPretty_0.c_str());
 			mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), data_0);
 			previousTimeMQTT_DHT = millis();
@@ -124,7 +125,7 @@ void task()
 		{
 			// JSON data creation
 			String sensorData = mySensors.singleSensorRawdataTemp(0);
-			const char *data = makeJSON(1, sensorData).c_str();
+			String data = makeJSON(1, sensorData);
 			if (sensorData != "None")
 			{
 				mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), data);
@@ -139,7 +140,7 @@ void task()
 		// Keep alive message
 		if (millis() - previousKeepAliveTime > keepAliveTime)
 		{
-			const char *data = makeJSON(2).c_str();
+			String data = makeJSON(2);
 			mqttOnLoop(host.c_str(), port, keep_alive_topic_publish.c_str(), data);
 			previousKeepAliveTime = millis();
 		}
@@ -210,7 +211,7 @@ void loop()
 
 String makeJSON(int typeOfValues, String dataExtra)
 {
-	std::string data, dataPretty;
+	String data;
 	DynamicJsonDocument dataJson(1024);
 	dataJson["DeviceId"] = chipId;
 	dataJson["DeviceName"] = deviceName.c_str();
@@ -225,29 +226,23 @@ String makeJSON(int typeOfValues, String dataExtra)
 		dataJson["Value"][0]["Value"] = mySensors.singleSensorRawdataDHT(false);
 		dataJson["Value"][1]["Port"] = portsNames.DHTSensor_hum_name;
 		dataJson["Value"][1]["Value"] = mySensors.singleSensorRawdataDHT(true);
-		serializeJson(dataJson, data);
-		serializeJsonPretty(dataJson, dataPretty);
-
-		return String(data.c_str());
+		break;
 	}
 	case 1:
 	{
 		dataJson["Value"][0]["Port"] = portsNames.TempSensor_name;
 		dataJson["Value"][0]["Value"] = dataExtra;
-		serializeJson(dataJson, data);
-		serializeJsonPretty(dataJson, dataPretty);
-		return String(data.c_str());
+		break;
 	}
 	case 2:
 	{
 		dataJson["MsgType"] = "KeepAlive";
 		dataJson["ip"] = localIP;
-		serializeJson(dataJson, data);
-		serializeJsonPretty(dataJson, dataPretty);
-		return String(data.c_str());
+		break;
 	}
 	}
-	return "";
+	serializeJson(dataJson, data);
+	return data;
 }
 
 void checkConn()
