@@ -5,6 +5,7 @@
 //#define SMTP_CLIENT
 //#define I2C 
 #define PREFERENCES
+#define DEBUG
 
 #ifdef PREFERENCES
 Preferences myPref;

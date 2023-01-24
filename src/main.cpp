@@ -342,6 +342,7 @@ void loadDataPreferences()
 	keepAliveTime = std::stoll(myPref.getString("keepAliveTime", "6000").c_str());
 	myPref.end();
 
+	#ifdef DEBUG
 	Serial.println("#####################################################################");
 	Serial.print("\n## Current Config:\n## Device Name: " + deviceName);
 	Serial.print("\n## UID: " + String(ESP.getChipId()));
@@ -363,6 +364,7 @@ void loadDataPreferences()
 	Serial.print("\n## Single sensor sending time: " + String(MQTTsingleTemp));
 	Serial.println("\n## Keep alive sending time: " + String(keepAliveTime));
 	Serial.println("#####################################################################");
+	#endif
 }
 
 #endif
