@@ -15,6 +15,7 @@ typedef enum{
   DNS_UPDATE,
   SCREEN_REFRESH,
   TEMPORAL_DATA,
+  CHECK_STATUS,
   MQTT_DHT,
   MQTT_SINGLE_TEMP,
   MQTT_KEEP_ALIVE,
@@ -71,6 +72,8 @@ String configTopic = "DeviceConfig/" + chipId;
 String root_topic_subscribe = "DeviceConfig/" + chipId;
 String root_topic_publish = "DeviceData/" + chipId;
 String keep_alive_topic_publish = "DeviceStatus/" + chipId;
+String Status = "OK"; // Status can be OK or WARNING
+String Consulta = "";
 
 struct {
   String DHTSensor_hum_name;
