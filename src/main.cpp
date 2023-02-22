@@ -101,6 +101,29 @@ void task()
 							 myInputs.returnSingleInput(12), myInputs.returnSingleInput(13));
 			previousTimeTemporalData = millis();
 		}
+		currentState = CHECK_STATUS;
+		break;
+	}
+	case CHECK_STATUS:
+	{
+		int signal = WiFi.RSSI();
+
+		if (signal < -90)
+		{
+			Status = "Warning";
+			Consulta = "Extremely weak signal";
+		}
+		else if (-55 > signal || signal >= -67)
+		{
+			Status = "Warning";
+			Consulta = "Weak signal";
+		}
+		else
+		{
+			Status = "Ok";
+			Consulta = "";
+		}
+
 		currentState = MQTT_DHT;
 		break;
 	}
@@ -216,7 +239,7 @@ String makeJSON(int typeOfValues, String dataExtra)
 	dataJson["DeviceId"] = chipId;
 	dataJson["DeviceName"] = deviceName.c_str();
 	dataJson["Timestamp"] = ntpRaw();
-	dataJson["MsgType"] = "Data";
+	dataJson["Version"] = "1.0";
 	switch (typeOfValues)
 	{
 		// MQTT DHT temp
@@ -236,8 +259,12 @@ String makeJSON(int typeOfValues, String dataExtra)
 	}
 	case 2:
 	{
-		dataJson["MsgType"] = "KeepAlive";
-		dataJson["ip"] = localIP;
+		dataJson["Conexion"] = "WiFi";
+		dataJson["Senial"] = WiFi.RSSI();
+		dataJson["Battery"] = 100; 
+		dataJson["RedId"] = localIP;
+		dataJson["Status"] = Status;
+		dataJson["Consulta"] = Consulta;
 		break;
 	}
 	}
@@ -342,7 +369,7 @@ void loadDataPreferences()
 	keepAliveTime = std::stoll(myPref.getString("keepAliveTime", "6000").c_str());
 	myPref.end();
 
-	#ifdef DEBUG
+#ifdef DEBUG
 	Serial.println("#####################################################################");
 	Serial.print("\n## Current Config:\n## Device Name: " + deviceName);
 	Serial.print("\n## UID: " + String(ESP.getChipId()));
@@ -364,7 +391,7 @@ void loadDataPreferences()
 	Serial.print("\n## Single sensor sending time: " + String(MQTTsingleTemp));
 	Serial.println("\n## Keep alive sending time: " + String(keepAliveTime));
 	Serial.println("#####################################################################");
-	#endif
+#endif
 }
 
 #endif
