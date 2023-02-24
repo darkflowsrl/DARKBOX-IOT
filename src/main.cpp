@@ -261,7 +261,7 @@ String makeJSON(int typeOfValues, String dataExtra)
 	{
 		dataJson["Conexion"] = "WiFi";
 		dataJson["Senial"] = WiFi.RSSI();
-		dataJson["Battery"] = 100; 
+		dataJson["Battery"] = 100;
 		dataJson["RedId"] = localIP;
 		dataJson["Status"] = Status;
 		dataJson["Consulta"] = Consulta;

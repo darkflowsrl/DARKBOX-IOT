@@ -11,7 +11,7 @@ NTPClient timeClient(ntpUDP, "time.google.com", 0);
 
 String ntpRaw()
 {
-    //timeClient.update();
+    // timeClient.update();
     return String(timeClient.getEpochTime());
 }
 
@@ -101,7 +101,7 @@ void updateConfig(fs::FS &fs, String json)
     myPref.putString("d1_name", (const char *)newConfig["names"]["d1_name"]);
     myPref.putString("d2_name", (const char *)newConfig["names"]["d2_name"]);
     myPref.putString("d3_name", (const char *)newConfig["names"]["d3_name"]);
-    
+
     myPref.putString("MQTTDHT", (const char *)newConfig["etc"]["DHT"]);
     myPref.putString("keepAliveTime", (const char *)newConfig["etc"]["keepAliveTime"]);
     myPref.putString("MQTTsingleTemp", (const char *)newConfig["etc"]["SingleTemp"]);
@@ -271,10 +271,30 @@ int restoreConfig(fs::FS &fs)
     configFile.close();
     restoreFile.close();
 
-    fs.end();
+    fs.end();t
 
     return 0;
 #endif
 }
-#endif
 
+float readBatteryLevel()
+{
+    float tempC;
+    float batt_volts;
+    float temp_var = 0; // holds cumulative reads for averaging
+    unsigned int batt_raw;
+
+    for (int i = 0; i <= 9; i++)
+    {
+        temp_var = temp_var + analogRead(A0);
+        delay(1);
+    }
+
+    batt_raw = temp_var / 10;
+
+    batt_volts = batt_raw * 0.0146; // scalling factor for 15V full scale with ADC range of 1V
+
+    return batt_volts;
+}
+
+#endif
