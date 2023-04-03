@@ -7,29 +7,103 @@
 WiFiClient client_;
 MqttClient mqttClient(client_);
 
+/*
+DeviceConfig/
+{
+    "device": {
+        "name": "Departamento"
+    },
+    "network": {
+        "SSID": "default",
+        "wifiPassword": "default",
+        "ip": "",
+        "subnetMask": "",
+        "gateway": ""
+    },
+    "smtp": {
+        "mailSender": "default@default.com",
+        "mailPassword": "default",
+        "mailReceiver": "default@default.com",
+        "smtpServer": "smtp.default.com",
+        "smtpPort": "587"
+    },
+    "ports": {
+        "IO_0": "OTU",
+        "IO_1": "OTU",
+        "IO_2": "OTU",
+        "IO_3": "OTU"
+    },
+    "names": {
+        "DHTSensor_hum_name": "humedad",
+        "DHTSensor_temp_name": "temperatura",
+        "TempSensor_name": "sonda",
+        "d0_name": "d0",
+        "d1_name": "d1",
+        "d2_name": "d2",
+        "d3_name": "d3"
+    },
+    "etc": {
+        "DHT": "1000",
+        "SingleTemp": "1000",
+        "keepAliveTime": "20000"
+    }
+}
+##################################
+ResetDevice/
+{
+  "password" : "123456789"
+}
+
+*/
+
 /**
  * @brief This function handle the incomming messages from a particular topic
  *
+ * Topics -> resetDevice
  * @param messageSize
  */
 void onMqttMessage(int messageSize)
 {
   // we received a message, print out the topic and contents
-  Serial.print("Received a message with topic '");
-  Serial.print(mqttClient.messageTopic());
-  Serial.print("', length ");
-  Serial.print(messageSize);
-  Serial.println(" bytes:");
+  String incomeTopic = mqttClient.messageTopic();
+  Serial.println("Received a message with topic '" + incomeTopic);
 
   String newContent;
 
-  // use the Stream interface to print the contents
-  while (mqttClient.available())
+  if (incomeTopic == configTopic)
   {
-    newContent += (char)mqttClient.read();
-  }
+    // use the Stream interface to print the contents
+    while (mqttClient.available())
+    {
+      newContent += (char)mqttClient.read();
+    }
 
-  updateConfig(LittleFS, newContent);
+    updateConfig(LittleFS, newContent);
+
+  }else if(incomeTopic == reset_topic){
+    while (mqttClient.available())
+    {
+      newContent += (char)mqttClient.read();
+    }
+
+    StaticJsonDocument<1024> reset_;
+    deserializeJson(reset_, newContent);
+    int temp_password = (int)reset_["password"]; 
+
+    if(temp_password == password){
+      #ifdef DEBUG
+      Serial.println("Password:" + String(temp_password));
+      Serial.println("Correct Password\nResetting device");
+      #endif
+      ESP.eraseConfig();
+      ESP.reset();
+    }else{
+      #ifdef DEBUG
+      Serial.println("Password:" + String(temp_password));
+      Serial.println("Incorrect password...");
+      #endif
+    }
+  }
 }
 
 void mqttSetup(const char *MQTT_SERVER, uint16_t MQTT_PORT, const char *PATH, WiFiClient client, const char *PATH_ALT = "")
@@ -61,6 +135,7 @@ void mqttSetup(const char *MQTT_SERVER, uint16_t MQTT_PORT, const char *PATH, Wi
   mqttClient.onMessage(onMqttMessage);
 
   mqttClient.subscribe(configTopic.c_str(), 2);
+  mqttClient.subscribe(reset_topic.c_str(), 2);
 
   Serial.println("(MQTT instance) You're connected to the MQTT broker!");
 }

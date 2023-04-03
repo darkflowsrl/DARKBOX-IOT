@@ -25,6 +25,7 @@ typedef enum{
 
 States currentState = DNS_UPDATE;
 
+unsigned int password = 123456789;
 unsigned int port = 1883;
 unsigned int eventInterval = 1500;
 unsigned int previousTimeScreen = 0;
@@ -72,6 +73,7 @@ String configTopic = "DeviceConfig/" + chipId;
 String root_topic_subscribe = "DeviceConfig/" + chipId;
 String root_topic_publish = "DeviceData/" + chipId;
 String keep_alive_topic_publish = "DeviceStatus/" + chipId;
+String reset_topic = "ResetDevice/" + chipId;
 String Status = "OK"; // Status can be OK or WARNING
 String Consulta = "";
 
