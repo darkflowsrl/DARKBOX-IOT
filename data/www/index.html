@@ -1,184 +1,287 @@
 <html>
-<header>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="icon" href="/static/img/ODOT_LOGO.png" type="image/x-icon">
+  <link href="/style.css" rel="stylesheet">
+  <link href="./pico.min.css" rel="stylesheet">
+  <!--
+    -->
   <style>
-    body {
-      font-family: verdana, sans-serif;
-      font-size: 12px;
-      color: #000000;
-      font-style: normal;
-      font-weight: normal;
-      font-variant: normal;
-      text-align: left;
-      letter-spacing: 0px;
-      line-height: 20px;
+    .h1 {
+      display: flex;
+      text-align: center;
+      align-content: center;
+      justify-content: center;
+      margin-bottom: 2%;
+      padding-top: 5%;
     }
 
-    input[type=button],
-    input[type=submit],
-    input[type=reset] {
-      background-color: #9b0556;
-      border: none;
-      color: white;
-      font-weight: bold;
-      padding: 8px 16px;
-      text-decoration: none;
-      margin: 2px 2px;
-      cursor: pointer;
+    .h2 {
+      display: flex;
+      text-align: center;
+      align-content: left;
+      justify-content: center;
+      margin-bottom: 2%;
+      margin-top: 0%;
+    }
+
+    .card {
+      padding-top: 2%;
+      display: block;
+    }
+
+    .h3 {
+      margin-bottom: 1%;
+      justify-content: left;
+      display: flex;
     }
   </style>
-</header>
+  <title>Darkbox</title>
+</head>
 
 <body>
-  <center>
-    <table style="border-collapse: collapse; width: 400px; height: 284px; border: 1px solid #3c0471;" border="0">
-      <tbody>
-        <tr style="height: 55px;">
-          <td style="text-align: center; background-color: #3c0471; height: 55px; width: 396px;color: #ffffff;"
-            colspan="3" valign="center">
-            <h2><strong>DARKFLOW DEVICE</span></h2>
-          </td>
-        </tr>
-        <tr style="height: 54px;">
-          <td style="width: 36.875px; text-align: center; height: 54px;"><img src="termp" alt="" width="32"
-              height="32" /></td>
-          <td style="width: 176.547px; height: 54px;">Temperatura 1</td>
-          <td style="width: 176.578px; text-align: center; height: 54px;">
-            <h3 id="temperature0"><strong>%TEMPERATURE0%</strong>
-            </h3>
-          </td>
-        </tr>
-        <tr style="height: 54px;">
-          <td style="width: 36.875px; text-align: center; height: 54px;"><img src="termp" alt="" width="32"
-              height="32" /></td>
-          <td style="width: 176.547px; height: 54px;">Temperatura 2</td>
-          <td style="width: 176.578px; height: 54px;">
-            <h3 style="text-align: center;" id="temperature1"><strong>%TEMPERATURE1%</strong>
-            </h3>
-          </td>
-        </tr>
-        <tr style="height: 54px;">
-          <td style="width: 36.875px; text-align: center; height: 54px;"><img src="gota" alt="" width="32"
-              height="32" /></td>
-          <td style="width: 176.547px; height: 54px;">Humedad</td>
-          <td style="width: 176.578px; height: 54px;">
-            <h3 style="text-align: center;" id="humidity"><strong>%HUMIDITY%</strong>
-            </h3>
-          </td>       
-        </tr>
-        <tr>
-          <td style="width: 36.875px; text-align: center; height: 54px;"><img src="relay" alt="" width="32"
-            height="32" /></td>
-          <td style="width: 176.547px; height: 54px;">Estado del rele</td>
-          <td style="width: 176.578px; height: 54px;">
-            <h3 style="text-align: center;" id="rele"><strong>%RELE%</strong>
-            </h3>
-          </td>
-        </tr>
-        <tr style="height: 43px;">
-          <td style="height: 43px; width: 396px;" colspan="3">
-            <table style="border-collapse: collapse; width: 100%; height: 36px; border-color: #3c0471;" border="0">
-              <tbody>
-                <tr style="text-align: center; ; background-color: #5705a3;">
-                  <td style="width: 25%; text-align: center; height: 18px;"><span style="color: #ffffff;">Button
-                      1</span></td>
-                  <td style="width: 25%; text-align: center; height: 18px;"><span style="color: #ffffff;">Button
-                      2</span></td>
-                  <td style="width: 25%; text-align: center; height: 18px;"><span style="color: #ffffff;">Button
-                      3</span></td>
-                  <td style="width: 25%; text-align: center; height: 18px;"><span style="color: #ffffff;">Button
-                      4</span></td>
-                </tr>
-                <tr style="height: 18px;">
-                  <td style="width: 25%; text-align: center; height: 18px;"><strong><span id="io0">%IO0%</span></strong>
-                  </td>
-                  <td style="width: 25%; text-align: center; height: 18px;"><strong><span id="io1">%IO1%</span></strong>
-                  </td>
-                  <td style="width: 25%; text-align: center; height: 18px;"><strong><span id="io2">%IO2%</span></strong>
-                  </td>
-                  <td style="width: 25%; text-align: center; height: 18px;"><strong><span id="io3">%IO3%</span></strong>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+  <h1 class="h1"><strong>Darkbox Dashboard</strong></h1>
+  <p style="display: flex;margin-left: 5%; margin-bottom: 0%;" id="timestamp"><strong>Hora:</strong></p>
+  <p style="display: flex;margin-left: 5%;margin-bottom: 0%;" id="ip_establecida"><strong>Ip:</strong></p>
 
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <table style="border-collapse: collapse; width: 400px; height: 66px;" border="0">
-      <tbody>
+  <main class="container" data-theme='dark' style="margin-top: 0%; padding-top: 0%;" id="main">
 
-        <tr>
-          <td><a href="/reset"><input type="button" value="RESET" /></a></td>
-          <td align="center"><a href="/reboot"><input type="button" value="REBOOT"" /></a></td>
-          <td align="right"><input type="button" value="Boton3" onclick="alert()" /></td>
-        </tr>
-    </table>
-    <h1>Hardware Information</h1>
-    <table style="border-collapse: collapse; width: 400px; height: 100px;" border="2">
-      <tbody>
-        <tr>
-          <td style="width: 35%; text-align: center; height: 18px;"><strong><span>Device Voltage</span></strong></td>
-          <td style="width: 25%; text-align: center; height: 18px;" id="VCC"><span>%VCC</span></td>
-        </tr>
-        <tr>
-          <td style="width: 25%; text-align: center; height: 18px;"><strong><span>Boot Version:</span></strong></td>
-          <td style="width: 25%; text-align: center; height: 18px;" id="BOOTVERSION"><span>%BOOTVERSION</span></td>
-        </tr>
-        <tr>
-          <td style="width: 35%; text-align: center; height: 18px;"><strong><span>CPU frequency:</span></strong></td>
-          <td style="width: 25%; text-align: center; height: 18px;" id="CPU"><span>%CPU</span></td>
-        </tr>
-        <tr>
-          <td style="width: 25%; text-align: center; height: 18px;"><strong><span>Free Heap:</span></strong></td>
-          <td style="width: 25%; text-align: center; height: 18px;" id="heap"><span>%HEAP</span></td>
-        </tr>
-        <tr>
-          <td style="width: 35%; text-align: center; height: 18px;"><strong><span>Chip ID:</span></strong></td>
-          <td style="width: 25%; text-align: center; height: 18px;" id="chipid"><span>%chipid</span></td>
-        </tr>
-        <tr>
-          <td style="width: 25%; text-align: center; height: 18px;"><strong><span>Core Version:</span></strong></td>
-          <td style="width: 25%; text-align: center; height: 18px;" id="CORE"><span>%CORE</span></td>
-        </tr>
-        <tr>
-          <td style="width: 35%; text-align: center; height: 18px;"><strong><span>Flash Chip ID:</span></strong></td>
-          <td style="width: 25%; text-align: center; height: 18px;" id="FCID"><span>%FCID</span></td>
-        </tr>
-        <tr>
-          <td style="width: 25%; text-align: center; height: 18px;"><strong><span>Flash Real Size:</span></strong></td>
-          <td style="width: 25%; text-align: center; height: 18px;" id="FRS"><span>%FRS</span></td>
-        </tr>
-        <tr>
-          <td style="width: 35%; text-align: center; height: 18px;"><strong><span>Flash Chip Speed:</span></strong></td>
-          <td style="width: 25%; text-align: center; height: 18px;" id="FCS"><span>%FCS</span></td>
-        </tr>
-        <tr>
-          <td style="width: 25%; text-align: center; height: 18px;"><strong><span>Free Sketch Size:</span></strong></td>
-          <td style="width: 25%; text-align: center; height: 18px;" id="FSS"><span>%FSS</span></td>
-        </tr>
-        <tr>
-          <td style="width: 35%; text-align: center; height: 18px;"><strong><span>Full Version:</span></strong></td>
-          <td style="width: 25%; text-align: center; height: 18px;" id="FVV"><span>%FVV</span></td>
-        </tr>
-    </table>
-  </center>
+    <article class="card" style="margin-top: 5%;padding-bottom: 2%">
+      <h2 class="h2">Sensores</h2>
+      <div class="grid">
+        <label for="temperature0">
+          <strong>Temperatura Sonda</strong>
+          <input style="text-align: center;" type="number" id="temperature0" name="temperature0" value="0" readonly>
+        </label>
+
+        <label for="temperature1">
+          <strong>Temperatura DHT</strong>
+          <input style="text-align: center;" type="number" id="temperature1" name="temperature1" value="0" readonly>
+        </label>
+
+        <label for="humidity">
+          <strong>Humedad DHT</strong>
+          <input style="text-align: center;" type="number" id="humidity" name="humidity" value="0" readonly>
+        </label>
+      </div>
+
+      <div class="grid">
+        <label for="io0">
+          <strong>Entrada 1</strong>
+          <input style="text-align: center; color: #ff2125;" type="text" id="io0" name="io0" value="LOW" readonly>
+        </label>
+        <label for="io1">
+          <strong>Entrada 2</strong>
+          <input style="text-align: center; color: #ff2125;" type="text" id="io1" name="io1" value="LOW" readonly>
+        </label>
+        <label for="io2">
+          <strong>Entrada 3</strong>
+          <input style="text-align: center; color: #ff2125;" type="text" id="io2" name="io2" value="LOW" readonly>
+        </label>
+        <label for="io3">
+          <strong>Entrada 4</strong>
+          <input style="text-align: center; color: #ff2125;" type="text" id="io3" name="io3" value="LOW" readonly>
+        </label>
+        <label for="rele">
+          <strong>Rele</strong>
+          <input style="text-align: center; color: #ff2125;" type="text" id="rele" name="rele" value="LOW" readonly>
+        </label>
+      </div>
+    </article>
+
+    <article class="card" style="margin-top: 5%;padding-bottom: 0% ">
+      <div class="grid">
+        <a href="/reboot"><input type="button" value="Reboot"></a>
+        <a href="/reset"><input type="button" value="Reset"></a>
+      </div>
+    </article>
+
+    <article class="card">
+      <form action="/save" method="get">
+        <h2 class="h2">Configuraciones de Red</h2>
+
+        <h3 class="h3">WiFi</h3>
+        <label for="tipo">
+          <strong>Tipo de conexión</strong>
+          <select id="tipo" onchange="habilitar()" required>
+            <option value="DHCP" selected>DCHP</option>
+            <option value="FIXED">IP Estática</option>
+          </select>
+        </label>
+
+        <div class="grid">
+          <label for="ip">
+            <strong>IP Local</strong>
+            <input type="text" id="ip" name="ip"
+              pattern="^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
+              placeholder="IP" required>
+          </label>
+
+          <label for="subnet">
+            <strong>Mascara de subred</strong>
+            <input type="text" id="subnet" name="subnet"
+              pattern="^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
+              placeholder="Mascara de subred" required>
+          </label>
+
+          <label for="puerta">
+            <strong>Puerta de enlace</strong>
+            <input type="text" id="puerta" name="puerta"
+              pattern="^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
+              placeholder="Puerta de enlace" required>
+          </label>
+        </div>
+
+        <h3 class="h3">MQTT</h3>
+        <div style="display: flex;">
+          <div class="container" style="padding-left: 0%;">
+            <strong>Host</strong>
+            <input type="text" id="Host" name="host" placeholder="host" required>
+          </div>
+          <input type="number" id="puerto" name="puerto" value="1888" style="width: 30%; text-align: center;margin-bottom: 0%;align-self: center;margin-top: 10;margin-left: 2%;" required>
+        </div>
+
+        <div class=grid>
+        <label for="usuario">
+            <strong>Usuario</strong>
+            <input type="text" id="usuario" name="usuario" placeholder="Usuario">
+          </label>
+          <label for="password">
+            <strong>Contraseña</strong>
+            <input type="text" id="password" name="password" placeholder="Contraseña">
+          </label>
+
+        </div>
+
+        <input type="submit" value="Guardar">
+      </form>
+    </article>
+
+    <article class="card">
+      <h2 class="h2">Hardware</h2>
+      </table>
+      <table role="grid">
+        <tbody>
+          <tr>
+            <td style="width: 35%; text-align: center; height: 18px;"><strong><span>Device Voltage</span></strong></td>
+            <td style="width: 25%; text-align: center; height: 18px;" id="VCC"><span>-</span></td>
+          </tr>
+          <tr>
+            <td style="width: 25%; text-align: center; height: 18px;"><strong><span>Boot Version:</span></strong></td>
+            <td style="width: 25%; text-align: center; height: 18px;" id="BOOTVERSION"><span>-</span></td>
+          </tr>
+          <tr>
+            <td style="width: 35%; text-align: center; height: 18px;"><strong><span>CPU frequency:</span></strong></td>
+            <td style="width: 25%; text-align: center; height: 18px;" id="CPU"><span>-</span></td>
+          </tr>
+          <tr>
+            <td style="width: 25%; text-align: center; height: 18px;"><strong><span>Free Heap:</span></strong></td>
+            <td style="width: 25%; text-align: center; height: 18px;" id="heap"><span>-</span></td>
+          </tr>
+          <tr>
+            <td style="width: 35%; text-align: center; height: 18px;"><strong><span>Chip ID:</span></strong></td>
+            <td style="width: 25%; text-align: center; height: 18px;" id="chipid"><span>-</span></td>
+          </tr>
+          <tr>
+            <td style="width: 25%; text-align: center; height: 18px;"><strong><span>Core Version:</span></strong></td>
+            <td style="width: 25%; text-align: center; height: 18px;" id="CORE"><span>-</span></td>
+          </tr>
+          <tr>
+            <td style="width: 35%; text-align: center; height: 18px;"><strong><span>Flash Chip ID:</span></strong></td>
+            <td style="width: 25%; text-align: center; height: 18px;" id="FCID"><span>-</span></td>
+          </tr>
+          <tr>
+            <td style="width: 25%; text-align: center; height: 18px;"><strong><span>Flash Real Size:</span></strong>
+            </td>
+            <td style="width: 25%; text-align: center; height: 18px;" id="FRS"><span>-</span></td>
+          </tr>
+          <tr>
+            <td style="width: 35%; text-align: center; height: 18px;"><strong><span>Flash Chip Speed:</span></strong>
+            </td>
+            <td style="width: 25%; text-align: center; height: 18px;" id="FCS"><span>-</span></td>
+          </tr>
+          <tr>
+            <td style="width: 25%; text-align: center; height: 18px;"><strong><span>Free Sketch Size:</span></strong>
+            </td>
+            <td style="width: 25%; text-align: center; height: 18px;" id="FSS"><span>-</span></td>
+          </tr>
+          <tr>
+            <td style="width: 35%; text-align: center; height: 18px;"><strong><span>Full Version:</span></strong></td>
+            <td style="width: 25%; text-align: center; height: 18px;" id="FVV"><span>-</span></td>
+          </tr>
+      </table>
+
+    </article>
+
+  </main>
 </body>
 
 <script>
+  document.getElementById("ip").setAttribute("disabled", "disabled");
+  document.getElementById("subnet").setAttribute("disabled", "disabled");
+  document.getElementById("puerta").setAttribute("disabled", "disabled");
+
+  function habilitar() {
+    val = document.getElementById("tipo").value;
+    if (val == "DHCP") {
+      document.getElementById("ip").value = "";
+      document.getElementById("subnet").value = "";
+      document.getElementById("puerta").value = "";
+
+      document.getElementById("ip").setAttribute("disabled", "disabled");
+      document.getElementById("subnet").setAttribute("disabled", "disabled");
+      document.getElementById("puerta").setAttribute("disabled", "disabled");
+    } else {
+      document.getElementById("ip").removeAttribute("disabled", "disabled");
+      document.getElementById("subnet").removeAttribute("disabled", "disabled");
+      document.getElementById("puerta").removeAttribute("disabled", "disabled");
+    }
+  }
+
   setInterval(function () {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function () {
       if (this.readyState == 4 && this.status == 200) {
         var a = this.responseText.split(';');
 
-        document.getElementById("temperature0").innerHTML = a[0] + "&#8451";
-        document.getElementById("temperature1").innerHTML = a[1] + "&#8451";
-        document.getElementById("humidity").innerHTML = a[2] + "%";
-        document.getElementById("io0").innerHTML = a[3];
-        document.getElementById("io1").innerHTML = a[4];
-        document.getElementById("io2").innerHTML = a[5];
-        document.getElementById("io3").innerHTML = a[6];
+        document.getElementById("temperature0").value = a[0];
+        document.getElementById("temperature1").value = a[1];
+        document.getElementById("humidity").value = a[2];
+        document.getElementById("io0").value = a[3];
+        document.getElementById("io1").value = a[4];
+        document.getElementById("io2").value = a[5];
+        document.getElementById("io3").value = a[6];
+        
+        if(a[3] == "HIGH"){
+          document.getElementById("io0").style.color = "#00ff44";
+        }else{
+          document.getElementById("io0").style.color = "#ff2125";
+        }
+        if(a[4] == "HIGH"){
+          document.getElementById("io1").style.color = "#00ff44";
+        }else{
+          document.getElementById("io1").style.color = "#ff2125";
+        }
+        if(a[5] == "HIGH"){
+          document.getElementById("io2").style.color = "#00ff44";
+        }else{
+          document.getElementById("io2").style.color = "#ff2125";
+        }
+        if(a[6] == "HIGH"){
+          document.getElementById("io3").style.color = "#00ff44";
+        }else{
+          document.getElementById("io3").style.color = "#ff2125";
+        }
+
+        if(a[18] == "HIGH"){
+          document.getElementById("rele").style.color = "#00ff44";
+        }else{
+          document.getElementById("rele").style.color = "#ff2125";
+        }
+
         document.getElementById("heap").innerHTML = a[7];
         document.getElementById("BOOTVERSION").innerHTML = a[8];
         document.getElementById("chipid").innerHTML = a[9];
@@ -189,13 +292,15 @@
         document.getElementById("FCS").innerHTML = a[14];
         document.getElementById("FSS").innerHTML = a[15] + " bytes";
         document.getElementById("FVV").innerHTML = a[16];
-        document.getElementById("VCC").innerHTML = a[17];
-        document.getElementById("rele").innerHTML = a[18];
+        document.getElementById("VCC").innerHTML = a[17] + " volts";
+        document.getElementById("rele").value = a[18];
+        document.getElementById("timestamp").innerHTML = "Timestamp: " +  a[19];
+        document.getElementById("ip_establecida").innerHTML = "Ip: " + a[20];
       }
     };
     xhttp.open("GET", "/allvalues", true);
     xhttp.send();
-  }, 50);
+  }, 500);
 </script>
 
 </html>

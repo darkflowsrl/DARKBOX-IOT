@@ -20,6 +20,19 @@ ArduinoMqttClient
 WiFiManager
 ```
 
+### Inputs Status
+All the inputs states will be shown in the following topic: DeviceData/<chipId>
+
+### Relay
+In order to change the state of the relay send a message to the topic: RelaySwich/<DeviceID>
+
+```
+{
+    "state": 1/0
+}
+```
+
+
 ### Required Drivers (For windows or mac)
 CP210x 
 ```

@@ -33,7 +33,7 @@ is the UID (Unique ID) of the device.
 #include "screenController.hpp"
 #endif
 
-IPAddress local_ip(192, 168, 1, 1);
+IPAddress local_ip(192, 168, 1, 100);
 IPAddress gateway(192, 168, 1, 1);
 IPAddress subnet(255, 255, 255, 0);
 IPAddress dns(8, 8, 8, 8);
@@ -98,9 +98,9 @@ public:
 
     myManager.setSaveConfigCallback(saveConfigCallback);
 
-    //myManager.setDarkMode(true);
+    myManager.setDarkMode(true);
 
-    myManager.setTitle("Darkflow Device");
+    myManager.setTitle("Darkbox");
 
     myManager.setTimeout(520);
 
@@ -127,6 +127,7 @@ public:
     #endif
 
     // Custom parameters
+    /*
     WiFiManagerParameter deviceName("deviceName", "Nombre del dispositivo (Campo obligatorio)", deviceName_, 40, "required");
     myManager.addParameter(&deviceName);
     WiFiManagerParameter smtpUser("mail", "SMTP mail", smtpMail, 40);
@@ -139,6 +140,7 @@ public:
     myManager.addParameter(&gatewayParam);
     WiFiManagerParameter subnetParam("Subnet", "Mascara de subred", subnetAP, 40, "pattern='\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}'");
     myManager.addParameter(&subnetParam);
+    */
 
     //<-
 
@@ -146,11 +148,14 @@ public:
     myManager.autoConnect(name.c_str());
 
     //-> Save config into JSON
+
+    /*
     strcpy(smtpMail, smtpUser.getValue());
     strcpy(staticIPAP, StaticIpParam.getValue());
     strcpy(gatewayAP, gatewayParam.getValue());
     strcpy(subnetAP, subnetParam.getValue());
     strcpy(deviceName_, deviceName.getValue());
+    */
 
     if (shouldSaveConfig)
     {

@@ -1,3 +1,6 @@
+#ifndef INPUTCONTROLLER_H
+#define INPUTCONTROLLER_H
+
 #include "myMqtt.hpp"
 #include "detectFlag.hpp"
 /*
@@ -17,7 +20,6 @@ extraPin7 -> Output Salida 1
 #define Input1 14
 #define Input2 12
 #define Input3 13
-#define Output1 15
 
 bool OTU_IO0;
 bool OTU_IO1;
@@ -68,7 +70,7 @@ void checkReset(std::string inputJson)
         Serial.println("Failed to deserialize");
         Serial.println(error.f_str());
     }
-    if (config["Value"][portsNames.d2_name] == "HIGH")
+    if (config["Value"][portsNames.d2_name] == 1)
     {
         for (int i = 0; i <= 2; i++)
         {
@@ -183,6 +185,182 @@ public:
         }
         Serial.println("( ) IO's Configured Succesfully");
     }
+
+    void readAllInputsbyAllConditions()
+    {
+        int flag0 = input0_.comprueba();
+        int flag1 = input1_.comprueba();
+        int flag2 = input2_.comprueba();
+        int flag3 = input3_.comprueba();
+
+        if(last_IO_0_State != flag0){
+            if (flag0 == 1)
+            {
+            onTriggerFlag(Input0, portsNames.d0_name);
+            }
+
+            else if (flag0 == -1)
+            {
+                onTriggerFlag(Input0, portsNames.d0_name, false);
+            }
+
+            last_IO_0_State = flag0;
+        }
+        
+
+        if(last_IO_1_State != flag1){
+            if (flag1 == 1)
+            {
+            onTriggerFlag(Input1, portsNames.d1_name);
+            }
+
+            else if (flag1 == -1)
+            {
+                onTriggerFlag(Input1, portsNames.d1_name, false);
+            }
+
+            last_IO_1_State = flag1;
+        }
+
+        if(last_IO_2_State != flag2){
+            if (flag2 == 1)
+            {
+            onTriggerFlag(Input2, portsNames.d2_name);
+            }
+
+            else if (flag2 == -1)
+            {
+                onTriggerFlag(Input2, portsNames.d2_name, false);
+            }
+
+            last_IO_2_State = flag2;
+        }
+
+        if(last_IO_3_State != flag3){
+            if (flag3 == 1)
+            {
+            onTriggerFlag(Input3, portsNames.d3_name);
+            }
+
+            else if (flag3 == -1)
+            {
+                onTriggerFlag(Input3, portsNames.d3_name, false);
+            }
+
+            last_IO_3_State = flag3;
+        }
+        
+        sendOntime();
+
+        //readInputs();
+    }
+
+    void sendOntime()
+    {
+        if (millis() - previousTime_IO_0 > T_IO0)
+        {
+            previousTime_IO_0 = millis();
+            String message;
+            DynamicJsonDocument data(512);
+            data["DeviceId"] = chipId;
+            data["DeviceName"] = deviceName.c_str();
+            data["Timestamp"] = ntpRaw();
+            data["MsgType"] = "Data";
+            if (!debounce(Input0))
+            {
+
+                data["Value"][0]["Port"] = portsNames.d0_name;
+                data["Value"][0]["Value"] = 1;
+            }
+            else
+            {
+                data["Value"][0]["Port"] = portsNames.d0_name;
+                data["Value"][0]["Value"] = 0;
+            }
+
+            serializeJson(data, message);
+            // Serial.println(message);
+            mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), message.c_str());
+        }
+        
+        if (millis() - previousTime_IO_1 > T_IO1)
+        {
+            previousTime_IO_1 = millis();
+            String message;
+            DynamicJsonDocument data(512);
+            data["DeviceId"] = chipId;
+            data["DeviceName"] = deviceName.c_str();
+            data["Timestamp"] = ntpRaw();
+            data["MsgType"] = "Data";
+            if (!debounce(Input1))
+            {
+                data["Value"][0]["Port"] = portsNames.d1_name;
+                data["Value"][0]["Value"] = 1;
+            }
+            else
+            {
+                data["Value"][0]["Port"] = portsNames.d1_name;
+                data["Value"][0]["Value"] = 0;
+            }
+
+            serializeJson(data, message);
+            // Serial.println(message);
+            mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), message.c_str());
+        }
+
+        if (millis() - previousTime_IO_2 > T_IO2)
+        {
+            previousTime_IO_2 = millis();
+            String message;
+            DynamicJsonDocument data(512);
+            data["DeviceId"] = chipId;
+            data["DeviceName"] = deviceName.c_str();
+            data["Timestamp"] = ntpRaw();
+            data["MsgType"] = "Data";
+            if (!debounce(Input2))
+            {
+                data["Value"][0]["Port"] = portsNames.d2_name;
+                data["Value"][0]["Value"] = 1;
+            }
+            else
+            {
+                data["Value"][0]["Port"] = portsNames.d2_name;
+                data["Value"][0]["Value"] = 0;
+            }
+
+            serializeJson(data, message);
+            // Serial.println(message);
+            //   Device hard reset check
+            // checkReset(message.c_str());
+            mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), message.c_str());
+        }
+
+        if (millis() - previousTime_IO_3 > T_IO3)
+        {
+            previousTime_IO_3 = millis();
+            String message;
+            DynamicJsonDocument data(512);
+            data["DeviceId"] = chipId;
+            data["DeviceName"] = deviceName.c_str();
+            data["Timestamp"] = ntpRaw();
+            data["MsgType"] = "Data";
+            if (!debounce(Input3))
+            {
+                data["Value"][0]["Port"] = portsNames.d3_name;
+                data["Value"][0]["Value"] = 1;
+            }
+            else
+            {
+                data["Value"][0]["Port"] = portsNames.d3_name;
+                data["Value"][0]["Value"] = 0;
+            }
+
+            serializeJson(data, message);
+            // Serial.println(message);
+            mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), message.c_str());
+        }
+    }
+
     void onTriggerFlag(int Input, String IO_name, bool ascendant = true)
     {
         if (IO_name == portsNames.d0_name)
@@ -196,7 +374,7 @@ public:
                 data["Timestamp"] = ntpRaw();
                 data["MsgType"] = "Data";
                 data["Value"][0]["Port"] = IO_name;
-                data["Value"][0]["Value"] = "HIGH";
+                data["Value"][0]["Value"] = 1;
                 serializeJson(data, message);
                 // Serial.println(message);
                 mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), message.c_str());
@@ -210,7 +388,7 @@ public:
                 data["Timestamp"] = ntpRaw();
                 data["MsgType"] = "Data";
                 data["Value"][0]["Port"] = IO_name;
-                data["Value"][0]["Value"] = "LOW";
+                data["Value"][0]["Value"] = 0;
                 serializeJson(data, message);
                 // Serial.println(message);
                 mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), message.c_str());
@@ -227,7 +405,7 @@ public:
                 data["Timestamp"] = ntpRaw();
                 data["MsgType"] = "Data";
                 data["Value"][0]["Port"] = IO_name;
-                data["Value"][0]["Value"] = "HIGH";
+                data["Value"][0]["Value"] = 1;
                 serializeJson(data, message);
                 // Serial.println(message);
                 mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), message.c_str());
@@ -241,7 +419,7 @@ public:
                 data["Timestamp"] = ntpRaw();
                 data["MsgType"] = "Data";
                 data["Value"][0]["Port"] = IO_name;
-                data["Value"][0]["Value"] = "LOW";
+                data["Value"][0]["Value"] = 0;
                 serializeJson(data, message);
                 // Serial.println(message);
                 mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), message.c_str());
@@ -258,7 +436,7 @@ public:
                 data["Timestamp"] = ntpRaw();
                 data["MsgType"] = "Data";
                 data["Value"][0]["Port"] = IO_name;
-                data["Value"][0]["Value"] = "HIGH";
+                data["Value"][0]["Value"] = 1;
                 serializeJson(data, message);
                 // Serial.println(message);
                 mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), message.c_str());
@@ -272,7 +450,7 @@ public:
                 data["Timestamp"] = ntpRaw();
                 data["MsgType"] = "Data";
                 data["Value"][0]["Port"] = IO_name;
-                data["Value"][0]["Value"] = "LOW";
+                data["Value"][0]["Value"] = 0;
                 serializeJson(data, message);
                 // Serial.println(message);
                 mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), message.c_str());
@@ -289,7 +467,7 @@ public:
                 data["Timestamp"] = ntpRaw();
                 data["MsgType"] = "Data";
                 data["Value"][0]["Port"] = IO_name;
-                data["Value"][0]["Value"] = "HIGH";
+                data["Value"][0]["Value"] = 1;
                 serializeJson(data, message);
                 // Serial.println(message);
                 mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), message.c_str());
@@ -303,13 +481,15 @@ public:
                 data["Timestamp"] = ntpRaw();
                 data["MsgType"] = "Data";
                 data["Value"][0]["Port"] = IO_name;
-                data["Value"][0]["Value"] = "LOW";
+                data["Value"][0]["Value"] = 0;
                 serializeJson(data, message);
                 // Serial.println(message);
                 mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), message.c_str());
             }
         }
     }
+
+    // inputData() DEPRECATED
     void inputData()
     {
         int flag0 = input0_.comprueba();
@@ -349,12 +529,12 @@ public:
                 {
 
                     data["Value"][0]["Port"] = portsNames.d0_name;
-                    data["Value"][0]["Value"] = "HIGH";
+                    data["Value"][0]["Value"] = 1;
                 }
                 else
                 {
                     data["Value"][0]["Port"] = portsNames.d0_name;
-                    data["Value"][0]["Value"] = "LOW";
+                    data["Value"][0]["Value"] = 0;
                 }
 
                 serializeJson(data, message);
@@ -393,12 +573,12 @@ public:
                     if (!debounce(Input1))
                     {
                         data["Value"][0]["Port"] = portsNames.d1_name;
-                        data["Value"][0]["Value"] = "HIGH";
+                        data["Value"][0]["Value"] = 1;
                     }
                     else
                     {
                         data["Value"][0]["Port"] = portsNames.d1_name;
-                        data["Value"][0]["Value"] = "LOW";
+                        data["Value"][0]["Value"] = 0;
                     }
 
                     serializeJson(data, message);
@@ -439,12 +619,12 @@ public:
                 if (!debounce(Input2))
                 {
                     data["Value"][0]["Port"] = portsNames.d2_name;
-                    data["Value"][0]["Value"] = "HIGH";
+                    data["Value"][0]["Value"] = 1;
                 }
                 else
                 {
                     data["Value"][0]["Port"] = portsNames.d2_name;
-                    data["Value"][0]["Value"] = "LOW";
+                    data["Value"][0]["Value"] = 0;
                 }
 
                 serializeJson(data, message);
@@ -486,12 +666,12 @@ public:
                 if (!debounce(Input3))
                 {
                     data["Value"][0]["Port"] = portsNames.d3_name;
-                    data["Value"][0]["Value"] = "HIGH";
+                    data["Value"][0]["Value"] = 1;
                 }
                 else
                 {
                     data["Value"][0]["Port"] = portsNames.d3_name;
-                    data["Value"][0]["Value"] = "LOW";
+                    data["Value"][0]["Value"] = 0;
                 }
 
                 serializeJson(data, message);
@@ -501,6 +681,7 @@ public:
         }
         readInputs();
     }
+    
     void readInputs()
     {
         if (!digitalRead(Input1))
@@ -524,6 +705,7 @@ public:
             changeStatus(false);
         }
     }
+    
     std::string returnSingleInput(uint8_t customInput)
     {
         if (!digitalRead(customInput))
@@ -534,16 +716,6 @@ public:
     }
 };
 
-void changeStatus(bool state)
-{
-    if (state)
-    {
-        // digitalWrite(Output1, HIGH);
-        releStatus = "HIGH";
-    }
-    else
-    {
-        digitalWrite(Output1, LOW);
-        releStatus = "LOW";
-    }
-}
+
+
+#endif 

@@ -23,7 +23,7 @@ typedef enum{
   CONN_CHECK
 }States;
 
-States currentState = DNS_UPDATE;
+States currentState = TEMPORAL_DATA;
 
 unsigned int password = 123456789;
 unsigned int port = 1883;
@@ -64,16 +64,17 @@ String flashRealSize = String(ESP.getFlashChipRealSize());
 String flashChipSpeed = String(ESP.getFlashChipSpeed());
 String freeSketchSize = String(ESP.getFreeSketchSpace());
 String fullVersion = String(ESP.getFullVersion());
-String vcc;
+String vcc = "0";
 String releStatus = "LOW";
 String localDeviceName = String("darkflow-") + chipId;
 String tempString0, tempString1, tempString2;
-String host = "mqtt.darkflow.com.ar";
+String host;
 String configTopic = "DeviceConfig/" + chipId;
 String root_topic_subscribe = "DeviceConfig/" + chipId;
 String root_topic_publish = "DeviceData/" + chipId;
 String keep_alive_topic_publish = "DeviceStatus/" + chipId;
 String reset_topic = "ResetDevice/" + chipId;
+String relay_topic = "RelaySwich/" + chipId;
 String Status = "OK"; // Status can be OK or WARNING
 String Consulta = "";
 

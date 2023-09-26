@@ -3,6 +3,8 @@
 #include <WiFiUdp.h>
 #include <NTPClient.h>
 
+#define Output1 15
+
 const int utcOffset = -10800;
 unsigned long previousTime2 = 0;
 
@@ -55,6 +57,26 @@ IPAddress strToIp(String miIp)
     s >> oct0 >> ch >> oct1 >> ch >> oct2 >> ch >> oct3;
 
     return IPAddress(oct0, oct1, oct2, oct3);
+}
+
+/**
+ * @brief Change RELAY status
+ * 
+ * @param state 
+ */
+
+void changeStatus(bool state)
+{
+    if (state)
+    {
+        digitalWrite(Output1, HIGH);
+        releStatus = "HIGH";
+    }
+    else
+    {
+        digitalWrite(Output1, LOW);
+        releStatus = "LOW";
+    }
 }
 
 /**

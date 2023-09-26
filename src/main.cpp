@@ -96,11 +96,25 @@ void task()
 		//  Temporal data to EEPROM
 		if (millis() - previousTimeTemporalData >= temporalDataRefreshTime)
 		{
-			loadTemporalData(mySensors.singleSensorRawdataTemp(0).c_str(), mySensors.singleSensorRawdataDHT(false).c_str(), mySensors.singleSensorRawdataDHT(true).c_str(),
-							 myInputs.returnSingleInput(16), myInputs.returnSingleInput(14),
-							 myInputs.returnSingleInput(12), myInputs.returnSingleInput(13));
+			loadTemporalData(mySensors.singleSensorRawdataTemp(0).c_str(), // Sonda
+							 mySensors.singleSensorRawdataDHT(false).c_str(), // Temperature
+							 mySensors.singleSensorRawdataDHT(true).c_str(), // Humidity
+							 myInputs.returnSingleInput(16),
+							 myInputs.returnSingleInput(14),
+							 myInputs.returnSingleInput(12),
+							 myInputs.returnSingleInput(13));
+
 			previousTimeTemporalData = millis();
 		}
+
+		/*
+		Send messages by all conditions:
+		- By time
+		- By trigger up
+		- By trigger down
+		*/
+		myInputs.readAllInputsbyAllConditions();
+
 		currentState = CHECK_STATUS;
 		break;
 	}
@@ -127,6 +141,7 @@ void task()
 		currentState = MQTT_DHT;
 		break;
 	}
+
 	case MQTT_DHT:
 	{
 		// MQTT DHT
@@ -135,9 +150,14 @@ void task()
 			// JSON data creation
 			String data_0 = makeJSON(0);
 			// Serial.println(dataPretty_0.c_str());
-			mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), data_0);
+			mqttOnLoop(host.c_str(),
+					   port,
+					   root_topic_publish.c_str(),
+					   data_0);
+
 			previousTimeMQTT_DHT = millis();
 		}
+
 		currentState = MQTT_SINGLE_TEMP;
 		break;
 	}
@@ -149,9 +169,13 @@ void task()
 			// JSON data creation
 			String sensorData = mySensors.singleSensorRawdataTemp(0);
 			String data = makeJSON(1, sensorData);
+
 			if (sensorData != "None")
 			{
-				mqttOnLoop(host.c_str(), port, root_topic_publish.c_str(), data);
+				mqttOnLoop(host.c_str(),
+						   port,
+						   root_topic_publish.c_str(),
+						   data);
 				previousMQTTsingleTemp = millis();
 			}
 		}
@@ -164,7 +188,10 @@ void task()
 		if (millis() - previousKeepAliveTime > keepAliveTime)
 		{
 			String data = makeJSON(2);
-			mqttOnLoop(host.c_str(), port, keep_alive_topic_publish.c_str(), data);
+			mqttOnLoop(host.c_str(),
+					   port,
+					   keep_alive_topic_publish.c_str(),
+					   data);
 			previousKeepAliveTime = millis();
 		}
 		currentState = MQTT_POLL;
@@ -218,9 +245,12 @@ void setup()
 	myScreen.printScreen("Starting device...", 0, 1, true);
 #endif
 	myInputs.inputSetup();
-	delay(2000);
 	// MQTT
-	mqttSetup(host.c_str(), port, root_topic_publish.c_str(), espClient, keep_alive_topic_publish.c_str());
+	mqttSetup(host.c_str(),
+			  port,
+			  root_topic_publish.c_str(),
+			  espClient,
+			  keep_alive_topic_publish.c_str());
 // Local Dashboard
 #ifdef LOCAL_DASHBOARD
 	setupServer();
@@ -277,7 +307,6 @@ void checkConn()
 	if (millis() - previousTimeTemporalCheckConnection >= 30000)
 	{
 		bool conn = WiFi.isConnected();
-		delay(100);
 		if (!conn)
 		{
 			ESP.restart();
@@ -351,22 +380,24 @@ void loadDataPreferences()
 	SmtpServer = myPref.getString("SmtpServer", "smtp.default.com");
 	SmtpPort = std::stoi(myPref.getString("SmtpPort", "587").c_str());
 
-	IO_0 = myPref.getString("IO_0", "OTU");
-	IO_1 = myPref.getString("IO_1", "OTU");
-	IO_2 = myPref.getString("IO_2", "OTU");
-	IO_3 = myPref.getString("IO_3", "OTU");
+	IO_0 = myPref.getString("IO_0", "10000");
+	IO_1 = myPref.getString("IO_1", "10000");
+	IO_2 = myPref.getString("IO_2", "10000");
+	IO_3 = myPref.getString("IO_3", "10000");
 
-	portsNames.DHTSensor_hum_name = myPref.getString("DHTSensor_hum_name", "humedad");
-	portsNames.DHTSensor_temp_name = myPref.getString("DHTSensor_temp_name", "temperatura");
-	portsNames.TempSensor_name = myPref.getString("TempSensor_name", "sonda");
-	portsNames.d0_name = myPref.getString("d0_name", "digital0");
-	portsNames.d1_name = myPref.getString("d1_name", "digital1");
-	portsNames.d2_name = myPref.getString("d2_name", "digital2");
-	portsNames.d3_name = myPref.getString("d3_name", "digital3");
+	host = myPref.getString("host", "test.mosquitto.org");
+
+	portsNames.DHTSensor_hum_name = myPref.getString("DHTSensor_hum_name", "A1");
+	portsNames.DHTSensor_temp_name = myPref.getString("DHTSensor_temp_name", "A2");
+	portsNames.TempSensor_name = myPref.getString("TempSensor_name", "A3");
+	portsNames.d0_name = myPref.getString("d0_name", "D0");
+	portsNames.d1_name = myPref.getString("d1_name", "D1");
+	portsNames.d2_name = myPref.getString("d2_name", "D2");
+	portsNames.d3_name = myPref.getString("d3_name", "D3");
 
 	MQTTDHT = std::stoll(myPref.getString("MQTTDHT", "5000").c_str());
-	MQTTsingleTemp = std::stoll(myPref.getString("MQTTsingleTemp", "3000").c_str());
-	keepAliveTime = std::stoll(myPref.getString("keepAliveTime", "6000").c_str());
+	MQTTsingleTemp = std::stoll(myPref.getString("MQTTsingleTemp", "5000").c_str());
+	keepAliveTime = std::stoll(myPref.getString("keepAliveTime", "5000").c_str());
 	myPref.end();
 
 #ifdef DEBUG

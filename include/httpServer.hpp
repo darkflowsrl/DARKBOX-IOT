@@ -5,6 +5,7 @@
 #include <ESP8266mDNS.h>
 #endif
 #include "dataSensors.hpp"
+#include "functions.hpp"
 
 String proccesor();
 
@@ -18,7 +19,7 @@ void setupServer()
 {
   // mDNS setup
   Serial.print("Local DNS: " + localDeviceName + ".local ");
-  
+
   if (!mDns.begin(localDeviceName.c_str(), WiFi.localIP()))
   {
     Serial.println("(mDns instance) Error setting up DNS server");
@@ -34,6 +35,8 @@ void setupServer()
   // Web Server Root URL
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
             { request->send(LittleFS, "/www/index.html", "text/html"); });
+  server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request)
+            { request->send(LittleFS, "/www/pico.min.css", "text/css"); });
   server.on("/allvalues", HTTP_GET, [](AsyncWebServerRequest *request)
             { request->send(200, "application/json", proccesor()); });
 
@@ -46,16 +49,26 @@ void setupServer()
   server.on("/reset", HTTP_POST, [](AsyncWebServerRequest *request)
             {
             request->send(200, "text/plain", "Resetting Device...");
-            delay(5000);
             restoreConfig(LittleFS);
             ESP.eraseConfig();
             ESP.reset();
             ESP.restart(); });
-    server.on("/reboot", HTTP_POST, [](AsyncWebServerRequest *request)
+  server.on("/reboot", HTTP_POST, [](AsyncWebServerRequest *request)
             {
             request->send(200, "text/plain", "Rebooting Device...");
-            delay(5000);
             ESP.restart(); });
+  server.on("/save", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
+              String inputMessage;
+
+              if (request->hasParam("wifi"))
+              {
+                  inputMessage = request->getParam("wifi")->value();
+              }
+        
+              request->send(200, "text/html", "WebServer cerrado."); 
+              server.end(); 
+              });
 
   server.begin();
 }
@@ -75,9 +88,29 @@ String proccesor()
   d2 = String(TemporalAccess.d2);
   d3 = String(TemporalAccess.d3);
   heap = String(ESP.getFreeHeap());
-  vcc = String(ESP.getVcc());
+  vcc = String(float(ESP.getVcc() / 10000));
 
-  String allValues = t0 + String(";") + t1 + String(";") + h0 + String(";") + d0 + String(";") + d1 + String(";") + d2 + String(";") + d3 + String(";") + heap + String(";") + bootVersion + String(";") + chipId + String(";") + CPUfreq + String(";") + coreVersion + String(";") + flashChipId + String(";") + flashRealSize + String(";") + flashChipSpeed + String(";") + freeSketchSize + String(";") + fullVersion + String(";") + vcc + fullVersion + String(";") + releStatus;
+  String allValues = t0 + String(";");
+  allValues += t1 + String(";");
+  allValues += h0 + String(";"); 
+  allValues += d0 + String(";");
+  allValues += d1 + String(";");
+  allValues += d2 + String(";");
+  allValues += d3 + String(";");
+  allValues += heap + String(";");
+  allValues += bootVersion + String(";");
+  allValues += chipId + String(";");
+  allValues += CPUfreq + String(";");
+  allValues += coreVersion + String(";");
+  allValues += flashChipId + String(";");
+  allValues += flashRealSize + String(";");
+  allValues += flashChipSpeed + String(";");
+  allValues += freeSketchSize + String(";");
+  allValues += fullVersion + String(";");
+  allValues += vcc + String(";");
+  allValues += releStatus + String(";");
+  allValues +=  formatedTime() + String(";");
+  allValues +=  WiFi.localIP().toString();
 
   return allValues;
 }
