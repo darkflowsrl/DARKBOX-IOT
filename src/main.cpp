@@ -52,8 +52,7 @@ void renameFile(fs::FS &fs, const char *path1, const char *path2);
 void deleteFile(fs::FS &fs, const char *path);
 void loadData(fs::FS &fs, const char *path);
 void callback(char *topic, byte *payload, unsigned int lenght);
-void loadTemporalData(std::string t0, std::string t1, std::string h0,
-					  std::string d0, std::string d1, std::string d2, std::string d3);
+void loadTemporalData();
 void loadDataPreferences();
 void refreshScreen();
 void checkConn();
@@ -97,14 +96,7 @@ void task()
 		//  Temporal data to EEPROM
 		if (millis() - previousTimeTemporalData >= temporalDataRefreshTime)
 		{
-			loadTemporalData(mySensors.singleSensorRawdataTemp(0).c_str(), // Sonda
-							 mySensors.singleSensorRawdataDHT(false).c_str(), // Temperature
-							 mySensors.singleSensorRawdataDHT(true).c_str(), // Humidity
-							 myInputs.returnSingleInput(16),
-							 myInputs.returnSingleInput(14),
-							 myInputs.returnSingleInput(12),
-							 myInputs.returnSingleInput(13));
-
+			loadTemporalData();
 			previousTimeTemporalData = millis();
 		}
 
@@ -169,10 +161,10 @@ void task()
 		{
 			// JSON data creation
 			String sensorData = mySensors.singleSensorRawdataTemp(0);
-			String data = makeJSON(1, sensorData);
-
+			
 			if (sensorData != "None")
 			{
+				String data = makeJSON(1, sensorData);
 				mqttOnLoop(host.c_str(),
 						   port,
 						   root_topic_publish.c_str(),
@@ -360,16 +352,15 @@ void checkConn()
  * @param d2 digital io 2
  * @param d3 digital io 3
  */
-void loadTemporalData(std::string t0, std::string t1, std::string h0,
-					  std::string d0, std::string d1, std::string d2, std::string d3)
+void loadTemporalData()
 {
-	TemporalAccess.t0 = std::atoi(t0.c_str());
-	TemporalAccess.t1 = std::atoi(t1.c_str());
-	TemporalAccess.h0 = std::atoi(h0.c_str());
-	TemporalAccess.d0 = d0.c_str();
-	TemporalAccess.d1 = d1.c_str();
-	TemporalAccess.d2 = d2.c_str();
-	TemporalAccess.d3 = d3.c_str();
+	TemporalAccess.t0 = std::atoi(mySensors.singleSensorRawdataTemp(0).c_str());
+	TemporalAccess.t1 = std::atoi(mySensors.singleSensorRawdataDHT(false).c_str());
+	TemporalAccess.h0 = std::atoi(mySensors.singleSensorRawdataDHT(true).c_str());
+	TemporalAccess.d0 = myInputs.returnSingleInput(16).c_str();
+	TemporalAccess.d1 = myInputs.returnSingleInput(14).c_str();
+	TemporalAccess.d2 = myInputs.returnSingleInput(12).c_str();
+	TemporalAccess.d3 = myInputs.returnSingleInput(13).c_str();
 	if(digitalRead(Output1) == 0){
 		releStatus = "LOW";
 	}else{
