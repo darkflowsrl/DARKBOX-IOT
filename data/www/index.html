@@ -43,7 +43,8 @@
 </head>
 
 <body>
-  <h1 class="h1"><strong>Darkbox Dashboard</strong></h1>
+  <h1 class="h1" style="margin-bottom: 0%;"><strong>Darkbox Dashboard</strong></h1>
+  <h4 class="h1" style="margin-top: 0%;padding-top: 0%;" id="uuid"><strong></strong></h4>
   <p style="display: flex;margin-left: 5%; margin-bottom: 0%;" id="timestamp"><strong>Hora:</strong></p>
   <p style="display: flex;margin-left: 5%;margin-bottom: 0%;" id="ip_establecida"><strong>Ip:</strong></p>
 
@@ -99,8 +100,8 @@
       </div>
     </article>
 
-    <article class="card">
-      <form action="/save" method="get">
+    <article class="card" style="margin-top: 5%;padding-bottom: 0% ">
+      <form action="/save">
         <h2 class="h2">Configuraciones de Red</h2>
 
         <h3 class="h3">WiFi</h3>
@@ -139,9 +140,9 @@
         <div style="display: flex;">
           <div class="container" style="padding-left: 0%;">
             <strong>Host</strong>
-            <input type="text" id="Host" name="host" placeholder="host" required>
+            <input type="text" id="host" name="host" placeholder="host" required>
           </div>
-          <input type="number" id="puerto" name="puerto" value="1888" style="width: 30%; text-align: center;margin-bottom: 0%;align-self: center;margin-top: 10;margin-left: 2%;" required>
+          <input type="number" id="puerto" name="puerto" value=1883 style="width: 30%; text-align: center;margin-bottom: 0%;align-self: center;margin-top: 10;margin-left: 2%;" required>
         </div>
 
         <div class=grid>
@@ -154,6 +155,57 @@
             <input type="text" id="password" name="password" placeholder="Contraseña">
           </label>
 
+        </div>
+
+        <input type="submit" value="Guardar">
+      </form>
+    </article>
+
+    <article class="card"  style="margin-top: 5%;padding-bottom: 0% ">
+      <form action="/save_general">
+        <h2 class="h2">Configuraciones Generales</h2>
+        
+        <label for="device_name">
+          <strong>Nombre del dispositivo</strong>
+          <input type="text" id="device_name" name="device_name" placeholder="" required>
+        </label>
+
+        <div class="grid">
+          <label for="d0_time">
+            <strong>Tiempo D0</strong>
+            <input type="number" id="d0_time" name="d0_time" required>
+          </label>
+          <label for="d1_time">
+            <strong>Tiempo D1</strong>
+            <input type="number" id="d1_time" name="d1_time" required>
+          </label>
+          <label for="d2_time">
+            <strong>Tiempo D2</strong>
+            <input type="number" id="d2_time" name="d2_time" required>
+          </label>
+          <label for="d3_time">
+            <strong>Tiempo D3</strong>
+            <input type="number" id="d3_time" name="d3_time" required>
+          </label>
+        </div>
+
+        <div class="grid">
+          <label for="a1_time">
+            <strong>Tiempo A1</strong>
+            <input type="number" id="a1_time" name="a1_time" required>
+          </label>
+          <label for="a2_time">
+            <strong>Tiempo A2</strong>
+            <input type="number" id="a2_time" name="a2_time" required>
+          </label>
+          <label for="a3_time">
+            <strong>Tiempo A3</strong>
+            <input type="number" id="a3_time" name="a3_time"required>
+          </label>
+          <label for="rele_time">
+            <strong>Tiempo Rele</strong>
+            <input type="number" id="rele_time" name="rele_time" required>
+          </label>
         </div>
 
         <input type="submit" value="Guardar">
@@ -296,6 +348,7 @@
         document.getElementById("rele").value = a[18];
         document.getElementById("timestamp").innerHTML = "Timestamp: " +  a[19];
         document.getElementById("ip_establecida").innerHTML = "Ip: " + a[20];
+        document.getElementById("uuid").innerHTML = a[21];
       }
     };
     xhttp.open("GET", "/allvalues", true);

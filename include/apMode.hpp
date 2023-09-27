@@ -271,12 +271,13 @@ void changeCredentials(fs::FS &fs, const char *path, String mailReceiver,
 
 int DHCPtoStatic(String staticIpAP, String gatewayAP_, String subnetMaskAP)
 {
-  IPAddress miIp = strToIp(staticIpAP.c_str());
-  IPAddress miGateway = strToIp(gatewayAP_.c_str());
-  IPAddress miSubnet = strToIp(subnetMaskAP.c_str());
-
   if (staticIpAP != "" && subnetMaskAP != "" && gatewayAP_ != "")
   {
+    IPAddress miIp = strToIp(staticIpAP.c_str());
+    IPAddress miGateway = strToIp(gatewayAP_.c_str());
+    IPAddress miSubnet = strToIp(subnetMaskAP.c_str());
+
+    Serial.println("Local IP change to " + staticIpAP);
     myManager.setSTAStaticIPConfig(miIp, miGateway, miSubnet, IPAddress(8, 8, 8, 8)); // Repair this, static ip detected but no configured
     WiFi.config(miIp, miGateway, miSubnet);
   }

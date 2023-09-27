@@ -50,8 +50,7 @@ void setupServer()
             {
             request->send(200, "text/plain", "Resetting Device...");
             restoreConfig(LittleFS);
-            ESP.eraseConfig();
-            ESP.reset();
+            myPref.clear();
             ESP.restart(); });
   server.on("/reboot", HTTP_POST, [](AsyncWebServerRequest *request)
             {
@@ -60,16 +59,137 @@ void setupServer()
   server.on("/save", HTTP_GET, [](AsyncWebServerRequest *request)
             {
               String inputMessage;
-
-              if (request->hasParam("wifi"))
+              myPref.begin("EPM", false);
+              if (request->hasParam("ip"))
               {
-                  inputMessage = request->getParam("wifi")->value();
+                  inputMessage = request->getParam("ip")->value();
+                  myPref.putString("staticIpAP", inputMessage);
+              }else{
+                myPref.putString("staticIpAP", "");
               }
-        
-              request->send(200, "text/html", "WebServer cerrado."); 
-              server.end(); 
-              });
 
+              if (request->hasParam("subnet"))
+              {
+                  inputMessage = request->getParam("subnet")->value();
+                  myPref.putString("subnetMaskAP", inputMessage);
+              }else{
+                myPref.putString("subnetMaskAP", "");
+              }
+
+              if (request->hasParam("puerta"))
+              {
+                  inputMessage = request->getParam("puerta")->value();
+                  myPref.putString("gatewayAP", inputMessage);
+              }else{
+                myPref.putString("gatewayAP", "");
+              }
+
+              if (request->hasParam("host"))
+              {
+                  inputMessage = request->getParam("host")->value();
+                  myPref.putString("mqtt_host", inputMessage);
+              }
+
+              if (request->hasParam("puerto"))
+              {
+                  inputMessage = request->getParam("puerto")->value();
+                  myPref.putString("mqtt_port", inputMessage);
+              }
+
+              if (request->hasParam("usuario"))
+              {
+                  inputMessage = request->getParam("usuario")->value();
+                  myPref.putString("mqtt_username", inputMessage);
+              }
+
+              if (request->hasParam("password"))
+              {
+                  inputMessage = request->getParam("password")->value();
+                  myPref.putString("mqtt_password", inputMessage);
+              }
+              
+              ESP.restart();        
+              });
+      server.on("/save_general", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
+              String inputMessage;
+              myPref.begin("EPM", false);
+              
+              if (request->hasParam("device_name"))
+              {
+                  inputMessage = request->getParam("device_name")->value();
+                  myPref.putString("deviceName", inputMessage);
+              }
+
+              if (request->hasParam("d0_time"))
+              {
+                  inputMessage = request->getParam("d0_time")->value();
+                  long long int temp = std::stoll(inputMessage.c_str());
+                  temp = temp*1000;
+                  inputMessage = String(temp);
+                  myPref.putString("IO_0", inputMessage);
+              }
+
+              if (request->hasParam("d1_time"))
+              {
+                  inputMessage = request->getParam("d1_time")->value();
+                  long long int temp = std::stoll(inputMessage.c_str());
+                  temp = temp*1000;
+                  inputMessage = String(temp);
+                  myPref.putString("IO_1", inputMessage);
+              }
+
+              if (request->hasParam("d2_time"))
+              {
+                  inputMessage = request->getParam("d2_time")->value();
+                  long long int temp = std::stoll(inputMessage.c_str());
+                  temp = temp*1000;
+                  inputMessage = String(temp);
+                  myPref.putString("IO_2", inputMessage);
+              }
+
+              if (request->hasParam("d3_time"))
+              {
+                  inputMessage = request->getParam("d3_time")->value();
+                  long long int temp = std::stoll(inputMessage.c_str());
+                  temp = temp*1000;
+                  inputMessage = String(temp);
+                  myPref.putString("IO_3", inputMessage);
+              }
+
+
+              if (request->hasParam("a1_time"))
+              {
+                  inputMessage = request->getParam("a1_time")->value();
+                  long long int temp = std::stoll(inputMessage.c_str());
+                  temp = temp*1000;
+                  inputMessage = String(temp);
+                  myPref.putString("MQTTDHT", inputMessage);
+              }
+              /*
+              REMEMBER TO IMPLEMENT a2_time
+              */
+              if (request->hasParam("a3_time"))
+              {
+                  inputMessage = request->getParam("a3_time")->value();
+                  long long int temp = std::stoll(inputMessage.c_str());
+                  temp = temp*1000;
+                  inputMessage = String(temp);
+                  myPref.putString("MQTTsingleTemp", inputMessage);
+              }
+
+              if (request->hasParam("rele_time"))
+              {
+                  inputMessage = request->getParam("rele_time")->value();
+                  long long int temp = std::stoll(inputMessage.c_str());
+                  temp = temp*1000;
+                  inputMessage = String(temp);
+                  myPref.putString("releStatusSendTime", inputMessage);
+              }
+
+              ESP.restart();        
+              });
+  
   server.begin();
 }
 
@@ -109,8 +229,9 @@ String proccesor()
   allValues += fullVersion + String(";");
   allValues += vcc + String(";");
   allValues += releStatus + String(";");
-  allValues +=  formatedTime() + String(";");
-  allValues +=  WiFi.localIP().toString();
+  allValues += formatedTime() + String(";");
+  allValues += WiFi.localIP().toString() + String(";");
+  allValues += chipId;
 
   return allValues;
 }

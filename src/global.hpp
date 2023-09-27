@@ -10,7 +10,6 @@
 #ifdef PREFERENCES
 Preferences myPref;
 #endif
-
 typedef enum{
   DNS_UPDATE,
   SCREEN_REFRESH,
@@ -19,6 +18,7 @@ typedef enum{
   MQTT_DHT,
   MQTT_SINGLE_TEMP,
   MQTT_KEEP_ALIVE,
+  MQTT_SEND_RELAY_STATUS,
   MQTT_POLL,
   CONN_CHECK
 }States;
@@ -26,30 +26,37 @@ typedef enum{
 States currentState = TEMPORAL_DATA;
 
 unsigned int password = 123456789;
-unsigned int port = 1883;
+unsigned int port;
 unsigned int eventInterval = 1500;
-unsigned int previousTimeScreen = 0;
-unsigned int previousTimeTemporalData = 0;
-unsigned int previousTimeTemporalCheckConnection = 0;
-unsigned int previousTimeMQTT_DHT = 0;
-unsigned int previousKeepAliveTime = 0;
-unsigned int previousMQTTsingleTemp = 0;
+unsigned long int previousTimeScreen = 0;
+unsigned long int previousTimeTemporalData = 0;
+unsigned long int previousTimeTemporalCheckConnection = 0;
+unsigned long int previousTimeMQTT_DHT = 0;
+unsigned long int previousKeepAliveTime = 0;
+unsigned long int previousMQTTsingleTemp = 0;
+unsigned long int previousReleStatusSendTime = 0;
 unsigned int temporalDataRefreshTime = 100;
 unsigned int SmtpPort;
 unsigned long long MQTTDHT;
 unsigned long long MQTTsingleTemp;
 unsigned long long keepAliveTime;
+unsigned long long int releStatusSendTime;
 
 String chipId = String(ESP.getChipId());
 String IO_0;
 String IO_1;
 String IO_2;
 String IO_3;
-String localIP;
 String deviceName;
+
+String localIP;
 String staticIpAP;
 String subnetMaskAP;
 String gatewayAP;
+
+String mqtt_username;
+String mqtt_password;
+
 String SmtpSender;
 String SmtpPass;
 String SmtpReceiver;

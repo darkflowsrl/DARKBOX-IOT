@@ -145,14 +145,14 @@ void mqttSetup(const char *MQTT_SERVER, uint16_t MQTT_PORT, const char *PATH, Wi
 		}
 		else
 		{
-			restoreConfig(LittleFS);
+			//restoreConfig(LittleFS);
 			ESP.restart();
 		}
 	}
 
 	mqttClient.setId(chipId);
 
-	mqttClient.setUsernamePassword("", "");
+	mqttClient.setUsernamePassword(mqtt_username, mqtt_password);
 
 	mqttClient.setCleanSession(true);
 

@@ -43,6 +43,7 @@
 #include "myMqtt.hpp"
 
 String makeJSON(int typeOfValues, String dataExtra = "");
+String makeRelayJSON();
 void listDir(fs::FS &fs, const char *dirname, uint8_t levels);
 void readFile(fs::FS &fs, const char *path);
 void writeFile(fs::FS &fs, const char *path, const char *message);
@@ -194,6 +195,24 @@ void task()
 					   data);
 			previousKeepAliveTime = millis();
 		}
+		currentState = MQTT_SEND_RELAY_STATUS;
+		break;
+	}
+	case MQTT_SEND_RELAY_STATUS:
+	{
+		String relayData = makeRelayJSON();
+		
+		// Keep alive message
+		if (millis() - previousReleStatusSendTime > releStatusSendTime)
+		{
+			String data = makeRelayJSON();
+			mqttOnLoop(host.c_str(),
+					   port,
+					   root_topic_publish.c_str(),
+					   data);
+			previousReleStatusSendTime = millis();
+		}
+
 		currentState = MQTT_POLL;
 		break;
 	}
@@ -302,6 +321,19 @@ String makeJSON(int typeOfValues, String dataExtra)
 	return data;
 }
 
+String makeRelayJSON()
+{
+	String data;
+	DynamicJsonDocument dataJson(1024);
+	dataJson["DeviceId"] = chipId;
+	dataJson["DeviceName"] = deviceName.c_str();
+	dataJson["Timestamp"] = ntpRaw();
+	dataJson["rele"] = digitalRead(Output1);
+
+	serializeJson(dataJson, data);
+	return data;
+}
+
 void checkConn()
 {
 	if (millis() - previousTimeTemporalCheckConnection >= 30000)
@@ -338,6 +370,11 @@ void loadTemporalData(std::string t0, std::string t1, std::string h0,
 	TemporalAccess.d1 = d1.c_str();
 	TemporalAccess.d2 = d2.c_str();
 	TemporalAccess.d3 = d3.c_str();
+	if(digitalRead(Output1) == 0){
+		releStatus = "LOW";
+	}else{
+		releStatus="HIGH";
+	}
 }
 
 #ifdef I2C
@@ -385,7 +422,10 @@ void loadDataPreferences()
 	IO_2 = myPref.getString("IO_2", "10000");
 	IO_3 = myPref.getString("IO_3", "10000");
 
-	host = myPref.getString("host", "test.mosquitto.org");
+	host = myPref.getString("mqtt_host", "test.mosquitto.org");
+	port = std::stoll(myPref.getString("mqtt_port", "1883").c_str());
+	mqtt_username = myPref.getString("mqtt_username", "");
+	mqtt_password = myPref.getString("mqtt_password", "");
 
 	portsNames.DHTSensor_hum_name = myPref.getString("DHTSensor_hum_name", "A1");
 	portsNames.DHTSensor_temp_name = myPref.getString("DHTSensor_temp_name", "A2");
@@ -397,7 +437,9 @@ void loadDataPreferences()
 
 	MQTTDHT = std::stoll(myPref.getString("MQTTDHT", "5000").c_str());
 	MQTTsingleTemp = std::stoll(myPref.getString("MQTTsingleTemp", "5000").c_str());
-	keepAliveTime = std::stoll(myPref.getString("keepAliveTime", "5000").c_str());
+	releStatusSendTime = std::stoll(myPref.getString("releStatusSendTime", "5000").c_str());
+	keepAliveTime = std::stoll(myPref.getString("keepAliveTime", "120000").c_str());
+	
 	myPref.end();
 
 #ifdef DEBUG
@@ -415,11 +457,16 @@ void loadDataPreferences()
 	Serial.print("\n## IO1 name: " + portsNames.d1_name);
 	Serial.print("\n## IO2 name: " + portsNames.d2_name);
 	Serial.print("\n## IO3 name: " + portsNames.d3_name);
+	Serial.print("\n## MQTT host: " + host);
+	Serial.print("\n## MQTT port: " + String(port));
+	Serial.print("\n## MQTT username: " + mqtt_username);
+	Serial.print("\n## MQTT password: " + mqtt_password);
 	Serial.print("\n## DHT humidity name: " + portsNames.DHTSensor_hum_name);
 	Serial.print("\n## DHT temperature name: " + portsNames.DHTSensor_temp_name);
 	Serial.print("\n## Temperature sensor name: " + portsNames.TempSensor_name);
 	Serial.print("\n## DHT sensor sending time: " + String(MQTTDHT));
 	Serial.print("\n## Single sensor sending time: " + String(MQTTsingleTemp));
+	Serial.print("\n## Rele status sending time: " + String(releStatusSendTime));
 	Serial.println("\n## Keep alive sending time: " + String(keepAliveTime));
 	Serial.println("#####################################################################");
 #endif
