@@ -1,62 +1,26 @@
 #ifndef MYMQTT_H
 #define MYMQTT_H
-#include <ArduinoMqttClient.h>
+
+//#define SSL
+
+#ifndef SSL
 #include <WiFiClient.h>
+#else
+#include <WiFiClientSecure.h>
+#include <loadCerts.hpp>
+#endif
+
+#include <ArduinoMqttClient.h>
 #include <string.h>
 #include <functions.hpp>
 
-
+#ifndef SSL
 WiFiClient client_;
+#else
+WiFiClientSecure client_;
+#endif
+
 MqttClient mqttClient(client_);
-
-/*
-DeviceConfig/
-{
-	"device": {
-		"name": "Departamento"
-	},
-	"network": {
-		"SSID": "default",
-		"wifiPassword": "default",
-		"ip": "",
-		"subnetMask": "",
-		"gateway": ""
-	},
-	"smtp": {
-		"mailSender": "default@default.com",
-		"mailPassword": "default",
-		"mailReceiver": "default@default.com",
-		"smtpServer": "smtp.default.com",
-		"smtpPort": "587"
-	},
-	"ports": {
-		"IO_0": "OTU",
-		"IO_1": "OTU",
-		"IO_2": "OTU",
-		"IO_3": "OTU"
-	},
-	"names": {
-		"DHTSensor_hum_name": "humedad",
-		"DHTSensor_temp_name": "temperatura",
-		"TempSensor_name": "sonda",
-		"d0_name": "d0",
-		"d1_name": "d1",
-		"d2_name": "d2",
-		"d3_name": "d3"
-	},
-	"etc": {
-		"DHT": "1000",
-		"SingleTemp": "1000",
-		"keepAliveTime": "20000"
-	}
-}
-##################################
-ResetDevice/
-{
-  "password" : "123456789"
-}
-
-*/
 
 /**
  * @brief This function handle the incomming messages from a particular topic
@@ -131,11 +95,14 @@ void onMqttMessage(int messageSize)
 	}
 }
 
+#ifndef SSL
 void mqttSetup(const char *MQTT_SERVER, uint16_t MQTT_PORT, const char *PATH, WiFiClient client, const char *PATH_ALT = "")
 {
 	int count = 0;
+
 	while (!mqttClient.connect(MQTT_SERVER, MQTT_PORT))
 	{
+
 		if (count != 500)
 		{ // 500 (15 min aprox)
 			Serial.print(String(count) + String(") "));
@@ -145,8 +112,10 @@ void mqttSetup(const char *MQTT_SERVER, uint16_t MQTT_PORT, const char *PATH, Wi
 		}
 		else
 		{
-			//restoreConfig(LittleFS);
-			ESP.restart();
+			myPref.putString("mqtt_host", "test.mosquitto.org");
+			myPref.putString("mqtt_port", "1883");
+			myPref.putString("mqtt_username", "");
+			myPref.putString("mqtt_password", "");
 		}
 	}
 
@@ -164,6 +133,47 @@ void mqttSetup(const char *MQTT_SERVER, uint16_t MQTT_PORT, const char *PATH, Wi
 
 	Serial.println("(MQTT instance) You're connected to the MQTT broker!");
 }
+
+#else
+
+void mqttSetup(const char *MQTT_SERVER, uint16_t MQTT_PORT, const char *PATH, WiFiServerSecure client, const char *PATH_ALT = "")
+{
+	int count = 0;
+	while (!mqttClient.connect(MQTT_SERVER, MQTT_PORT))
+	{
+
+		if (count != 500)
+		{ // 500 (15 min aprox)
+			Serial.print(String(count) + String(") "));
+			Serial.print("(MQTT instance) MQTT connection failed! Error code: ");
+			Serial.println(std::to_string(mqttClient.connectError()).c_str());
+			count++;
+		}
+		else
+		{
+			myPref.putString("mqtt_host", "test.mosquitto.org");
+			myPref.putString("mqtt_port", "1883");
+			myPref.putString("mqtt_username", "");
+			myPref.putString("mqtt_password", "");
+		}
+	}
+
+	mqttClient.setId(chipId);
+
+	mqttClient.setUsernamePassword(mqtt_username, mqtt_password);
+
+	mqttClient.setCleanSession(true);
+
+	mqttClient.onMessage(onMqttMessage);
+
+	mqttClient.subscribe(configTopic.c_str(), 2);
+	mqttClient.subscribe(reset_topic.c_str(), 2);
+	mqttClient.subscribe(relay_topic.c_str(), 2);
+
+	Serial.println("(MQTT instance) You're connected to the MQTT broker!");
+}
+
+#endif
 
 /**
  * @brief mqttOnLoop receive all the neccesary data to send a MQTT message

@@ -8,6 +8,7 @@
 #include "functions.hpp"
 
 String proccesor();
+String storedValues();
 
 dataSensors _mySensors;
 AsyncWebServer server(80);
@@ -37,9 +38,12 @@ void setupServer()
             { request->send(LittleFS, "/www/index.html", "text/html"); });
   server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request)
             { request->send(LittleFS, "/www/pico.min.css", "text/css"); });
+  server.on("/jquery.js", HTTP_GET, [](AsyncWebServerRequest *request)
+                  { request->send(LittleFS, "/www/jquery.js", "text/javascript"); });
   server.on("/allvalues", HTTP_GET, [](AsyncWebServerRequest *request)
             { request->send(200, "application/json", proccesor()); });
-
+  server.on("/stored_values", HTTP_GET, [](AsyncWebServerRequest *request)
+            { request->send(200, "application/json", storedValues()); });
   server.on("/gota", HTTP_GET, [](AsyncWebServerRequest *request)
             { request->send(LittleFS, "/www/gota.gif", "image/png"); });
   server.on("/termp", HTTP_GET, [](AsyncWebServerRequest *request)
@@ -234,6 +238,25 @@ String proccesor()
   allValues += chipId;
 
   return allValues;
+}
+
+String storedValues(){
+  String values;
+
+  values += host;
+  values += ";" + String(port);
+  values += ";" + mqtt_username;
+  values += ";" + mqtt_password;
+  values += ";" + deviceName;
+  values += ";" + IO_0;
+  values += ";" + IO_1;
+  values += ";" + IO_2;
+  values += ";" + IO_3;
+  values += ";" + String(MQTTDHT);
+  values += ";" + String(MQTTsingleTemp);
+  values += ";" + String(releStatusSendTime);
+
+  return values;
 }
 
 #endif

@@ -7,9 +7,24 @@
   <link rel="icon" href="/static/img/ODOT_LOGO.png" type="image/x-icon">
   <link href="/style.css" rel="stylesheet">
   <link href="./pico.min.css" rel="stylesheet">
+  <script src="jquery.js"></script>
   <!--
     -->
   <style>
+    body {
+      position: relative
+    }
+
+    .cargando {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 10;
+      background-color: #11191f;
+    }
+
     .h1 {
       display: flex;
       text-align: center;
@@ -43,6 +58,13 @@
 </head>
 
 <body>
+  <div id="guardando" class="cargando">
+    <h1 style="display: flex; justify-content: center;margin-top: calc(100vh/3);">
+      <strong>
+        GUARDANDO CONFIGURACIONES
+      </strong>
+    </h1>
+  </div>
   <h1 class="h1" style="margin-bottom: 0%;"><strong>Darkbox Dashboard</strong></h1>
   <h4 class="h1" style="margin-top: 0%;padding-top: 0%;" id="uuid"><strong></strong></h4>
   <p style="display: flex;margin-left: 5%; margin-bottom: 0%;" id="timestamp"><strong>Hora:</strong></p>
@@ -142,11 +164,13 @@
             <strong>Host</strong>
             <input type="text" id="host" name="host" placeholder="host" required>
           </div>
-          <input type="number" id="puerto" name="puerto" value=1883 style="width: 30%; text-align: center;margin-bottom: 0%;align-self: center;margin-top: 10;margin-left: 2%;" required>
+          <input type="number" id="puerto" name="puerto" value=1883
+            style="width: 30%; text-align: center;margin-bottom: 0%;align-self: center;margin-top: 10;margin-left: 2%;"
+            required>
         </div>
 
         <div class=grid>
-        <label for="usuario">
+          <label for="usuario">
             <strong>Usuario</strong>
             <input type="text" id="usuario" name="usuario" placeholder="Usuario">
           </label>
@@ -161,10 +185,10 @@
       </form>
     </article>
 
-    <article class="card"  style="margin-top: 5%;padding-bottom: 0% ">
+    <article class="card" style="margin-top: 5%;padding-bottom: 0% ">
       <form action="/save_general">
         <h2 class="h2">Configuraciones Generales</h2>
-        
+
         <label for="device_name">
           <strong>Nombre del dispositivo</strong>
           <input type="text" id="device_name" name="device_name" placeholder="" required>
@@ -200,7 +224,7 @@
           </label>
           <label for="a3_time">
             <strong>Tiempo A3</strong>
-            <input type="number" id="a3_time" name="a3_time"required>
+            <input type="number" id="a3_time" name="a3_time" required>
           </label>
           <label for="rele_time">
             <strong>Tiempo Rele</strong>
@@ -208,7 +232,9 @@
           </label>
         </div>
 
-        <input type="submit" value="Guardar">
+        <button type="submit">
+          Guardar
+        </button>
       </form>
     </article>
 
@@ -272,9 +298,50 @@
 </body>
 
 <script>
-  document.getElementById("ip").setAttribute("disabled", "disabled");
-  document.getElementById("subnet").setAttribute("disabled", "disabled");
-  document.getElementById("puerta").setAttribute("disabled", "disabled");
+  const $guardandoDiv = document.getElementById("guardando");
+  $guardandoDiv.style.display = 'None'
+
+  function wait(milliseconds) {
+    return new Promise((resolve) => {
+      setTimeout(resolve, milliseconds);
+    });
+  }
+
+  function loadAndRestore() {
+    wait(10000)
+      .then(() => {
+        $guardandoDiv.style.display = 'None'
+      })
+  }
+
+
+  function load_stored_values() {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function () {
+      if (this.readyState == 4 && this.status == 200) {
+        var a = this.responseText.split(';');
+
+        document.getElementById("host").value = a[0];
+        document.getElementById("puerto").value = a[1];
+        document.getElementById("usuario").value = a[2];
+        document.getElementById("password").value = a[3];
+
+        document.getElementById("device_name").value = a[4];
+
+        document.getElementById("d0_time").value = a[5] / 1000;
+        document.getElementById("d1_time").value = a[6] / 1000;
+        document.getElementById("d2_time").value = a[7] / 1000;
+        document.getElementById("d3_time").value = a[8] / 1000;
+
+        document.getElementById("a1_time").value = a[9] / 1000;
+        document.getElementById("a2_time").value = a[9] / 1000;
+        document.getElementById("a3_time").value = a[10] / 1000;
+        document.getElementById("rele_time").value = a[11] / 1000;
+      }
+    }
+    xhttp.open("GET", "/stored_values", true);
+    xhttp.send();
+  }
 
   function habilitar() {
     val = document.getElementById("tipo").value;
@@ -293,6 +360,12 @@
     }
   }
 
+  load_stored_values();
+
+  document.getElementById("ip").setAttribute("disabled", "disabled");
+  document.getElementById("subnet").setAttribute("disabled", "disabled");
+  document.getElementById("puerta").setAttribute("disabled", "disabled");
+
   setInterval(function () {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function () {
@@ -306,31 +379,31 @@
         document.getElementById("io1").value = a[4];
         document.getElementById("io2").value = a[5];
         document.getElementById("io3").value = a[6];
-        
-        if(a[3] == "HIGH"){
+
+        if (a[3] == "HIGH") {
           document.getElementById("io0").style.color = "#00ff44";
-        }else{
+        } else {
           document.getElementById("io0").style.color = "#ff2125";
         }
-        if(a[4] == "HIGH"){
+        if (a[4] == "HIGH") {
           document.getElementById("io1").style.color = "#00ff44";
-        }else{
+        } else {
           document.getElementById("io1").style.color = "#ff2125";
         }
-        if(a[5] == "HIGH"){
+        if (a[5] == "HIGH") {
           document.getElementById("io2").style.color = "#00ff44";
-        }else{
+        } else {
           document.getElementById("io2").style.color = "#ff2125";
         }
-        if(a[6] == "HIGH"){
+        if (a[6] == "HIGH") {
           document.getElementById("io3").style.color = "#00ff44";
-        }else{
+        } else {
           document.getElementById("io3").style.color = "#ff2125";
         }
 
-        if(a[18] == "HIGH"){
+        if (a[18] == "HIGH") {
           document.getElementById("rele").style.color = "#00ff44";
-        }else{
+        } else {
           document.getElementById("rele").style.color = "#ff2125";
         }
 
@@ -346,7 +419,7 @@
         document.getElementById("FVV").innerHTML = a[16];
         document.getElementById("VCC").innerHTML = a[17] + " volts";
         document.getElementById("rele").value = a[18];
-        document.getElementById("timestamp").innerHTML = "Timestamp: " +  a[19];
+        document.getElementById("timestamp").innerHTML = "Timestamp: " + a[19];
         document.getElementById("ip_establecida").innerHTML = "Ip: " + a[20];
         document.getElementById("uuid").innerHTML = a[21];
       }
@@ -354,6 +427,25 @@
     xhttp.open("GET", "/allvalues", true);
     xhttp.send();
   }, 500);
+  
+  $(document).ready(function () {
+    $('form').submit(function (e) {
+      e.preventDefault()
+      $guardandoDiv.style.display = 'block'
+      window.scrollTo(0, 0)
+
+      // Get the form data
+      var formData = $(this).serialize();
+
+      // Perform the AJAX request
+      $.ajax({
+        type: 'GET', // or 'GET' depending on your form's method
+        url: $(this).attr('action'),
+        data: formData});
+
+      loadAndRestore()
+    });
+  });
 </script>
 
 </html>
