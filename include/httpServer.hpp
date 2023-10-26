@@ -3,6 +3,7 @@
 #ifndef DASHBOARD_OUTLINE
 #include <ESPAsyncWebServer.h>
 #include <ESP8266mDNS.h>
+#include <Updater.h>
 #endif
 #include "dataSensors.hpp"
 #include "functions.hpp"
@@ -18,50 +19,52 @@ String t0, t1, h0, d0, d1, d2, d3, io0, io1, io2, io3, allvalues;
 
 void setupServer()
 {
-  // mDNS setup
-  Serial.print("Local DNS: " + localDeviceName + ".local ");
+	// mDNS setup
+	Serial.print("Local DNS: " + localDeviceName + ".local ");
 
-  if (!mDns.begin(localDeviceName.c_str(), WiFi.localIP()))
-  {
-    Serial.println("(mDns instance) Error setting up DNS server");
-  }
-  else
-  {
-    Serial.println("(mDns instance) DNS server started succesfully");
-  }
+	if (!mDns.begin(localDeviceName.c_str(), WiFi.localIP()))
+	{
+		Serial.println("(mDns instance) Error setting up DNS server");
+	}
+	else
+	{
+		Serial.println("(mDns instance) DNS server started succesfully");
+	}
 
-  mDns.addService("http", "tcp", 80);
+	mDns.addService("http", "tcp", 80);
 
-  // ESPAsyncWebServer Setup
-  // Web Server Root URL
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
-            { request->send(LittleFS, "/www/index.html", "text/html"); });
-  server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request)
-            { request->send(LittleFS, "/www/pico.min.css", "text/css"); });
-  server.on("/jquery.js", HTTP_GET, [](AsyncWebServerRequest *request)
-                  { request->send(LittleFS, "/www/jquery.js", "text/javascript"); });
-  server.on("/allvalues", HTTP_GET, [](AsyncWebServerRequest *request)
-            { request->send(200, "application/json", proccesor()); });
-  server.on("/stored_values", HTTP_GET, [](AsyncWebServerRequest *request)
-            { request->send(200, "application/json", storedValues()); });
-  server.on("/gota", HTTP_GET, [](AsyncWebServerRequest *request)
-            { request->send(LittleFS, "/www/gota.gif", "image/png"); });
-  server.on("/termp", HTTP_GET, [](AsyncWebServerRequest *request)
-            { request->send(LittleFS, "/www/termp.gif", "image/png"); });
-  server.on("/relay", HTTP_GET, [](AsyncWebServerRequest *request)
-            { request->send(LittleFS, "/www/relay.gif", "image/png"); });
-  server.on("/reset", HTTP_POST, [](AsyncWebServerRequest *request)
-            {
+	// ESPAsyncWebServer Setup
+	// Web Server Root URL
+	server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
+			  { request->send(LittleFS, "/www/index.html", "text/html"); });
+	server.on("/updatePortal", HTTP_GET, [](AsyncWebServerRequest *request)
+			  { request->send(LittleFS, "/www/updatePortal.html", "text/html"); });
+	server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request)
+			  { request->send(LittleFS, "/www/pico.min.css", "text/css"); });
+	server.on("/jquery.js", HTTP_GET, [](AsyncWebServerRequest *request)
+			  { request->send(LittleFS, "/www/jquery.js", "text/javascript"); });
+	server.on("/allvalues", HTTP_GET, [](AsyncWebServerRequest *request)
+			  { request->send(200, "application/json", proccesor()); });
+	server.on("/stored_values", HTTP_GET, [](AsyncWebServerRequest *request)
+			  { request->send(200, "application/json", storedValues()); });
+	server.on("/gota", HTTP_GET, [](AsyncWebServerRequest *request)
+			  { request->send(LittleFS, "/www/gota.gif", "image/png"); });
+	server.on("/termp", HTTP_GET, [](AsyncWebServerRequest *request)
+			  { request->send(LittleFS, "/www/termp.gif", "image/png"); });
+	server.on("/relay", HTTP_GET, [](AsyncWebServerRequest *request)
+			  { request->send(LittleFS, "/www/relay.gif", "image/png"); });
+	server.on("/reset", HTTP_POST, [](AsyncWebServerRequest *request)
+			  {
             request->send(200, "text/plain", "Resetting Device...");
             restoreConfig(LittleFS);
             myPref.clear();
             ESP.restart(); });
-  server.on("/reboot", HTTP_POST, [](AsyncWebServerRequest *request)
-            {
+	server.on("/reboot", HTTP_POST, [](AsyncWebServerRequest *request)
+			  {
             request->send(200, "text/plain", "Rebooting Device...");
             ESP.restart(); });
-  server.on("/save", HTTP_GET, [](AsyncWebServerRequest *request)
-            {
+	server.on("/save", HTTP_GET, [](AsyncWebServerRequest *request)
+			  {
               String inputMessage;
               myPref.begin("EPM", false);
               if (request->hasParam("ip"))
@@ -112,10 +115,9 @@ void setupServer()
                   myPref.putString("mqtt_password", inputMessage);
               }
               
-              ESP.restart();        
-              });
-      server.on("/save_general", HTTP_GET, [](AsyncWebServerRequest *request)
-            {
+              ESP.restart(); });
+	server.on("/save_general", HTTP_GET, [](AsyncWebServerRequest *request)
+			  {
               String inputMessage;
               myPref.begin("EPM", false);
               
@@ -191,72 +193,109 @@ void setupServer()
                   myPref.putString("releStatusSendTime", inputMessage);
               }
 
-              ESP.restart();        
-              });
-  
-  server.begin();
+              ESP.restart(); });
+	server.on(
+		"/update", HTTP_POST, [](AsyncWebServerRequest *request)
+		{
+  		bool espShouldReboot = !Update.hasError();
+  		AsyncWebServerResponse *response = request->beginResponse(200, "text/html", espShouldReboot ? "<h1><strong>Update DONE</strong></h1><br><a href='/'>Return Home</a>" : "<h1><strong>Update FAILED</strong></h1><br><a href='/updt'>Retry?</a>");
+  		response->addHeader("Connection", "close");
+  		request->send(200); },
+		[](AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final)
+		{
+			uint32_t free_space = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
+			if (!index)
+			{
+				Serial.println("process update");
+				Update.runAsync(true);
+				if (!Update.begin(free_space))
+				{
+					Update.printError(Serial);
+				}
+				// Serial.printf("UploadStart: %s\n", filename.c_str());
+			}
+
+			if (Update.write(data, len) != len)
+			{
+				Update.printError(Serial);
+			}
+
+			if (final)
+			{
+				if (!Update.end(true))
+				{
+					Update.printError(Serial);
+				}
+				else
+				{
+					ESP.restart(); // Set flag so main loop can issue restart call
+				}
+			}
+		});
+	server.begin();
 }
 
 void setupHttpServer()
 {
-  mDns.update();
+	mDns.update();
 }
 
 String proccesor()
 {
-  t0 = String(TemporalAccess.t0);
-  t1 = String(TemporalAccess.t1);
-  h0 = String(TemporalAccess.h0);
-  d0 = String(TemporalAccess.d0);
-  d1 = String(TemporalAccess.d1);
-  d2 = String(TemporalAccess.d2);
-  d3 = String(TemporalAccess.d3);
-  heap = String(ESP.getFreeHeap());
-  vcc = String(float(ESP.getVcc() / 10000));
+	t0 = String(TemporalAccess.t0);
+	t1 = String(TemporalAccess.t1);
+	h0 = String(TemporalAccess.h0);
+	d0 = String(TemporalAccess.d0);
+	d1 = String(TemporalAccess.d1);
+	d2 = String(TemporalAccess.d2);
+	d3 = String(TemporalAccess.d3);
+	heap = String(ESP.getFreeHeap());
+	vcc = String(float(ESP.getVcc() / 10000));
 
-  String allValues = t0 + String(";");
-  allValues += t1 + String(";");
-  allValues += h0 + String(";"); 
-  allValues += d0 + String(";");
-  allValues += d1 + String(";");
-  allValues += d2 + String(";");
-  allValues += d3 + String(";");
-  allValues += heap + String(";");
-  allValues += bootVersion + String(";");
-  allValues += chipId + String(";");
-  allValues += CPUfreq + String(";");
-  allValues += coreVersion + String(";");
-  allValues += flashChipId + String(";");
-  allValues += flashRealSize + String(";");
-  allValues += flashChipSpeed + String(";");
-  allValues += freeSketchSize + String(";");
-  allValues += fullVersion + String(";");
-  allValues += vcc + String(";");
-  allValues += releStatus + String(";");
-  allValues += formatedTime() + String(";");
-  allValues += WiFi.localIP().toString() + String(";");
-  allValues += chipId;
+	String allValues = t0 + String(";");
+	allValues += t1 + String(";");
+	allValues += h0 + String(";");
+	allValues += d0 + String(";");
+	allValues += d1 + String(";");
+	allValues += d2 + String(";");
+	allValues += d3 + String(";");
+	allValues += heap + String(";");
+	allValues += bootVersion + String(";");
+	allValues += chipId + String(";");
+	allValues += CPUfreq + String(";");
+	allValues += coreVersion + String(";");
+	allValues += flashChipId + String(";");
+	allValues += flashRealSize + String(";");
+	allValues += flashChipSpeed + String(";");
+	allValues += freeSketchSize + String(";");
+	allValues += fullVersion + String(";");
+	allValues += vcc + String(";");
+	allValues += releStatus + String(";");
+	allValues += formatedTime() + String(";");
+	allValues += WiFi.localIP().toString() + String(";");
+	allValues += chipId;
 
-  return allValues;
+	return allValues;
 }
 
-String storedValues(){
-  String values;
+String storedValues()
+{
+	String values;
 
-  values += host;
-  values += ";" + String(port);
-  values += ";" + mqtt_username;
-  values += ";" + mqtt_password;
-  values += ";" + deviceName;
-  values += ";" + IO_0;
-  values += ";" + IO_1;
-  values += ";" + IO_2;
-  values += ";" + IO_3;
-  values += ";" + String(MQTTDHT);
-  values += ";" + String(MQTTsingleTemp);
-  values += ";" + String(releStatusSendTime);
+	values += host;
+	values += ";" + String(port);
+	values += ";" + mqtt_username;
+	values += ";" + mqtt_password;
+	values += ";" + deviceName;
+	values += ";" + IO_0;
+	values += ";" + IO_1;
+	values += ";" + IO_2;
+	values += ";" + IO_3;
+	values += ";" + String(MQTTDHT);
+	values += ";" + String(MQTTsingleTemp);
+	values += ";" + String(releStatusSendTime);
 
-  return values;
+	return values;
 }
 
 #endif

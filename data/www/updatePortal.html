@@ -1,0 +1,36 @@
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="/style.css" rel="stylesheet">
+    <link href="./pico.min.css" rel="stylesheet">
+    <title>Actualizar dispositivo</title>
+    <style>
+        article{
+            padding-bottom: 0%;
+        }
+        div{
+            text-align: center;
+            padding-left: 10%;
+            padding-right: 10%;
+        }
+        h1{
+            padding-top: 5%;
+        }
+    </style>
+</head>
+
+<body>
+    <div>
+        <h1>Actualizar dispositivo</h1>
+        <article class="card">
+            <form method="POST" action="/update" enctype="multipart/form-data">
+                <input type="file" name="update" /><input type="submit" value="Update" />
+            </form>
+        </article>
+    </div>
+</body>
+
+</html>

@@ -413,7 +413,7 @@ void loadDataPreferences()
 	IO_2 = myPref.getString("IO_2", "10000");
 	IO_3 = myPref.getString("IO_3", "10000");
 
-	host = myPref.getString("mqtt_host", "test.mosquitto.org");
+	host = myPref.getString("mqtt_host", "broker.emqx.io");
 	port = std::stoll(myPref.getString("mqtt_port", "1883").c_str());
 	mqtt_username = myPref.getString("mqtt_username", "");
 	mqtt_password = myPref.getString("mqtt_password", "");
@@ -434,7 +434,7 @@ void loadDataPreferences()
 	myPref.end();
 
 #ifdef DEBUG
-	Serial.println("#####################################################################");
+	Serial.print("\n#####################################################################");
 	Serial.print("\n## Current Config:\n## Device Name: " + deviceName);
 	Serial.print("\n## UID: " + String(ESP.getChipId()));
 	Serial.print("\n## IP: " + staticIpAP);
