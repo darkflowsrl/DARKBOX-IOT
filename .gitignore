@@ -40,3 +40,7 @@ src/BackUps/BackUp-11-08.tar.xz
 .vscode/settings.json
 src/old.txt
 src/BackUps/backup_06_09.tar.xz
+data/www/pico.min-Giuliano-.css
+src/main-Giuliano-.cpp
+include/httpServer-Giuliano-.hpp
+data/www/index-Giuliano-.html
